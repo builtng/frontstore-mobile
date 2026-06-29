@@ -1,0 +1,232 @@
+import React, { useState } from 'react';
+import {
+  View, Text, StyleSheet, SafeAreaView, KeyboardAvoidingView,
+  Platform, TouchableOpacity, ScrollView, TextInput,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming,
+} from 'react-native-reanimated';
+import { ArrowLeft, Phone, ChevronDown, Check } from 'lucide-react-native';
+import { Button } from '@/components/ui/Button';
+import { BottomSheet } from '@/components/ui/BottomSheet';
+import { useToast } from '@/components/ui/Toast';
+import { authApi } from '@/services/authApi';
+import { useOnboardingStore } from '@/stores/onboardingStore';
+import { Colors } from '@/constants/colors';
+import { FontFamily, FontSize } from '@/constants/typography';
+import { Radius, Shadow, Spacing } from '@/constants/spacing';
+import { useTheme } from '@/hooks/useTheme';
+import { useHaptics } from '@/hooks/useHaptics';
+
+const DIAL_CODES = [
+  { country: 'Nigeria', code: '+234' },
+  { country: 'Kenya', code: '+254' },
+  { country: 'Ghana', code: '+233' },
+  { country: 'South Africa', code: '+27' },
+  { country: 'Uganda', code: '+256' },
+  { country: 'Tanzania', code: '+255' },
+  { country: 'Rwanda', code: '+250' },
+  { country: 'Ethiopia', code: '+251' },
+  { country: 'Senegal', code: '+221' },
+  { country: 'Ivory Coast', code: '+225' },
+  { country: 'United Kingdom', code: '+44' },
+  { country: 'United States', code: '+1' },
+];
+
+export default function PhoneScreen() {
+  const router = useRouter();
+  const { theme } = useTheme();
+  const toast = useToast();
+  const haptics = useHaptics();
+  const setUserData = useOnboardingStore((s) => s.setUserData);
+
+  const [phone, setPhone] = useState('');
+  const [dialCode, setDialCode] = useState(DIAL_CODES[0]);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const titleOpacity = useSharedValue(0);
+  const titleY = useSharedValue(24);
+  const cardOpacity = useSharedValue(0);
+  const cardScale = useSharedValue(0.96);
+
+  React.useEffect(() => {
+    titleOpacity.value = withDelay(150, withTiming(1, { duration: 450 }));
+    titleY.value = withDelay(150, withSpring(0, { damping: 16 }));
+    cardOpacity.value = withDelay(350, withTiming(1, { duration: 400 }));
+    cardScale.value = withDelay(350, withSpring(1, { damping: 16 }));
+  }, []);
+
+  const titleStyle = useAnimatedStyle(() => ({
+    opacity: titleOpacity.value,
+    transform: [{ translateY: titleY.value }],
+  }));
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
+    transform: [{ scale: cardScale.value }],
+  }));
+
+  const cleanPhone = phone.replace(/\D/g, '');
+  const isValid = cleanPhone.length >= 7;
+
+  const handleSend = async () => {
+    if (!isValid) return;
+    setIsLoading(true);
+    haptics.light();
+    try {
+      const result = await authApi.sendOtp({
+        phone_number: cleanPhone,
+        country_dial_code: dialCode.code,
+      });
+      setUserData({ phone: result.phone });
+      router.push({
+        pathname: '/(auth)/verify',
+        params: {
+          phone: cleanPhone,
+          dial_code: dialCode.code,
+          formatted: result.phone,
+          is_new_user: result.is_new_user ? '1' : '0',
+        },
+      });
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? 'Failed to send OTP. Please check your number.';
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <TouchableOpacity style={styles.back} onPress={() => router.back()}>
+            <ArrowLeft size={22} color={theme.text} />
+          </TouchableOpacity>
+
+          {/* Header */}
+          <Animated.View style={[styles.header, titleStyle]}>
+            <View style={[styles.waIcon, { backgroundColor: '#25D366' + '20' }]}>
+              <Phone size={28} color="#25D366" strokeWidth={2} />
+            </View>
+            <Text style={[styles.title, { color: theme.text }]}>Enter your{'\n'}WhatsApp number</Text>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+              We'll send a 6-digit code to verify your identity. No password needed.
+            </Text>
+          </Animated.View>
+
+          {/* Phone input card */}
+          <Animated.View style={[styles.card, { backgroundColor: theme.card }, Shadow.md as any, cardStyle]}>
+            <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>WhatsApp Number</Text>
+            <View style={styles.inputRow}>
+              {/* Dial code — opens BottomSheet, no z-index conflict */}
+              <TouchableOpacity
+                style={[styles.dialBtn, { backgroundColor: theme.background, borderColor: theme.border }]}
+                onPress={() => { setPickerOpen(true); haptics.light(); }}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.dialCode, { color: theme.text }]}>{dialCode.code}</Text>
+                <ChevronDown size={14} color={theme.textTertiary} />
+              </TouchableOpacity>
+
+              <TextInput
+                style={[styles.phoneInput, { color: theme.text, fontFamily: FontFamily.headingBold }]}
+                placeholder="800 000 0000"
+                placeholderTextColor={theme.textTertiary}
+                keyboardType="phone-pad"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={phone}
+                onChangeText={setPhone}
+                maxLength={15}
+                autoFocus
+              />
+            </View>
+            <Text style={[styles.note, { color: theme.textTertiary }]}>
+              Make sure this number is active on WhatsApp
+            </Text>
+          </Animated.View>
+
+          <Button
+            title="Send OTP via WhatsApp"
+            onPress={handleSend}
+            isLoading={isLoading}
+            disabled={!isValid}
+            size="xl"
+            style={styles.sendBtn}
+          />
+
+          <Text style={[styles.terms, { color: theme.textTertiary }]}>
+            By continuing you agree to our Terms of Service and Privacy Policy
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* Country picker as BottomSheet — renders above all content, no overlap */}
+      <BottomSheet
+        isVisible={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        title="Select Country"
+        snapPoint={0.6}
+        scrollable
+      >
+        {DIAL_CODES.map((dc) => (
+          <TouchableOpacity
+            key={dc.code + dc.country}
+            style={[styles.pickerItem, { borderBottomColor: theme.border }]}
+            onPress={() => {
+              setDialCode(dc);
+              setPickerOpen(false);
+              haptics.selection();
+            }}
+          >
+            <Text style={[styles.pickerCode, { color: Colors.primary }]}>{dc.code}</Text>
+            <Text style={[styles.pickerCountry, { color: theme.text }]}>{dc.country}</Text>
+            {dialCode.code === dc.code && (
+              <Check size={16} color={Colors.primary} strokeWidth={2.5} />
+            )}
+          </TouchableOpacity>
+        ))}
+      </BottomSheet>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1 },
+  flex: { flex: 1 },
+  scroll: { flexGrow: 1, paddingHorizontal: Spacing[6], paddingBottom: Spacing[10] },
+  back: { marginTop: Spacing[4], marginBottom: Spacing[6], width: 40, height: 40, justifyContent: 'center' },
+
+  header: { marginBottom: Spacing[8], gap: Spacing[4] },
+  waIcon: { width: 60, height: 60, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  title: { fontFamily: FontFamily.headingBold, fontSize: FontSize['4xl'], letterSpacing: -1, lineHeight: 44 },
+  subtitle: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.base, lineHeight: 24 },
+
+  card: { borderRadius: Radius.xl, padding: Spacing[5], gap: Spacing[4], marginBottom: Spacing[5] },
+  inputLabel: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[3] },
+  dialBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing[2],
+    paddingHorizontal: Spacing[3], paddingVertical: Spacing[3],
+    borderRadius: Radius.md, borderWidth: 1.5, minWidth: 86,
+  },
+  dialCode: { fontFamily: FontFamily.headingSemiBold, fontSize: FontSize.md },
+  phoneInput: { flex: 1, fontSize: FontSize['2xl'], paddingVertical: Spacing[3], letterSpacing: 1 },
+  note: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs },
+
+  sendBtn: {},
+  terms: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs, textAlign: 'center', marginTop: Spacing[5], lineHeight: 18 },
+
+  pickerItem: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing[4],
+    paddingVertical: Spacing[4], borderBottomWidth: 1,
+  },
+  pickerCode: { fontFamily: FontFamily.headingBold, fontSize: FontSize.base, minWidth: 52 },
+  pickerCountry: { flex: 1, fontFamily: FontFamily.bodyRegular, fontSize: FontSize.base },
+});

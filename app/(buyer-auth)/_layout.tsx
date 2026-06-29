@@ -1,0 +1,13 @@
+import { Stack } from 'expo-router';
+
+export default function BuyerAuthLayout() {
+  return (
+    <Stack screenOptions={{ headerShown: false, animation: 'slide_from_bottom' }}>
+      <Stack.Screen name="phone" />
+      <Stack.Screen name="verify" />
+      {/* Legacy redirects */}
+      <Stack.Screen name="sign-in" />
+      <Stack.Screen name="sign-up" />
+    </Stack>
+  );
+}

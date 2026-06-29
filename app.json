@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "FrontStore",
+    "slug": "frontstore-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "frontstore",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#62109F"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.frontstore.mobile",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow FrontStore to access your photos to add product images.",
+        "NSCameraUsageDescription": "Allow FrontStore to access your camera to capture product photos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#62109F"
+      },
+      "package": "app.frontstore.mobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow FrontStore to access your photos.",
+          "cameraPermission": "Allow FrontStore to use your camera."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
