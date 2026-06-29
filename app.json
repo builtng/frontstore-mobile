@@ -15,8 +15,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.frontstore.mobile",
+      "buildNumber": "1",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow FrontStore to access your photos to add product images.",
+        "NSPhotoLibraryAddUsageDescription": "Allow FrontStore to save QR codes and images to your photo library.",
         "NSCameraUsageDescription": "Allow FrontStore to access your camera to capture product photos."
       }
     },
@@ -26,15 +28,12 @@
         "backgroundColor": "#62109F"
       },
       "package": "app.frontstore.mobile",
+      "versionCode": 1,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.READ_MEDIA_IMAGES"
       ]
     },
     "web": {
@@ -50,6 +49,14 @@
         {
           "photosPermission": "Allow FrontStore to access your photos.",
           "cameraPermission": "Allow FrontStore to use your camera."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow FrontStore to save QR codes to your photo library.",
+          "savePhotosPermission": "Allow FrontStore to save QR codes to your photo library.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ],
