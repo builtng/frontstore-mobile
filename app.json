@@ -19,7 +19,8 @@
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow FrontStore to access your photos to add product images.",
         "NSPhotoLibraryAddUsageDescription": "Allow FrontStore to save QR codes and images to your photo library.",
-        "NSCameraUsageDescription": "Allow FrontStore to access your camera to capture product photos."
+        "NSCameraUsageDescription": "Allow FrontStore to access your camera to capture product photos.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
