@@ -95,7 +95,7 @@ export default function WelcomeScreen() {
 
       {/* Background gradient */}
       <LinearGradient
-        colors={['#0A192F', '#1a0c3d', '#62109F']}
+        colors={['#0A192F', '#022C22', '#25D366']}
         locations={[0, 0.55, 1]}
         style={StyleSheet.absoluteFill}
       />

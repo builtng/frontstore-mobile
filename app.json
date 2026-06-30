@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.frontstore.mobile",
-      "buildNumber": "1",
+      "buildNumber": "3",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow FrontStore to access your photos to add product images.",
         "NSPhotoLibraryAddUsageDescription": "Allow FrontStore to save QR codes and images to your photo library.",
@@ -59,7 +59,8 @@
           "savePhotosPermission": "Allow FrontStore to save QR codes to your photo library.",
           "isAccessMediaLocationEnabled": true
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

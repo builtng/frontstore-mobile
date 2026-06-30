@@ -84,7 +84,7 @@ export default function MarketplaceHome() {
         {/* Hero banner */}
         <TouchableOpacity activeOpacity={0.9} style={styles.heroBanner}>
           <LinearGradient
-            colors={isDark ? ['#1a0c3d', '#62109F'] : ['#62109F', '#7C3AED']}
+            colors={isDark ? ['#022C22', '#25D366'] : ['#25D366', '#4ADE80']}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
             style={styles.heroGradient}
           >

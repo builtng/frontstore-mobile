@@ -20,7 +20,7 @@ const getInitials = (name: string) => {
 };
 
 const getAvatarColor = (name: string) => {
-  const colors = [Colors.primary, '#7C3AED', '#2563EB', '#0891B2', '#059669', '#D97706'];
+  const colors = [Colors.primary, '#64FFDA', '#2563EB', '#0891B2', '#059669', '#D97706'];
   const index = name.charCodeAt(0) % colors.length;
   return colors[index];
 };

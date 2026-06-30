@@ -28,7 +28,7 @@ const THEMES: {
   colors: string[];
   bg: string;
 }[] = [
-  { id: 'modern', name: 'Modern', tagline: 'Clean & bold', colors: ['#62109F', '#0A192F', '#FFFFFF'], bg: '#F8F9FA' },
+  { id: 'modern', name: 'Modern', tagline: 'Clean & bold', colors: ['#25D366', '#0A192F', '#FFFFFF'], bg: '#F8F9FA' },
   { id: 'minimal', name: 'Minimal', tagline: 'Pure simplicity', colors: ['#1A1A1A', '#FFFFFF', '#F5F5F5'], bg: '#FFFFFF' },
   { id: 'luxury', name: 'Luxury', tagline: 'Premium feel', colors: ['#B8860B', '#1A0A00', '#FAF6F0'], bg: '#1A0A00' },
   { id: 'creator', name: 'Creator', tagline: 'Vibrant energy', colors: ['#FF6B6B', '#4ECDC4', '#FFFFFF'], bg: '#FFF8F0' },

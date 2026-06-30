@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -19,6 +19,7 @@ import {
   PlusJakartaSans_700Bold,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { ToastProvider } from '@/components/ui/Toast';
+import { VideoSplash } from '@/components/ui/VideoSplash';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
@@ -35,6 +36,7 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [showVideoSplash, setShowVideoSplash] = useState(true);
 
   const [fontsLoaded, fontError] = useFonts({
     Outfit_400Regular,
@@ -65,6 +67,7 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(merchant)" />
           </Stack>
+          {showVideoSplash && <VideoSplash onFinish={() => setShowVideoSplash(false)} />}
         </ToastProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

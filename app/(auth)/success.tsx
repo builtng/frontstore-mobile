@@ -87,7 +87,7 @@ export default function SuccessScreen() {
         {/* Store card */}
         <Animated.View style={[cardStyle, styles.card, { backgroundColor: theme.card }, Shadow.lg as any]}>
           <LinearGradient
-            colors={[Colors.primary, Colors.primaryLight ?? '#7C3AED']}
+            colors={[Colors.primary, Colors.primaryLight ?? '#4ADE80']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.cardHeader}

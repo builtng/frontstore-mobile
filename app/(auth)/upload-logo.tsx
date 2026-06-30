@@ -97,7 +97,7 @@ export default function UploadLogoScreen() {
               ) : (
                 <View style={styles.logoPlaceholder}>
                   <LinearGradient
-                    colors={[Colors.primaryDim, '#E9D5FF']}
+                    colors={[Colors.primaryDim, '#BBF7D0']}
                     style={StyleSheet.absoluteFill}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}

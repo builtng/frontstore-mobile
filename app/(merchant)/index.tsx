@@ -98,10 +98,10 @@ export default function DashboardScreen() {
       try {
         const html = `
           <html><body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;padding:40px">
-            <h2 style="color:#62109F;margin-bottom:8px">${user?.store?.name ?? 'My Store'}</h2>
+            <h2 style="color:#25D366;margin-bottom:8px">${user?.store?.name ?? 'My Store'}</h2>
             <p style="color:#666;margin-bottom:24px">Scan to visit our store</p>
             <img src="data:image/png;base64,${base64}" style="width:240px;height:240px" />
-            <p style="color:#62109F;margin-top:20px;font-size:14px">${storeUrl}</p>
+            <p style="color:#25D366;margin-top:20px;font-size:14px">${storeUrl}</p>
           </body></html>
         `;
         await Print.printAsync({ html });
@@ -145,7 +145,7 @@ export default function DashboardScreen() {
         {/* Revenue hero card */}
         <View style={styles.heroCard}>
           <LinearGradient
-            colors={isDark ? ['#1a0c3d', '#62109F'] : ['#62109F', '#7C3AED']}
+            colors={isDark ? ['#022C22', '#25D366'] : ['#25D366', '#4ADE80']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.heroGradient}
@@ -312,7 +312,7 @@ export default function DashboardScreen() {
             activeOpacity={0.85}
           >
             <LinearGradient
-              colors={['#62109F18', '#62109F08']}
+              colors={['#25D36618', '#25D36608']}
               style={styles.qrCardGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -378,7 +378,7 @@ export default function DashboardScreen() {
               <QRCode
                 value={storeUrl}
                 size={200}
-                color="#62109F"
+                color="#25D366"
                 backgroundColor={Colors.white}
                 getRef={(ref) => { qrRef.current = ref; }}
                 logo={require('../../assets/icon.png')}
@@ -415,7 +415,7 @@ export default function DashboardScreen() {
         activeOpacity={0.85}
       >
         <LinearGradient
-          colors={[Colors.primary, Colors.primaryLight ?? '#7C3AED']}
+          colors={[Colors.primary, Colors.primaryLight ?? '#4ADE80']}
           style={styles.fabGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
