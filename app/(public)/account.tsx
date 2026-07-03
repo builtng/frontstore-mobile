@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, ShoppingBag, Store, LogOut, ChevronRight, Package, Star } from 'lucide-react-native';
+import { User, ShoppingBag, Store, LogOut, ChevronRight, Package } from 'lucide-react-native';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { useBuyerStore } from '@/stores/buyerStore';
@@ -66,12 +66,11 @@ export default function AccountScreen() {
               {[
                 { label: 'My Orders', Icon: ShoppingBag, route: '/(buyer)/orders' },
                 { label: 'Track an Order', Icon: Package, route: '/(buyer)/track' },
-                { label: 'My Reviews', Icon: Star, route: null },
               ].map((item, i) => (
                 <TouchableOpacity
                   key={item.label}
-                  style={[styles.menuItem, i < 2 && { borderBottomColor: theme.border, borderBottomWidth: 1 }]}
-                  onPress={() => item.route && router.push(item.route as any)}
+                  style={[styles.menuItem, i < 1 && { borderBottomColor: theme.border, borderBottomWidth: 1 }]}
+                  onPress={() => router.push(item.route as any)}
                 >
                   <View style={[styles.menuIcon, { backgroundColor: Colors.primaryDim }]}>
                     <item.Icon size={18} color={Colors.primary} strokeWidth={2} />

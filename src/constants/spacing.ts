@@ -51,7 +51,7 @@ export const Shadow = {
     elevation: 8,
   },
   xl: {
-    shadowColor: '#25D366',
+    shadowColor: '#128C7E',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.18,
     shadowRadius: 32,

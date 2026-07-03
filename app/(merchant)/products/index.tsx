@@ -70,7 +70,7 @@ export default function ProductsScreen() {
             onPress={() => router.push('/(merchant)/products/add')}
           >
             <LinearGradient
-              colors={[Colors.primary, Colors.primaryLight ?? '#4ADE80']}
+              colors={[Colors.primary, Colors.primaryLight ?? '#25D366']}
               style={styles.addBtnGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}

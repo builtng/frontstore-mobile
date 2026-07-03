@@ -10,7 +10,7 @@ import { z } from 'zod';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ImagePlus, X, Sparkles, ChevronDown, Plus } from 'lucide-react-native';
+import { ArrowLeft, ImagePlus, X, Sparkles, ChevronDown, Plus, Package, Download, Wrench } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { BottomSheet } from '@/components/ui/BottomSheet';
@@ -180,9 +180,9 @@ export default function AddProductScreen() {
   };
 
   const PRODUCT_TYPES = [
-    { value: 'physical', label: 'Physical', emoji: '📦' },
-    { value: 'digital', label: 'Digital', emoji: '💾' },
-    { value: 'service', label: 'Service', emoji: '🛠️' },
+    { value: 'physical', label: 'Physical', Icon: Package },
+    { value: 'digital', label: 'Digital', Icon: Download },
+    { value: 'service', label: 'Service', Icon: Wrench },
   ];
 
   return (
@@ -261,7 +261,7 @@ export default function AddProductScreen() {
                         { backgroundColor: value === t.value ? Colors.primaryDim : theme.card, borderColor: value === t.value ? Colors.primary : theme.border },
                       ]}
                     >
-                      <Text style={styles.typeEmoji}>{t.emoji}</Text>
+                      <t.Icon size={16} color={value === t.value ? Colors.primary : theme.textSecondary} strokeWidth={1.8} />
                       <Text style={[styles.typeLabel, { color: value === t.value ? Colors.primary : theme.textSecondary }]}>{t.label}</Text>
                     </TouchableOpacity>
                   ))}
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   uploadingDot: { color: Colors.white, fontSize: 22, fontFamily: FontFamily.headingBold },
   typeRow: { flexDirection: 'row', gap: Spacing[3] },
   typeChip: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: Spacing[3], borderRadius: Radius.md, borderWidth: 1.5, gap: 4 },
-  typeEmoji: { fontSize: 20 },
+
   typeLabel: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.xs },
   categoryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing[4], borderRadius: Radius.md, borderWidth: 1.5 },
   categoryBtnText: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.base },

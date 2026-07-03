@@ -4,7 +4,7 @@ export interface User {
   email: string;
   phone?: string;
   role: 'merchant' | 'admin';
-  plan: 'free' | 'pro' | 'enterprise';
+  plan: 'free' | 'pro_monthly' | 'pro_yearly';
   store?: Store;
   created_at: string;
 }

@@ -11,7 +11,6 @@ export type BusinessType =
   | 'creator'
   | 'other';
 
-export type PaymentProvider = 'paystack' | 'flutterwave' | 'stripe';
 export type DeliveryOption = 'pickup' | 'delivery' | 'shipping' | 'digital';
 export type StoreTheme =
   | 'modern'
@@ -42,7 +41,6 @@ interface OnboardingStore {
 
   // Customization
   selectedTheme: StoreTheme | null;
-  paymentProviders: PaymentProvider[];
   deliveryOptions: DeliveryOption[];
 
   // Actions
@@ -54,7 +52,6 @@ interface OnboardingStore {
   setStoreData: (data: Partial<Pick<OnboardingStore, 'storeName' | 'storeUsername' | 'storeDescription'>>) => void;
   setLogoUri: (uri: string | null) => void;
   setTheme: (theme: StoreTheme) => void;
-  togglePaymentProvider: (provider: PaymentProvider) => void;
   toggleDeliveryOption: (option: DeliveryOption) => void;
   reset: () => void;
 }
@@ -71,7 +68,6 @@ const initialState = {
   storeDescription: '',
   logoUri: null,
   selectedTheme: null,
-  paymentProviders: [] as PaymentProvider[],
   deliveryOptions: [] as DeliveryOption[],
 };
 
@@ -87,15 +83,6 @@ export const useOnboardingStore = create<OnboardingStore>((set, get) => ({
   setStoreData: (data) => set(data),
   setLogoUri: (logoUri) => set({ logoUri }),
   setTheme: (selectedTheme) => set({ selectedTheme }),
-
-  togglePaymentProvider: (provider) => {
-    const { paymentProviders } = get();
-    if (paymentProviders.includes(provider)) {
-      set({ paymentProviders: paymentProviders.filter((p) => p !== provider) });
-    } else {
-      set({ paymentProviders: [...paymentProviders, provider] });
-    }
-  },
 
   toggleDeliveryOption: (option) => {
     const { deliveryOptions } = get();

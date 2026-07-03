@@ -1,7 +1,7 @@
 export const Colors = {
   // Brand
-  primary: '#25D366',
-  primaryLight: '#4ADE80',
+  primary: '#128C7E',
+  primaryLight: '#25D366',
   primaryDim: '#DCFCE7',
   navy: '#0A192F',
   navyLight: '#112240',

@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView,
-  RefreshControl, Dimensions, Share, Alert, Modal,
+  RefreshControl, Dimensions, Share,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -10,20 +10,17 @@ import Animated, {
 } from 'react-native-reanimated';
 import {
   Bell, Store, TrendingUp, ShoppingBag, Users, Wallet,
-  Plus, ChevronRight, ArrowUpRight, Zap, Star, QrCode, Download, Share2, Printer,
+  Plus, ChevronRight, ArrowUpRight, Zap, Star, QrCode, Megaphone,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
-import QRCode from 'react-native-qrcode-svg';
-import * as MediaLibrary from 'expo-media-library';
-import * as FileSystem from 'expo-file-system';
-import * as Print from 'expo-print';
 import { StatCard } from '@/components/ui/StatCard';
 import { Card } from '@/components/ui/Card';
 import { SkeletonStatCard, Skeleton, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { Badge } from '@/components/ui/Badge';
 import { OrderCard } from '@/components/merchant/OrderCard';
 import { RevenueChart } from '@/components/merchant/RevenueChart';
+import { NinaCard } from '@/components/merchant/NinaCard';
 import { merchantApi } from '@/services/merchantApi';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/colors';
@@ -47,9 +44,8 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { theme, isDark } = useTheme();
   const { user } = useAuthStore();
+  const isPro = user?.plan === 'pro_monthly' || user?.plan === 'pro_yearly';
   const [refreshing, setRefreshing] = useState(false);
-  const [qrVisible, setQrVisible] = useState(false);
-  const qrRef = useRef<any>(null);
 
   const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ['dashboard-stats'],
@@ -67,48 +63,6 @@ export default function DashboardScreen() {
 
   const shareStoreLink = async () => {
     await Share.share({ message: `Shop at ${user?.store?.name ?? 'my store'} on FrontStore!\n${storeUrl}` });
-  };
-
-  const downloadQRCode = async () => {
-    if (!qrRef.current) return;
-    try {
-      const mediaPermission = await MediaLibrary.requestPermissionsAsync();
-      if (mediaPermission.status !== 'granted') {
-        Alert.alert('Permission needed', 'Allow access to save QR code to your photos.');
-        return;
-      }
-      qrRef.current.toDataURL(async (base64: string) => {
-        try {
-          const fileUri = FileSystem.cacheDirectory + 'qrcode.png';
-          await FileSystem.writeAsStringAsync(fileUri, base64, { encoding: FileSystem.EncodingType.Base64 });
-          await MediaLibrary.saveToLibraryAsync(fileUri);
-          Alert.alert('Saved!', 'QR code saved to your photos.');
-        } catch {
-          Alert.alert('Error', 'Could not save QR code.');
-        }
-      });
-    } catch {
-      Alert.alert('Error', 'Could not save QR code.');
-    }
-  };
-
-  const printQRCode = async () => {
-    if (!qrRef.current) return;
-    qrRef.current.toDataURL(async (base64: string) => {
-      try {
-        const html = `
-          <html><body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;padding:40px">
-            <h2 style="color:#25D366;margin-bottom:8px">${user?.store?.name ?? 'My Store'}</h2>
-            <p style="color:#666;margin-bottom:24px">Scan to visit our store</p>
-            <img src="data:image/png;base64,${base64}" style="width:240px;height:240px" />
-            <p style="color:#25D366;margin-top:20px;font-size:14px">${storeUrl}</p>
-          </body></html>
-        `;
-        await Print.printAsync({ html });
-      } catch {
-        Alert.alert('Error', 'Could not open print dialog.');
-      }
-    });
   };
 
   return (
@@ -145,7 +99,7 @@ export default function DashboardScreen() {
         {/* Revenue hero card */}
         <View style={styles.heroCard}>
           <LinearGradient
-            colors={isDark ? ['#022C22', '#25D366'] : ['#25D366', '#4ADE80']}
+            colors={isDark ? ['#022C22', '#128C7E'] : ['#128C7E', '#25D366']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.heroGradient}
@@ -184,6 +138,20 @@ export default function DashboardScreen() {
           </LinearGradient>
         </View>
 
+        {/* Nina proactive card */}
+        <NinaCard
+          merchantName={firstName}
+          hint={
+            !stats?.total_products
+              ? 'Your store needs products. Add a few items so customers can start ordering.'
+              : !user?.store?.logo_url
+              ? 'Add a store logo — customers trust stores with a clear identity.'
+              : (stats?.pending_orders ?? 0) > 0
+              ? `You have ${stats!.pending_orders} pending order${stats!.pending_orders > 1 ? 's' : ''}. Confirm them to keep customers happy.`
+              : undefined
+          }
+        />
+
         {/* Quick actions */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Actions</Text>
@@ -192,7 +160,7 @@ export default function DashboardScreen() {
           {[
             { label: 'Add Product', icon: <Plus size={20} color={Colors.white} />, color: Colors.primary, route: '/(merchant)/products/add' },
             { label: 'View Orders', icon: <ShoppingBag size={20} color={Colors.white} />, color: Colors.success, route: '/(merchant)/orders/index' },
-            { label: 'Broadcast', icon: <Zap size={20} color={Colors.white} />, color: '#D97706', route: '/(merchant)/marketing' },
+            { label: 'Marketing', icon: <Megaphone size={20} color={Colors.white} />, color: '#D97706', route: '/(merchant)/marketing' },
             { label: 'Analytics', icon: <TrendingUp size={20} color={Colors.white} />, color: Colors.info, route: '/(merchant)/more/index' },
           ].map((action, i) => (
             <TouchableOpacity
@@ -308,11 +276,11 @@ export default function DashboardScreen() {
         {user?.store?.username && (
           <TouchableOpacity
             style={[styles.qrCard, { backgroundColor: theme.card }, Shadow.md as any]}
-            onPress={() => setQrVisible(true)}
+            onPress={() => router.push('/(merchant)/qr-code' as any)}
             activeOpacity={0.85}
           >
             <LinearGradient
-              colors={['#25D36618', '#25D36608']}
+              colors={['#128C7E18', '#128C7E08']}
               style={styles.qrCardGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -322,7 +290,10 @@ export default function DashboardScreen() {
                   <QrCode size={24} color={Colors.primary} strokeWidth={2} />
                 </View>
                 <View style={styles.qrCardInfo}>
-                  <Text style={[styles.qrCardTitle, { color: theme.text }]}>My Store QR Code</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing[2] }}>
+                    <Text style={[styles.qrCardTitle, { color: theme.text }]}>My Store QR Code</Text>
+                    {!isPro && <Badge label="Pro" variant="primary" size="sm" />}
+                  </View>
                   <Text style={[styles.qrCardSub, { color: theme.textSecondary }]}>
                     Customers scan to visit your store
                   </Text>
@@ -357,57 +328,6 @@ export default function DashboardScreen() {
         </View>
       </ScrollView>
 
-      {/* QR Code Modal */}
-      <Modal visible={qrVisible} transparent animationType="fade" onRequestClose={() => setQrVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: theme.card }]}>
-            {/* Modal Header */}
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Store QR Code</Text>
-              <TouchableOpacity onPress={() => setQrVisible(false)} style={[styles.modalCloseBtn, { backgroundColor: theme.surface }]}>
-                <Text style={[styles.modalCloseText, { color: theme.textSecondary }]}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <Text style={[styles.modalSub, { color: theme.textSecondary }]}>
-              Share or print this code — customers scan it to open your store instantly.
-            </Text>
-
-            {/* QR Code */}
-            <View style={[styles.qrWrapper, { backgroundColor: Colors.white }]}>
-              <QRCode
-                value={storeUrl}
-                size={200}
-                color="#25D366"
-                backgroundColor={Colors.white}
-                getRef={(ref) => { qrRef.current = ref; }}
-                logo={require('../../assets/icon.png')}
-                logoSize={44}
-                logoBackgroundColor={Colors.white}
-                logoBorderRadius={10}
-              />
-            </View>
-            <Text style={[styles.qrUrl, { color: Colors.primary }]}>{storeUrl}</Text>
-
-            {/* Action buttons */}
-            <View style={styles.qrActions}>
-              <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.primaryDim }]} onPress={downloadQRCode}>
-                <Download size={18} color={Colors.primary} strokeWidth={2} />
-                <Text style={[styles.qrActionText, { color: Colors.primary }]}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.primaryDim }]} onPress={shareStoreLink}>
-                <Share2 size={18} color={Colors.primary} strokeWidth={2} />
-                <Text style={[styles.qrActionText, { color: Colors.primary }]}>Share</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.primaryDim }]} onPress={printQRCode}>
-                <Printer size={18} color={Colors.primary} strokeWidth={2} />
-                <Text style={[styles.qrActionText, { color: Colors.primary }]}>Print</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       {/* FAB */}
       <TouchableOpacity
         style={[styles.fab, Shadow.xl as any]}
@@ -415,7 +335,7 @@ export default function DashboardScreen() {
         activeOpacity={0.85}
       >
         <LinearGradient
-          colors={[Colors.primary, Colors.primaryLight ?? '#4ADE80']}
+          colors={[Colors.primary, Colors.primaryLight ?? '#25D366']}
           style={styles.fabGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -496,19 +416,6 @@ const styles = StyleSheet.create({
   qrCardInfo: { flex: 1 },
   qrCardTitle: { fontFamily: FontFamily.headingSemiBold, fontSize: FontSize.base },
   qrCardSub: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs, marginTop: 2 },
-
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center', padding: Spacing[6] },
-  modalCard: { width: '100%', borderRadius: Radius.xl, padding: Spacing[6], alignItems: 'center', gap: Spacing[4] },
-  modalHeader: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  modalTitle: { fontFamily: FontFamily.headingBold, fontSize: FontSize.xl, letterSpacing: -0.3 },
-  modalCloseBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  modalCloseText: { fontFamily: FontFamily.headingBold, fontSize: FontSize.base },
-  modalSub: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.sm, textAlign: 'center', lineHeight: 20 },
-  qrWrapper: { padding: Spacing[5], borderRadius: Radius.lg },
-  qrUrl: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.xs, textAlign: 'center' },
-  qrActions: { flexDirection: 'row', gap: Spacing[3], width: '100%' },
-  qrActionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing[2], paddingVertical: Spacing[4], borderRadius: Radius.lg },
-  qrActionText: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm },
 
   fab: {
     position: 'absolute',

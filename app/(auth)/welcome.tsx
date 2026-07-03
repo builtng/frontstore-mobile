@@ -6,283 +6,468 @@ import {
   Dimensions,
   TouchableOpacity,
   SafeAreaView,
-  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSpring,
-  withDelay,
-  withSequence,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { Button } from '@/components/ui/Button';
+import Svg, { Path } from 'react-native-svg';
+import * as Haptics from 'expo-haptics';
+import { ShoppingBag, ShieldCheck, MessageCircle, LucideIcon } from 'lucide-react-native';
+import { Image } from 'expo-image';
+
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
-import { Radius, Spacing } from '@/constants/spacing';
+import { Radius, Spacing, Shadow } from '@/constants/spacing';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
+
+// WhatsApp Brand Icon
+const WhatsAppIcon = ({ color = '#FFFFFF', size = 22 }: { color?: string; size?: number }) => {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12.012 2C6.485 2 2 6.484 2 12.011c0 1.767.46 3.427 1.262 4.887L2 22l5.244-1.376A9.972 9.972 0 0012.012 22c5.528 0 10.013-4.484 10.013-10.011C22.025 6.484 17.54 2 12.012 2zm0 18.294c-1.61 0-3.183-.42-4.57-1.22l-.328-.194-3.1 .812.827-3.023-.213-.34a8.232 8.232 0 01-1.264-4.34C3.368 7.237 7.243 3.362 12.012 3.362c4.77 0 8.647 3.875 8.647 8.65 0 4.773-3.877 8.282-8.647 8.282zm4.743-6.495c-.26-.13-1.534-.757-1.77-.843-.238-.087-.41-.13-.583.13-.173.26-.67.843-.82.996-.152.152-.303.173-.563.043a7.086 7.086 0 01-2.09-1.288 7.822 7.822 0 01-1.446-1.8c-.152-.26-.016-.4.113-.53.118-.118.26-.303.39-.454.13-.151.173-.26.26-.433.086-.173.043-.325-.022-.454-.065-.13-.583-1.407-.798-1.927-.21-.506-.42-.437-.583-.445l-.497-.008c-.173 0-.455.065-.692.325-.238.26-.908.887-.908 2.164 0 1.277.93 2.51 1.06 2.684.13.173 1.83 2.793 4.433 3.916 2.603 1.122 2.603.748 3.078.705.476-.043 1.533-.627 1.75-1.233.216-.606.216-1.125.151-1.233-.065-.108-.238-.173-.497-.303z"
+        fill={color}
+      />
+    </Svg>
+  );
+};
+
+const FEATURES: { icon: LucideIcon; label: string; caption: string }[] = [
+  { icon: MessageCircle, label: 'Chat', caption: 'Orders over WhatsApp' },
+  { icon: ShieldCheck, label: 'Escrow', caption: 'Funds held until delivery' },
+  { icon: ShoppingBag, label: 'Nina', caption: 'Your AI sales partner' },
+];
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
-  const logoOpacity = useSharedValue(0);
-  const logoScale = useSharedValue(0.7);
-  const taglineOpacity = useSharedValue(0);
-  const taglineY = useSharedValue(20);
-  const headlineOpacity = useSharedValue(0);
-  const headlineY = useSharedValue(30);
-  const subtitleOpacity = useSharedValue(0);
-  const buttonsOpacity = useSharedValue(0);
-  const buttonsY = useSharedValue(40);
-  const orbScale = useSharedValue(0.8);
+  const fade = useSharedValue(0);
+  const rise = useSharedValue(14);
 
   useEffect(() => {
-    // Animated orb background
-    orbScale.value = withSequence(
-      withTiming(1.1, { duration: 2000 }),
-      withTiming(0.95, { duration: 2000 }),
-      withTiming(1.05, { duration: 2000 })
-    );
-
-    // Logo entrance
-    logoOpacity.value = withDelay(200, withTiming(1, { duration: 600 }));
-    logoScale.value = withDelay(200, withSpring(1, { damping: 14, stiffness: 120 }));
-
-    // Tagline
-    taglineOpacity.value = withDelay(600, withTiming(1, { duration: 500 }));
-    taglineY.value = withDelay(600, withSpring(0, { damping: 15 }));
-
-    // Headline
-    headlineOpacity.value = withDelay(900, withTiming(1, { duration: 500 }));
-    headlineY.value = withDelay(900, withSpring(0, { damping: 15 }));
-
-    // Subtitle
-    subtitleOpacity.value = withDelay(1100, withTiming(1, { duration: 500 }));
-
-    // Buttons
-    buttonsOpacity.value = withDelay(1300, withTiming(1, { duration: 400 }));
-    buttonsY.value = withDelay(1300, withSpring(0, { damping: 15 }));
+    fade.value = withTiming(1, { duration: 550, easing: Easing.out(Easing.cubic) });
+    rise.value = withTiming(0, { duration: 550, easing: Easing.out(Easing.cubic) });
   }, []);
 
-  const logoStyle = useAnimatedStyle(() => ({
-    opacity: logoOpacity.value,
-    transform: [{ scale: logoScale.value }],
-  }));
-  const taglineStyle = useAnimatedStyle(() => ({
-    opacity: taglineOpacity.value,
-    transform: [{ translateY: taglineY.value }],
-  }));
-  const headlineStyle = useAnimatedStyle(() => ({
-    opacity: headlineOpacity.value,
-    transform: [{ translateY: headlineY.value }],
-  }));
-  const subtitleStyle = useAnimatedStyle(() => ({ opacity: subtitleOpacity.value }));
-  const buttonsStyle = useAnimatedStyle(() => ({
-    opacity: buttonsOpacity.value,
-    transform: [{ translateY: buttonsY.value }],
-  }));
-  const orbStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: orbScale.value }],
+  const entranceStyle = useAnimatedStyle(() => ({
+    opacity: fade.value,
+    transform: [{ translateY: rise.value }],
   }));
 
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
 
-      {/* Background gradient */}
       <LinearGradient
-        colors={['#0A192F', '#022C22', '#25D366']}
-        locations={[0, 0.55, 1]}
+        colors={['#020C1B', '#071A2E']}
         style={StyleSheet.absoluteFill}
       />
-
-      {/* Animated orb */}
-      <Animated.View style={[styles.orb, orbStyle]} />
-      <Animated.View style={[styles.orbSecondary, orbStyle]} />
+      <View style={styles.glow} />
 
       <SafeAreaView style={styles.safe}>
-        {/* Top — Logo + tagline */}
-        <View style={styles.topSection}>
-          <Animated.View style={[styles.logoContainer, logoStyle]}>
-            <View style={styles.logoMark}>
-              <View style={styles.logoBubble} />
-              <View style={styles.logoBubbleSmall} />
-            </View>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.logoRow}>
+            <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
             <Text style={styles.logoText}>frontstore</Text>
-          </Animated.View>
-
-          <Animated.Text style={[styles.tagline, taglineStyle]}>
-            Commerce Through Conversation
-          </Animated.Text>
+          </View>
         </View>
 
-        {/* Middle — headline */}
-        <View style={styles.middleSection}>
-          <Animated.Text style={[styles.headline, headlineStyle]}>
-            Start selling{'\n'}in minutes
-          </Animated.Text>
-          <Animated.Text style={[styles.subtitle, subtitleStyle]}>
-            Build your online store, accept payments, manage orders, and grow your business—all from one app.
-          </Animated.Text>
+        {/* Hero + Product Mock */}
+        <View style={styles.content}>
+          <Text style={styles.kicker}>Commerce through conversation</Text>
+          <Text style={styles.headline}>Turn WhatsApp chats{'\n'}into real sales.</Text>
+          <Text style={styles.subheadline}>
+            Frontstore runs your catalog, checkout, and secure payments right inside
+            the conversation your customers already trust.
+          </Text>
 
-          {/* Social proof dots */}
-          <Animated.View style={[styles.proofRow, subtitleStyle]}>
-            {['🇳🇬', '🇰🇪', '🇬🇭', '🇿🇦', '🇺🇬'].map((flag, i) => (
-              <Text key={i} style={styles.flag}>{flag}</Text>
+          <Animated.View style={[styles.mockCard, entranceStyle]}>
+            <View style={styles.mockHeader}>
+              <View style={styles.mockAvatar}>
+                <WhatsAppIcon color={Colors.teal} size={14} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.mockTitle}>Eko Fashion</Text>
+                <Text style={styles.mockSubtitle}>Online · Powered by Frontstore</Text>
+              </View>
+              <View style={styles.mockStatusDot} />
+            </View>
+
+            <View style={styles.mockBubbleRight}>
+              <Text style={styles.mockBubbleRightText}>Can I get the Ankara dress in M?</Text>
+            </View>
+
+            <View style={styles.mockBubbleLeft}>
+              <Text style={styles.mockBubbleLeftLabel}>Nina</Text>
+              <Text style={styles.mockBubbleLeftText}>Yes! Size M is in stock. Here's the item — tap Pay to order now.</Text>
+            </View>
+
+            <View style={styles.mockProductRow}>
+              <View style={styles.mockThumb}>
+                <ShoppingBag size={16} color={Colors.teal} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.mockProductTitle} numberOfLines={1}>Bespoke Ankara Outfit</Text>
+                <Text style={styles.mockProductPrice}>₦38,000 · In stock</Text>
+              </View>
+              <View style={styles.mockPayChip}>
+                <Text style={styles.mockPayChipText}>Pay</Text>
+              </View>
+            </View>
+          </Animated.View>
+
+          <View style={styles.featureRow}>
+            {FEATURES.map((feature) => (
+              <View key={feature.label} style={styles.featureItem}>
+                <feature.icon size={18} color={Colors.teal} />
+                <Text style={styles.featureLabel}>{feature.label}</Text>
+                <Text style={styles.featureCaption}>{feature.caption}</Text>
+              </View>
             ))}
-            <Text style={styles.proofText}>10,000+ merchants</Text>
-          </Animated.View>
+          </View>
         </View>
 
-        {/* Bottom — actions */}
-        <Animated.View style={[styles.bottomSection, buttonsStyle]}>
-          <Button
-            title="Continue with WhatsApp"
-            onPress={() => router.push('/(auth)/phone')}
-            size="xl"
-            style={styles.primaryBtn}
-            textStyle={{ color: Colors.primary }}
-          />
+        {/* Bottom Section - Social proof + CTA */}
+        <View style={styles.bottomSection}>
+          <Text style={styles.socialProof}>
+            Trusted by <Text style={styles.socialProofStrong}>10,000+ merchants</Text> across Africa
+          </Text>
+
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push('/(auth)/phone');
+            }}
+            style={styles.ctaButtonWrapper}
+          >
+            <LinearGradient
+              colors={['#25D366', '#128C7E']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.ctaButton}
+            >
+              <WhatsAppIcon color="#FFFFFF" size={20} />
+              <Text style={styles.ctaButtonLabel}>Continue with WhatsApp</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/(auth)/sign-in');
+            }}
+            style={styles.secondaryCtaButton}
+          >
+            <Text style={styles.secondaryCtaButtonLabel}>Continue with Email</Text>
+          </TouchableOpacity>
 
           <Text style={styles.terms}>
             By continuing, you agree to our{' '}
             <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
             <Text style={styles.termsLink}>Privacy Policy</Text>
           </Text>
-        </Animated.View>
+        </View>
       </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  safe: { flex: 1, paddingHorizontal: Spacing[6] },
-
-  orb: {
-    position: 'absolute',
-    width: width * 0.8,
-    height: width * 0.8,
-    borderRadius: width * 0.4,
-    backgroundColor: 'rgba(98, 16, 159, 0.35)',
-    top: -width * 0.2,
-    right: -width * 0.2,
+  root: {
+    flex: 1,
   },
-  orbSecondary: {
+  safe: {
+    flex: 1,
+    paddingHorizontal: Spacing[6],
+    justifyContent: 'space-between',
+  },
+
+  glow: {
     position: 'absolute',
-    width: width * 0.6,
-    height: width * 0.6,
-    borderRadius: width * 0.3,
+    top: -width * 0.35,
+    left: -width * 0.05,
+    width: width * 1.1,
+    height: width * 1.1,
+    borderRadius: 9999,
     backgroundColor: 'rgba(100, 255, 218, 0.06)',
-    bottom: height * 0.25,
-    left: -width * 0.15,
   },
 
-  topSection: {
-    paddingTop: Spacing[8],
-    alignItems: 'flex-start',
+  // Header
+  header: {
+    paddingTop: Spacing[4],
+    alignItems: 'center',
   },
-  logoContainer: {
+  logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing[2],
-    marginBottom: Spacing[2],
   },
-  logoMark: {
-    width: 32,
-    height: 32,
-    position: 'relative',
-  },
-  logoBubble: {
-    position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    backgroundColor: Colors.teal,
-    top: 0,
-    left: 0,
-  },
-  logoBubbleSmall: {
-    position: 'absolute',
-    width: 14,
-    height: 14,
-    borderRadius: 5,
-    backgroundColor: Colors.amber,
-    bottom: 0,
-    right: 0,
+  logoImage: {
+    width: 28,
+    height: 28,
+    borderRadius: Radius.sm,
   },
   logoText: {
     fontFamily: FontFamily.headingBold,
-    fontSize: FontSize['2xl'],
+    fontSize: FontSize.xl,
     color: Colors.white,
     letterSpacing: -0.5,
   },
-  tagline: {
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: FontSize.sm,
-    color: Colors.teal,
-    letterSpacing: 0.5,
-  },
 
-  middleSection: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingBottom: Spacing[6],
+  // Hero content
+  content: {
+    width: '100%',
+  },
+  kicker: {
+    fontFamily: FontFamily.bodySemiBold,
+    fontSize: FontSize.xs - 1,
+    color: 'rgba(100, 255, 218, 0.75)',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: Spacing[3],
   },
   headline: {
     fontFamily: FontFamily.headingBold,
-    fontSize: FontSize['6xl'],
+    fontSize: FontSize['3xl'],
+    lineHeight: FontSize['3xl'] * 1.15,
     color: Colors.white,
-    lineHeight: FontSize['6xl'] * 1.1,
-    letterSpacing: -1.5,
+    letterSpacing: -0.6,
+    marginBottom: Spacing[3],
+  },
+  subheadline: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: FontSize.sm,
+    lineHeight: 20,
+    color: 'rgba(255, 255, 255, 0.55)',
     marginBottom: Spacing[5],
   },
-  subtitle: {
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: FontSize.lg,
-    color: 'rgba(255,255,255,0.65)',
-    lineHeight: 28,
-    marginBottom: Spacing[6],
+
+  // Product mock card
+  mockCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: Radius.lg,
+    padding: Spacing[4],
+    gap: Spacing[3],
+    ...Shadow.md,
   },
-  proofRow: {
+  mockHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing[1],
+    gap: Spacing[2],
+    paddingBottom: Spacing[3],
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
-  flag: { fontSize: 18 },
-  proofText: {
-    fontFamily: FontFamily.bodySemiBold,
-    fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.5)',
-    marginLeft: Spacing[2],
+  mockAvatar: {
+    width: 26,
+    height: 26,
+    borderRadius: Radius.full,
+    backgroundColor: 'rgba(100, 255, 218, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-
-  bottomSection: {
-    paddingBottom: Spacing[8],
-    gap: Spacing[3],
+  mockTitle: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: FontSize.sm,
+    color: Colors.white,
   },
-  primaryBtn: {
-    backgroundColor: Colors.white,
-  },
-  ghostBtn: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.25)',
-  },
-
-  terms: {
+  mockSubtitle: {
     fontFamily: FontFamily.bodyRegular,
+    fontSize: FontSize.xs - 1,
+    color: 'rgba(255, 255, 255, 0.4)',
+  },
+  mockStatusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: Colors.success,
+  },
+  mockBubbleRight: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(100, 255, 218, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(100, 255, 218, 0.18)',
+    borderRadius: Radius.md,
+    borderBottomRightRadius: 4,
+    paddingHorizontal: Spacing[3],
+    paddingVertical: Spacing[2],
+    maxWidth: '85%',
+  },
+  mockBubbleRightText: {
+    fontFamily: FontFamily.bodyMedium,
+    fontSize: FontSize.sm,
+    color: Colors.white,
+  },
+  mockBubbleLeft: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(18, 140, 126, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(18, 140, 126, 0.25)',
+    borderRadius: Radius.md,
+    borderBottomLeftRadius: 4,
+    paddingHorizontal: Spacing[3],
+    paddingVertical: Spacing[2],
+    maxWidth: '85%',
+    gap: 2,
+  },
+  mockBubbleLeftLabel: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: FontSize.xs - 1,
+    color: Colors.teal,
+    letterSpacing: 0.3,
+  },
+  mockBubbleLeftText: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: FontSize.sm,
+    color: 'rgba(255,255,255,0.85)',
+  },
+  mockProductRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing[3],
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: Radius.md,
+    padding: Spacing[3],
+  },
+  mockThumb: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.sm,
+    backgroundColor: 'rgba(100, 255, 218, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mockProductTitle: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: FontSize.sm,
+    color: Colors.white,
+  },
+  mockProductPrice: {
+    fontFamily: FontFamily.bodyMedium,
     fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.35)',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 1,
+  },
+  mockPayChip: {
+    backgroundColor: 'rgba(100, 255, 218, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(100, 255, 218, 0.3)',
+    borderRadius: Radius.xs,
+    paddingHorizontal: Spacing[3],
+    paddingVertical: 6,
+  },
+  mockPayChipText: {
+    fontFamily: FontFamily.bodyBold,
+    fontSize: FontSize.xs - 1,
+    color: Colors.teal,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+
+  // Feature strip
+  featureRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: Spacing[5],
+    paddingTop: Spacing[4],
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  featureItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  featureLabel: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: FontSize.sm,
+    color: Colors.white,
+    marginTop: 2,
+  },
+  featureCaption: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: FontSize.xs - 2,
+    color: 'rgba(255, 255, 255, 0.4)',
     textAlign: 'center',
-    lineHeight: 18,
+  },
+
+  // Bottom action layout
+  bottomSection: {
+    width: '100%',
+    paddingBottom: Spacing[6],
+    gap: Spacing[4],
+  },
+  socialProof: {
+    fontFamily: FontFamily.bodyMedium,
+    fontSize: FontSize.xs,
+    color: 'rgba(255, 255, 255, 0.45)',
+    textAlign: 'center',
+  },
+  socialProofStrong: {
+    fontFamily: FontFamily.bodyBold,
+    color: Colors.teal,
+  },
+  ctaButtonWrapper: {
+    width: '100%',
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  ctaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing[2],
+    paddingVertical: Spacing[4],
+    minHeight: 56,
+  },
+  ctaButtonLabel: {
+    fontFamily: FontFamily.bodyBold,
+    fontSize: FontSize.base,
+    color: Colors.white,
+  },
+  secondaryCtaButton: {
+    width: '100%',
+    borderRadius: Radius.lg,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 56,
     marginTop: Spacing[2],
   },
+  secondaryCtaButtonLabel: {
+    fontFamily: FontFamily.bodyBold,
+    fontSize: FontSize.base,
+    color: '#FFFFFF',
+  },
+  terms: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: FontSize.xs - 1,
+    color: 'rgba(255, 255, 255, 0.35)',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
   termsLink: {
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(255, 255, 255, 0.55)',
     textDecorationLine: 'underline',
   },
 });

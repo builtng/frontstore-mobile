@@ -20,13 +20,45 @@ export interface PublicStore {
   logo_url?: string;
   banner_url?: string;
   template?: string;
-  business_type?: string;
+  store_template?: string;
+  business_persona?: string;
   is_verified: boolean;
   currency: string;
   whatsapp_number?: string;
   rating?: number;
   review_count?: number;
   product_count?: number;
+  location?: string;
+  address?: string;
+  since?: string;
+  working_hours?: { day: string; open: string; close: string; is_open: boolean }[];
+  instagram_handle?: string;
+  tiktok_handle?: string;
+  twitter_handle?: string;
+  return_policy?: string;
+  delivery_info?: string;
+  founder_name?: string;
+  founder_role?: string;
+  founder_bio?: string;
+  founder_avatar_url?: string;
+  about_facts?: { label: string; value: string }[];
+}
+
+export interface StoreReview {
+  id: string | number;
+  reviewer_name: string;
+  body: string;
+  rating: number;
+  created_at?: string;
+  reply?: string;
+  replied_at?: string;
+  product?: { id: string; name: string; slug: string };
+}
+
+export interface StoreFaq {
+  id: string | number;
+  question: string;
+  answer: string;
 }
 
 export interface PublicProduct {

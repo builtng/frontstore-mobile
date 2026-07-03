@@ -1,56 +1,89 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, ArrowRight, Check, ExternalLink } from 'lucide-react-native';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
-import { useOnboardingStore, PaymentProvider } from '@/stores/onboardingStore';
+import { merchantApi } from '@/services/merchantApi';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Radius, Shadow, Spacing } from '@/constants/spacing';
 import { useTheme } from '@/hooks/useTheme';
 import { useHaptics } from '@/hooks/useHaptics';
 
-const PROVIDERS: {
-  id: PaymentProvider;
-  name: string;
-  tagline: string;
-  logo: string;
-  color: string;
-  regions: string;
-}[] = [
-  {
-    id: 'paystack',
+type PaymentProvider = 'paystack' | 'flutterwave' | 'stripe' | 'manual';
+
+const PROVIDER_INFO: Record<PaymentProvider, { name: string; tagline: string; logo: string; color: string; regions: string }> = {
+  paystack: {
     name: 'Paystack',
     tagline: 'Cards, bank transfers, USSD, mobile money',
     logo: 'P',
     color: '#00C3F7',
     regions: 'Nigeria · Ghana · South Africa',
   },
-  {
-    id: 'flutterwave',
+  flutterwave: {
     name: 'Flutterwave',
     tagline: 'Pan-African payments in 150+ currencies',
     logo: 'F',
     color: '#F5A623',
     regions: '30+ African countries',
   },
-  {
-    id: 'stripe',
+  stripe: {
     name: 'Stripe',
     tagline: 'Global cards, Apple Pay, Google Pay',
     logo: 'S',
     color: '#635BFF',
     regions: 'Global · International',
   },
-];
+  manual: {
+    name: 'Manual (Bank Transfer)',
+    tagline: 'Customers pay by bank transfer, you confirm manually',
+    logo: 'B',
+    color: '#6B7280',
+    regions: 'Everywhere',
+  },
+};
 
 export default function ConnectPaymentsScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const haptics = useHaptics();
-  const { paymentProviders, togglePaymentProvider } = useOnboardingStore();
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [availableProviders, setAvailableProviders] = useState<PaymentProvider[]>(['paystack', 'flutterwave', 'stripe', 'manual']);
+  const [selectedProvider, setSelectedProvider] = useState<PaymentProvider | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await merchantApi.getStore();
+        const store = res?.data;
+        const available: PaymentProvider[] = [...(store?.available_payment_providers ?? []), 'manual'];
+        setAvailableProviders(Array.from(new Set(available)));
+        setSelectedProvider((store?.payment_provider as PaymentProvider) ?? null);
+      } catch {
+        // Keep the default provider list so the screen is still usable offline.
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const handleContinue = async () => {
+    if (selectedProvider) {
+      try {
+        setSaving(true);
+        await merchantApi.updateStore({ payment_provider: selectedProvider });
+      } catch {
+        // Non-fatal — merchant can change this later in Settings.
+      } finally {
+        setSaving(false);
+      }
+    }
+    router.push('/(auth)/delivery-setup');
+  };
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
@@ -71,51 +104,56 @@ export default function ConnectPaymentsScreen() {
           </Text>
         </View>
 
-        <View style={styles.list}>
-          {PROVIDERS.map((p) => {
-            const selected = paymentProviders.includes(p.id);
-            return (
-              <TouchableOpacity
-                key={p.id}
-                onPress={() => { haptics.selection(); togglePaymentProvider(p.id); }}
-                activeOpacity={0.8}
-              >
-                <View
-                  style={[
-                    styles.card,
-                    { backgroundColor: theme.card, borderColor: selected ? Colors.primary : theme.border },
-                    (Shadow.sm as any),
-                  ]}
+        {loading ? (
+          <ActivityIndicator color={Colors.primary} style={{ marginVertical: Spacing[8] }} />
+        ) : (
+          <View style={styles.list}>
+            {availableProviders.map((id) => {
+              const p = PROVIDER_INFO[id];
+              const selected = selectedProvider === id;
+              return (
+                <TouchableOpacity
+                  key={id}
+                  onPress={() => { haptics.selection(); setSelectedProvider(id); }}
+                  activeOpacity={0.8}
                 >
-                  <View style={[styles.logoBox, { backgroundColor: p.color + '22' }]}>
-                    <Text style={[styles.logoText, { color: p.color }]}>{p.logo}</Text>
-                  </View>
-
-                  <View style={styles.info}>
-                    <Text style={[styles.name, { color: theme.text }]}>{p.name}</Text>
-                    <Text style={[styles.tagline, { color: theme.textSecondary }]}>{p.tagline}</Text>
-                    <Text style={[styles.regions, { color: theme.textTertiary }]}>{p.regions}</Text>
-                  </View>
-
                   <View
                     style={[
-                      styles.checkbox,
-                      selected
-                        ? { backgroundColor: Colors.primary, borderColor: Colors.primary }
-                        : { backgroundColor: 'transparent', borderColor: theme.border },
+                      styles.card,
+                      { backgroundColor: theme.card, borderColor: selected ? Colors.primary : theme.border },
+                      (Shadow.sm as any),
                     ]}
                   >
-                    {selected && <Check size={14} color={Colors.white} strokeWidth={3} />}
+                    <View style={[styles.logoBox, { backgroundColor: p.color + '22' }]}>
+                      <Text style={[styles.logoText, { color: p.color }]}>{p.logo}</Text>
+                    </View>
+
+                    <View style={styles.info}>
+                      <Text style={[styles.name, { color: theme.text }]}>{p.name}</Text>
+                      <Text style={[styles.tagline, { color: theme.textSecondary }]}>{p.tagline}</Text>
+                      <Text style={[styles.regions, { color: theme.textTertiary }]}>{p.regions}</Text>
+                    </View>
+
+                    <View
+                      style={[
+                        styles.checkbox,
+                        selected
+                          ? { backgroundColor: Colors.primary, borderColor: Colors.primary }
+                          : { backgroundColor: 'transparent', borderColor: theme.border },
+                      ]}
+                    >
+                      {selected && <Check size={14} color={Colors.white} strokeWidth={3} />}
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
         <View style={[styles.note, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.noteText, { color: theme.textSecondary }]}>
-            💡 You'll need API keys from your payment provider. You can add these in Settings later.
+            💡 Only providers available in your country are shown. You can change this later in Settings.
           </Text>
         </View>
       </ScrollView>
@@ -123,8 +161,9 @@ export default function ConnectPaymentsScreen() {
       <View style={[styles.footer, { backgroundColor: theme.background }]}>
         <Button
           title="Continue"
-          onPress={() => router.push('/(auth)/delivery-setup')}
+          onPress={handleContinue}
           size="xl"
+          isLoading={saving}
           icon={<ArrowRight size={20} color={Colors.white} />}
           iconPosition="right"
         />

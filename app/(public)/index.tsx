@@ -6,7 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
-import { Search, Sparkles, ChevronRight, Store } from 'lucide-react-native';
+import { Search, Sparkles, ChevronRight, Store, Shirt, UtensilsCrossed, Package, Smartphone, Download, Wrench, Palette, LayoutGrid, LucideIcon } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { StoreCard } from '@/components/buyer/StoreCard';
@@ -20,15 +20,15 @@ import { useTheme } from '@/hooks/useTheme';
 
 const { width } = Dimensions.get('window');
 
-const CATEGORIES = [
-  { label: 'Fashion', emoji: '👗', type: 'fashion' },
-  { label: 'Food', emoji: '🍜', type: 'food' },
-  { label: 'Beauty', emoji: '💅', type: 'beauty' },
-  { label: 'Electronics', emoji: '📱', type: 'electronics' },
-  { label: 'Digital', emoji: '💾', type: 'digital' },
-  { label: 'Services', emoji: '🛠️', type: 'services' },
-  { label: 'Creator', emoji: '🎨', type: 'creator' },
-  { label: 'More', emoji: '✨', type: '' },
+const CATEGORIES: { label: string; Icon: LucideIcon; type: string }[] = [
+  { label: 'Fashion', Icon: Shirt, type: 'fashion' },
+  { label: 'Food', Icon: UtensilsCrossed, type: 'food' },
+  { label: 'Beauty', Icon: Sparkles, type: 'beauty' },
+  { label: 'Electronics', Icon: Smartphone, type: 'electronics' },
+  { label: 'Digital', Icon: Download, type: 'digital' },
+  { label: 'Services', Icon: Wrench, type: 'services' },
+  { label: 'Creator', Icon: Palette, type: 'creator' },
+  { label: 'More', Icon: LayoutGrid, type: '' },
 ];
 
 export default function MarketplaceHome() {
@@ -36,6 +36,12 @@ export default function MarketplaceHome() {
   const { theme, isDark } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [activeCategory, setActiveCategory] = useState('');
+
+  const { data: publicSettings } = useQuery({
+    queryKey: ['public-settings'],
+    queryFn: publicApi.getPublicSettings,
+    staleTime: 1000 * 60 * 10,
+  });
 
   const { data: marketplaceData, isLoading, refetch } = useQuery({
     queryKey: ['marketplace'],
@@ -49,6 +55,16 @@ export default function MarketplaceHome() {
 
   const featured: PublicStore[] = marketplaceData?.featured ?? [];
   const stores: PublicStore[] = storesData?.data ?? [];
+
+  const hero = (() => {
+    try { return publicSettings?.mobile_hero ? JSON.parse(publicSettings.mobile_hero) : {}; }
+    catch { return {}; }
+  })();
+  const heroBadge: string = hero.badge || '10,000+ merchants';
+  const heroTitle: string = hero.title || "Africa's Commerce\nPlatform";
+  const heroSubtitle: string = hero.subtitle || 'Browse thousands of verified stores';
+  const heroGradientStart: string = hero.gradient_start || (isDark ? '#022C22' : '#128C7E');
+  const heroGradientEnd: string = hero.gradient_end || (isDark ? '#128C7E' : '#25D366');
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -84,17 +100,17 @@ export default function MarketplaceHome() {
         {/* Hero banner */}
         <TouchableOpacity activeOpacity={0.9} style={styles.heroBanner}>
           <LinearGradient
-            colors={isDark ? ['#022C22', '#25D366'] : ['#25D366', '#4ADE80']}
+            colors={[heroGradientStart, heroGradientEnd]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
             style={styles.heroGradient}
           >
             <View style={styles.heroContent}>
               <View style={[styles.heroBadge, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
                 <Sparkles size={12} color={Colors.white} />
-                <Text style={styles.heroBadgeText}>10,000+ merchants</Text>
+                <Text style={styles.heroBadgeText}>{heroBadge}</Text>
               </View>
-              <Text style={styles.heroTitle}>Africa's Commerce{'\n'}Platform</Text>
-              <Text style={styles.heroSub}>Browse thousands of verified stores</Text>
+              <Text style={styles.heroTitle}>{heroTitle}</Text>
+              <Text style={styles.heroSub}>{heroSubtitle}</Text>
             </View>
             <View style={styles.heroShapes}>
               <View style={[styles.heroCircle, { backgroundColor: 'rgba(255,255,255,0.08)', width: 120, height: 120, borderRadius: 60, top: -20, right: -20 }]} />
@@ -121,7 +137,7 @@ export default function MarketplaceHome() {
                 Shadow.sm as any,
               ]}
             >
-              <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
+              <cat.Icon size={14} color={activeCategory === cat.type ? Colors.white : theme.textSecondary} strokeWidth={1.8} />
               <Text style={[styles.categoryLabel, { color: activeCategory === cat.type ? Colors.white : theme.text }]}>
                 {cat.label}
               </Text>
@@ -152,7 +168,7 @@ export default function MarketplaceHome() {
             {activeCategory ? `${CATEGORIES.find((c) => c.type === activeCategory)?.label} Stores` : 'All Stores'}
           </Text>
           <Text style={[styles.storeCount, { color: theme.textTertiary }]}>
-            {storesData?.meta?.total ?? 0} stores
+            {stores.length} store{stores.length !== 1 ? 's' : ''}
           </Text>
         </View>
 
@@ -243,7 +259,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full, borderWidth: 1.5,
     flexDirection: 'row', alignItems: 'center', gap: Spacing[2],
   },
-  categoryEmoji: { fontSize: 16 },
+
   categoryLabel: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm },
 
   featuredRow: { gap: Spacing[4], paddingBottom: Spacing[5] },

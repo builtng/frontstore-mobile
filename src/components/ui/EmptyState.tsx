@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { ShoppingBag, ClipboardList, Package, Users, BarChart2, Star } from 'lucide-react-native';
+import { ShoppingBag, ClipboardList, Package, Users, BarChart2, Star, Clock } from 'lucide-react-native';
 import { Button } from './Button';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { useTheme } from '@/hooks/useTheme';
 
-type EmptyType = 'orders' | 'products' | 'customers' | 'reviews' | 'bookings' | 'analytics' | 'generic';
+type EmptyType = 'orders' | 'products' | 'customers' | 'reviews' | 'bookings' | 'analytics' | 'generic' | 'coming-soon';
 
 interface EmptyStateProps {
   type?: EmptyType;
@@ -52,6 +52,11 @@ const configs: Record<EmptyType, { Icon: any; title: string; description: string
     Icon: ShoppingBag,
     title: 'Nothing here yet',
     description: 'There\'s nothing to show right now. Check back later.',
+  },
+  'coming-soon': {
+    Icon: Clock,
+    title: 'Coming Soon',
+    description: 'We\'re putting the finishing touches on this. Check back soon!',
   },
 };
 

@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://api.frontstore.app/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://api.frontstore.app/api/v1';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE,

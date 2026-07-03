@@ -5,7 +5,7 @@ import {
 import { useRouter } from 'expo-router';
 import {
   Wallet, Calendar, Settings, LogOut, Star, HelpCircle, ExternalLink,
-  ChevronRight, Shield, Bell, Globe, Users, BarChart2, Tag,
+  ChevronRight, Shield, Bell, Globe, Users, BarChart2, Tag, MessageCircle,
 } from 'lucide-react-native';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
@@ -32,6 +32,7 @@ export default function MoreScreen() {
   const { theme } = useTheme();
   const haptics = useHaptics();
   const { user, logout } = useAuthStore();
+  const isPro = user?.plan === 'pro_monthly' || user?.plan === 'pro_yearly';
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -58,6 +59,9 @@ export default function MoreScreen() {
       items: [
         { label: 'Customers', Icon: Users, route: '/(merchant)/customers', color: Colors.info },
         { label: 'Analytics', Icon: BarChart2, route: '/(merchant)/analytics', color: Colors.success },
+        { label: 'WhatsApp Inbox', Icon: MessageCircle, route: '/(merchant)/whatsapp-inbox', color: Colors.primary, badge: isPro ? undefined : 'Pro' },
+        { label: 'WhatsApp Order', Icon: MessageCircle, route: '/(merchant)/whatsapp-order', color: Colors.primary },
+        { label: 'WhatsApp Order Alerts', Icon: Bell, route: '/(merchant)/whatsapp-order-alerts', color: Colors.warning },
         { label: 'Discounts & Coupons', Icon: Tag, route: '/(merchant)/more/discounts', color: Colors.amber },
         { label: 'Wallet & Payouts', Icon: Wallet, route: '/(merchant)/more/wallet', color: '#0891B2' },
         { label: 'Bookings', Icon: Calendar, route: '/(merchant)/more/bookings', color: Colors.primary },
@@ -111,8 +115,8 @@ export default function MoreScreen() {
 
   const planConfig = {
     free: { label: 'Free Plan', color: Colors.gray600 },
-    pro: { label: 'Pro Plan', color: Colors.primary },
-    enterprise: { label: 'Enterprise', color: Colors.amber },
+    pro_monthly: { label: 'Pro Plan', color: Colors.primary },
+    pro_yearly: { label: 'Pro Plan', color: Colors.primary },
   };
   const plan = planConfig[user?.plan ?? 'free'];
 

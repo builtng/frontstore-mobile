@@ -11,6 +11,7 @@ import { Image } from 'expo-image';
 import { ArrowLeft, Camera, Globe, CheckCircle, ImagePlus } from 'lucide-react-native';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/SkeletonLoader';
 import { useToast } from '@/components/ui/Toast';
 import { merchantApi } from '@/services/merchantApi';
@@ -48,12 +49,15 @@ export default function SettingsScreen() {
     onError: () => toast.error('Failed to update store'),
   });
 
+  const isPro = user?.plan === 'pro_monthly' || user?.plan === 'pro_yearly';
+
   const { control, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
       description: '',
       whatsapp_number: '',
       currency: 'NGN',
+      username: '',
     },
   });
 
@@ -65,6 +69,7 @@ export default function SettingsScreen() {
         description: store.description ?? '',
         whatsapp_number: store.whatsapp_number ?? '',
         currency: store.currency ?? 'NGN',
+        username: store.username ?? '',
       });
     } else if (user?.store) {
       reset({
@@ -72,6 +77,7 @@ export default function SettingsScreen() {
         description: '',
         whatsapp_number: '',
         currency: user.store.currency ?? 'NGN',
+        username: user.store.username ?? '',
       });
     }
   }, [store, user?.store]);
@@ -253,16 +259,38 @@ export default function SettingsScreen() {
                 )}
               />
 
-              {/* Store URL (read-only) */}
-              <View style={[styles.urlCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <Text style={[styles.urlLabel, { color: theme.textSecondary }]}>Store URL</Text>
-                <Text style={[styles.urlValue, { color: Colors.primary }]}>
-                  frontstore.app/{storeUsername ?? '—'}
-                </Text>
-                <Text style={[styles.urlNote, { color: theme.textTertiary }]}>
-                  Username cannot be changed after setup
-                </Text>
-              </View>
+              {/* Store URL */}
+              {isPro ? (
+                <Controller
+                  control={control}
+                  name="username"
+                  rules={{ required: 'Username is required', minLength: { value: 3, message: 'Too short' } }}
+                  render={({ field: { onChange, value, onBlur } }) => (
+                    <Input
+                      label="Store URL Username"
+                      placeholder="my-store"
+                      value={value}
+                      onChangeText={(text) => onChange(text.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                      onBlur={onBlur}
+                      error={errors.username?.message}
+                      autoCapitalize="none"
+                    />
+                  )}
+                />
+              ) : (
+                <View style={[styles.urlCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing[2] }}>
+                    <Text style={[styles.urlLabel, { color: theme.textSecondary }]}>Store URL</Text>
+                    <Badge label="Pro" variant="primary" size="sm" />
+                  </View>
+                  <Text style={[styles.urlValue, { color: Colors.primary }]}>
+                    frontstore.app/{storeUsername ?? '—'}
+                  </Text>
+                  <Text style={[styles.urlNote, { color: theme.textTertiary }]}>
+                    Free plan usernames are locked. Upgrade to Pro to change it.
+                  </Text>
+                </View>
+              )}
 
               <Button
                 title="Save Changes"

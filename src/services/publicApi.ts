@@ -9,10 +9,32 @@ const mapStoreToFrontend = (s: any) => {
     description: s.store_bio ?? s.description,
     whatsapp_number: s.whatsapp_phone ?? s.whatsapp_number,
     currency: s.currency_code ?? s.currency,
+    location: s.location,
+    address: s.address,
+    since: s.since,
+    working_hours: s.working_hours,
+    instagram_handle: s.instagram_handle,
+    tiktok_handle: s.tiktok_handle,
+    twitter_handle: s.twitter_handle,
+    // Enums come as objects with a .value in some serialisers
+    business_persona: s.business_persona?.value ?? s.business_persona,
+    store_template: s.store_template?.value ?? s.store_template,
+    return_policy: s.return_policy,
+    delivery_info: s.delivery_info,
+    founder_name: s.founder_name,
+    founder_role: s.founder_role,
+    founder_bio: s.founder_bio,
+    founder_avatar_url: s.founder_avatar_url,
+    about_facts: s.about_facts,
   };
 };
 
 export const publicApi = {
+  getPublicSettings: async () => {
+    const { data } = await api.get('/public/settings');
+    return data?.data ?? {};
+  },
+
   getMarketplace: async (params?: { page?: number; category?: string; search?: string }) => {
     const { data } = await api.get('/public/marketplace', { params });
     if (data && data.featured) {

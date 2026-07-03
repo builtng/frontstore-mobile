@@ -181,6 +181,26 @@ export const merchantApi = {
     return data;
   },
 
+  // Identity Verification
+  submitVerification: async (payload: {
+    document_type: 'national_id' | 'intl_passport' | 'drivers_license' | 'business_registration';
+    document_url?: string;
+    id_number?: string;
+  }) => {
+    const { data } = await api.post('/store/verify-request', payload);
+    return data;
+  },
+
+  getVerificationStatus: async () => {
+    const { data } = await api.get('/store');
+    const store = data?.data;
+    return {
+      is_verified: store?.is_verified ?? false,
+      verification_status: store?.verification_status ?? 'unverified',
+      verification_document_type: store?.verification_document_type ?? null,
+    };
+  },
+
   // Reviews
   getReviews: async () => {
     const { data } = await api.get('/store/reviews');

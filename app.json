@@ -2,6 +2,7 @@
   "expo": {
     "name": "FrontStore",
     "slug": "frontstore-mobile",
+    "newArchEnabled": true,
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,12 +11,12 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#62109F"
+      "backgroundColor": "#056839"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.frontstore.mobile",
-      "buildNumber": "3",
+      "buildNumber": "5",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow FrontStore to access your photos to add product images.",
         "NSPhotoLibraryAddUsageDescription": "Allow FrontStore to save QR codes and images to your photo library.",
@@ -26,7 +27,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#62109F"
+        "backgroundColor": "#056839"
       },
       "package": "app.frontstore.mobile",
       "versionCode": 1,
