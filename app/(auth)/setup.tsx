@@ -106,7 +106,7 @@ export default function SetupScreen() {
       });
       await setAuth(response.data!.user, response.token!);
       haptics.success();
-      router.replace('/(auth)/success');
+      router.replace('/(merchant)');
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Setup failed. Please try again.';
       toast.error(msg);
