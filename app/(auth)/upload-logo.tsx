@@ -112,7 +112,7 @@ export default function UploadLogoScreen() {
           </TouchableOpacity>
 
           <Text style={[styles.logoName, { color: theme.text }]}>{storeName || 'Your Store'}</Text>
-          <Text style={[styles.logoHint, { color: theme.textTertiary }]}>frontstore.app/your-store</Text>
+          <Text style={[styles.logoHint, { color: theme.textTertiary }]}>frontstore.ng/your-store</Text>
         </View>
 
         {/* Tips */}

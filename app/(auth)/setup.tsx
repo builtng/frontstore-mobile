@@ -186,7 +186,7 @@ export default function SetupScreen() {
                 onChangeText={(t) => onChange(t.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 onBlur={onBlur}
                 error={errors.username?.message}
-                hint="frontstore.app/your-username"
+                hint="frontstore.ng/your-username"
                 leftIcon={<AtSign size={18} color={theme.textTertiary} />}
               />
             )}

@@ -50,8 +50,8 @@ export default function MoreScreen() {
   };
 
   const storeUrl = user?.store?.username
-    ? `https://frontstore.app/${user.store.username}`
-    : 'https://frontstore.app';
+    ? `https://frontstore.ng/${user.store.username}`
+    : 'https://frontstore.ng';
 
   const sections: { title: string; items: MenuItem[] }[] = [
     {
@@ -82,7 +82,7 @@ export default function MoreScreen() {
           label: 'Privacy & Security',
           Icon: Shield,
           color: Colors.navy,
-          action: () => Linking.openURL('https://frontstore.app/privacy'),
+          action: () => Linking.openURL('https://frontstore.ng/privacy'),
         },
         {
           label: 'Custom Domain',
@@ -100,7 +100,7 @@ export default function MoreScreen() {
           label: 'Help Center',
           Icon: HelpCircle,
           color: Colors.gray600,
-          action: () => Linking.openURL('https://frontstore.app/help'),
+          action: () => Linking.openURL('https://frontstore.ng/help'),
         },
         {
           label: 'View Your Store',
@@ -133,7 +133,7 @@ export default function MoreScreen() {
             <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>{user?.email}</Text>
             {user?.store?.username && (
               <Text style={[styles.profileStore, { color: Colors.primary }]}>
-                frontstore.app/{user.store.username}
+                frontstore.ng/{user.store.username}
               </Text>
             )}
           </View>

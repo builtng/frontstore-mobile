@@ -142,7 +142,7 @@ export default function BuyerOrderDetailScreen() {
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Seller</Text>
         <View style={[styles.storeCard, { backgroundColor: theme.card }, Shadow.sm as any]}>
           <Text style={[styles.storeName, { color: theme.text }]}>{order.store?.name}</Text>
-          <Text style={[styles.storeUrl, { color: Colors.primary }]}>frontstore.app/{order.store?.username}</Text>
+          <Text style={[styles.storeUrl, { color: Colors.primary }]}>frontstore.ng/{order.store?.username}</Text>
           {order.store?.whatsapp_number && (
             <TouchableOpacity style={styles.waBtn} onPress={openWhatsApp}>
               <MessageCircle size={16} color={Colors.white} />

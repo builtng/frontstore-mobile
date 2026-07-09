@@ -24,7 +24,7 @@ export default function QRCodeScreen() {
   const moduleStatus = useModuleStatus('qr_code');
   const isPro = user?.plan === 'pro_monthly' || user?.plan === 'pro_yearly';
 
-  const storeUrl = user?.store?.username ? `https://frontstore.app/${user.store.username}` : 'https://frontstore.app';
+  const storeUrl = user?.store?.username ? `https://frontstore.ng/${user.store.username}` : 'https://frontstore.ng';
 
   const shareStoreLink = async () => {
     await Share.share({ message: `Shop at ${user?.store?.name ?? 'my store'} on FrontStore!\n${storeUrl}` });
@@ -95,7 +95,7 @@ export default function QRCodeScreen() {
           title="My QR Code is a Pro feature"
           description="Get a branded, printable QR code for your store so customers can scan and shop instantly. Upgrade to Pro to unlock it."
           actionLabel="Upgrade to Pro"
-          onAction={() => Linking.openURL('https://frontstore.app/dashboard?tab=billing')}
+          onAction={() => Linking.openURL('https://frontstore.ng/dashboard?tab=billing')}
         />
       ) : (
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>

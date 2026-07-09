@@ -52,7 +52,7 @@ export default function SuccessScreen() {
   const cardStyle = useAnimatedStyle(() => ({ opacity: cardOpacity.value, transform: [{ scale: cardScale.value }] }));
   const buttonsStyle = useAnimatedStyle(() => ({ opacity: buttonsOpacity.value }));
 
-  const storeUrl = `frontstore.app/${storeUsername || user?.store?.username || 'your-store'}`;
+  const storeUrl = `frontstore.ng/${storeUsername || user?.store?.username || 'your-store'}`;
 
   const handleShare = async () => {
     await Share.share({

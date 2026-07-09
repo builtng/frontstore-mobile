@@ -146,7 +146,7 @@ export default function StoreSetupScreen() {
             <Animated.View style={[styles.preview, { backgroundColor: Colors.primaryDim, borderRadius: Radius.lg }, previewStyle]}>
               <Text style={[styles.previewLabel, { color: Colors.primary }]}>Your store URL</Text>
               <Text style={[styles.previewUrl, { color: Colors.primaryLight }]}>
-                frontstore.app/<Text style={{ fontFamily: FontFamily.headingBold }}>{watchedUsername || 'your-store'}</Text>
+                frontstore.ng/<Text style={{ fontFamily: FontFamily.headingBold }}>{watchedUsername || 'your-store'}</Text>
               </Text>
             </Animated.View>
 

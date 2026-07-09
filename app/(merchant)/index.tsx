@@ -59,7 +59,7 @@ export default function DashboardScreen() {
   };
 
   const firstName = user?.name?.split(' ')[0] ?? 'there';
-  const storeUrl = user?.store?.username ? `https://frontstore.app/${user.store.username}` : 'https://frontstore.app';
+  const storeUrl = user?.store?.username ? `https://frontstore.ng/${user.store.username}` : 'https://frontstore.ng';
 
   const shareStoreLink = async () => {
     await Share.share({ message: `Shop at ${user?.store?.name ?? 'my store'} on FrontStore!\n${storeUrl}` });

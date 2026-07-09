@@ -67,4 +67,4 @@ mobile/
 
 ## API
 
-Configured to `https://api.frontstore.app/v1`. Change `API_BASE_URL` in `src/constants/index.ts` for local development.
+Configured to `https://api.frontstore.ng/v1`. Change `API_BASE_URL` in `src/constants/index.ts` for local development.

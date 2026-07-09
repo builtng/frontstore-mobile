@@ -39,7 +39,7 @@ export default function WhatsAppInboxScreen() {
           title="WhatsApp Inbox is a Pro feature"
           description="Manage every WhatsApp order and conversation from one inbox. Upgrade to Pro to unlock it."
           actionLabel="Upgrade to Pro"
-          onAction={() => Linking.openURL('https://frontstore.app/dashboard?tab=billing')}
+          onAction={() => Linking.openURL('https://frontstore.ng/dashboard?tab=billing')}
         />
       ) : (
         <EmptyState

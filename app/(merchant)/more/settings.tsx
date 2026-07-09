@@ -176,7 +176,7 @@ export default function SettingsScreen() {
               {storeUsername && (
                 <View style={styles.urlRow}>
                   <Globe size={12} color={Colors.primary} />
-                  <Text style={[styles.logoUrl, { color: Colors.primary }]}>frontstore.app/{storeUsername}</Text>
+                  <Text style={[styles.logoUrl, { color: Colors.primary }]}>frontstore.ng/{storeUsername}</Text>
                 </View>
               )}
               {store?.is_verified && (
@@ -284,7 +284,7 @@ export default function SettingsScreen() {
                     <Badge label="Pro" variant="primary" size="sm" />
                   </View>
                   <Text style={[styles.urlValue, { color: Colors.primary }]}>
-                    frontstore.app/{storeUsername ?? '—'}
+                    frontstore.ng/{storeUsername ?? '—'}
                   </Text>
                   <Text style={[styles.urlNote, { color: theme.textTertiary }]}>
                     Free plan usernames are locked. Upgrade to Pro to change it.
