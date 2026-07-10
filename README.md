@@ -1,6 +1,6 @@
 # FrontStore Mobile App
 
-Premium React Native (Expo) merchant app for FrontStore.app.
+Premium React Native (Expo) merchant app for FrontStore.ng.
 
 ## Quick Start
 
