@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Share, Alert, Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Download, Share2, Printer } from 'lucide-react-native';
+import { ArrowLeft, Download, Share2, Printer, CheckCircle } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
@@ -118,7 +118,10 @@ export default function QRCodeScreen() {
               logoBorderRadius={10}
             />
           </View>
-          <Text style={[styles.storeName, { color: theme.text }]}>{user?.store?.name ?? 'My Store'}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Text style={[styles.storeName, { color: theme.text }]}>{user?.store?.name ?? 'My Store'}</Text>
+            {user?.store?.is_verified && <CheckCircle size={14} color={Colors.white} fill={Colors.info} />}
+          </View>
           <Text style={[styles.qrUrl, { color: Colors.primary }]}>{storeUrl}</Text>
         </View>
 

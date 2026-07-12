@@ -6,7 +6,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { ArrowLeft, ShoppingCart, Plus, Minus, Check, Share2 } from 'lucide-react-native';
+import { ArrowLeft, ShoppingCart, Plus, Minus, Check, Share2, CheckCircle } from 'lucide-react-native';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/SkeletonLoader';
@@ -167,7 +167,10 @@ export default function ProductDetailScreen() {
             )}
             <View style={styles.storeInfo}>
               <Text style={[styles.storeLabel, { color: theme.textTertiary }]}>Sold by</Text>
-              <Text style={[styles.storeName, { color: Colors.primary }]}>{product.store?.name ?? username}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={[styles.storeName, { color: Colors.primary }]}>{product.store?.name ?? username}</Text>
+                {product.store?.is_verified && <CheckCircle size={13} color={Colors.white} fill={Colors.info} />}
+              </View>
             </View>
             <Text style={[styles.viewStore, { color: Colors.primary }]}>View Store →</Text>
           </TouchableOpacity>

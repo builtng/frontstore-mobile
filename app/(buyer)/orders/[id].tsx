@@ -141,7 +141,10 @@ export default function BuyerOrderDetailScreen() {
         {/* Store info */}
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Seller</Text>
         <View style={[styles.storeCard, { backgroundColor: theme.card }, Shadow.sm as any]}>
-          <Text style={[styles.storeName, { color: theme.text }]}>{order.store?.name}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Text style={[styles.storeName, { color: theme.text }]}>{order.store?.name}</Text>
+            {order.store?.is_verified && <CheckCircle size={14} color={Colors.white} fill={Colors.info} />}
+          </View>
           <Text style={[styles.storeUrl, { color: Colors.primary }]}>frontstore.ng/{order.store?.username}</Text>
           {order.store?.whatsapp_number && (
             <TouchableOpacity style={styles.waBtn} onPress={openWhatsApp}>
