@@ -21,7 +21,7 @@ export default function BuyerVerifyScreen() {
   const toast = useToast();
   const haptics = useHaptics();
   const { setBuyerAuth } = useBuyerStore();
-  const params = useLocalSearchParams<{ phone: string; dial_code: string; formatted: string }>();
+  const params = useLocalSearchParams<{ phone: string; dial_code: string; formatted: string; email: string }>();
 
   const [otp, setOtp] = useState('');
   const [hasError, setHasError] = useState(false);
@@ -65,8 +65,12 @@ export default function BuyerVerifyScreen() {
 
   const handleResend = async () => {
     try {
-      await buyerApi.sendOtp({ phone_number: params.phone, country_dial_code: params.dial_code });
-      toast.success('New code sent to your WhatsApp');
+      await buyerApi.sendOtp({
+        phone_number: params.phone,
+        country_dial_code: params.dial_code,
+        email: params.email || undefined,
+      });
+      toast.success(`New code sent to ${params.email || 'your email'}`);
       setOtp('');
       setHasError(false);
     } catch {
@@ -98,9 +102,8 @@ export default function BuyerVerifyScreen() {
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               We sent a 6-digit code to{' '}
               <Text style={{ fontFamily: FontFamily.bodySemiBold, color: theme.text }}>
-                {params.formatted}
-              </Text>{' '}
-              on WhatsApp
+                {params.email || params.formatted}
+              </Text>
             </Text>
           )}
         </View>

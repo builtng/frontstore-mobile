@@ -11,11 +11,12 @@ const withBuyerToken = async (config: Record<string, any>) => {
 };
 
 export const buyerApi = {
-  // ── WhatsApp OTP (primary auth — no email/password) ──────────────────────
+  // ── Email OTP, identified by phone (primary auth) ─────────────────────────
   sendOtp: async (payload: {
     phone_number: string;
     country_dial_code?: string;
-  }): Promise<{ phone: string; is_new_user: boolean }> => {
+    email?: string;
+  }): Promise<{ phone: string; is_new_user: boolean; needs_email: boolean; email?: string }> => {
     const { data } = await api.post('/auth/send-otp', payload);
     return data;
   },

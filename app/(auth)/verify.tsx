@@ -28,6 +28,7 @@ export default function VerifyScreen() {
     phone: string;
     dial_code: string;
     formatted: string;
+    email: string;
     is_new_user: string;
   }>();
 
@@ -86,8 +87,9 @@ export default function VerifyScreen() {
       await authApi.sendOtp({
         phone_number: params.phone,
         country_dial_code: params.dial_code,
+        email: params.email || undefined,
       });
-      toast.success('New code sent to your WhatsApp');
+      toast.success(`New code sent to ${params.email || 'your email'}`);
       setOtp('');
       setHasError(false);
     } catch {
@@ -121,9 +123,8 @@ export default function VerifyScreen() {
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               We sent a 6-digit code to{' '}
               <Text style={{ fontFamily: FontFamily.bodySemiBold, color: theme.text }}>
-                {displayPhone}
-              </Text>{' '}
-              on WhatsApp
+                {params.email || displayPhone}
+              </Text>
             </Text>
           )}
         </View>
@@ -150,7 +151,7 @@ export default function VerifyScreen() {
             )}
 
             <Text style={[styles.note, { color: theme.textTertiary }]}>
-              Didn't receive it? Make sure your WhatsApp is active and check your notifications.
+              Didn't receive it? Check your spam folder or tap resend below.
             </Text>
           </>
         )}

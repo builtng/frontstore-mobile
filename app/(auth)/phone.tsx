@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import Animated, {
   useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming,
 } from 'react-native-reanimated';
-import { ArrowLeft, Phone, ChevronDown, Check } from 'lucide-react-native';
+import { ArrowLeft, Phone, Mail, ChevronDown, Check } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { useToast } from '@/components/ui/Toast';
@@ -45,6 +45,8 @@ export default function PhoneScreen() {
   const [dialCode, setDialCode] = useState(DIAL_CODES[0]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [needsEmail, setNeedsEmail] = useState(false);
+  const [email, setEmail] = useState('');
 
   const titleOpacity = useSharedValue(0);
   const titleY = useSharedValue(24);
@@ -68,29 +70,40 @@ export default function PhoneScreen() {
   }));
 
   const cleanPhone = phone.replace(/\D/g, '');
-  const isValid = cleanPhone.length >= 7;
+  const isValidPhone = cleanPhone.length >= 7;
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const isValid = isValidPhone && (!needsEmail || isValidEmail);
 
   const handleSend = async () => {
-    if (!isValid) return;
+    if (!isValidPhone) return;
+    if (needsEmail && !isValidEmail) return;
     setIsLoading(true);
     haptics.light();
     try {
       const result = await authApi.sendOtp({
         phone_number: cleanPhone,
         country_dial_code: dialCode.code,
+        email: needsEmail ? email.trim() : undefined,
       });
-      setUserData({ phone: result.phone });
+
+      if (result.needs_email) {
+        setNeedsEmail(true);
+        return;
+      }
+
+      setUserData({ phone: result.phone, email: result.email ?? '' });
       router.push({
         pathname: '/(auth)/verify',
         params: {
           phone: cleanPhone,
           dial_code: dialCode.code,
           formatted: result.phone,
+          email: result.email ?? '',
           is_new_user: result.is_new_user ? '1' : '0',
         },
       });
     } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Failed to send OTP. Please check your number.';
+      const msg = err?.response?.data?.message ?? 'Failed to send OTP. Please check your details.';
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -116,7 +129,7 @@ export default function PhoneScreen() {
             </View>
             <Text style={[styles.title, { color: theme.text }]}>Enter your{'\n'}WhatsApp number</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              We'll send a 6-digit code to verify your identity. No password needed.
+              We'll send a 6-digit code to your email to verify your identity. No password needed.
             </Text>
           </Animated.View>
 
@@ -144,6 +157,7 @@ export default function PhoneScreen() {
                 value={phone}
                 onChangeText={setPhone}
                 maxLength={15}
+                editable={!needsEmail}
                 autoFocus
               />
             </View>
@@ -152,8 +166,31 @@ export default function PhoneScreen() {
             </Text>
           </Animated.View>
 
+          {needsEmail && (
+            <Animated.View style={[styles.card, { backgroundColor: theme.card }, Shadow.md as any, cardStyle]}>
+              <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Email Address</Text>
+              <View style={styles.inputRow}>
+                <Mail size={18} color={theme.textTertiary} />
+                <TextInput
+                  style={[styles.phoneInput, { color: theme.text, fontFamily: FontFamily.headingBold, fontSize: FontSize.lg }]}
+                  placeholder="you@example.com"
+                  placeholderTextColor={theme.textTertiary}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoFocus
+                />
+              </View>
+              <Text style={[styles.note, { color: theme.textTertiary }]}>
+                We couldn't find an email on this account — enter one to receive your verification code
+              </Text>
+            </Animated.View>
+          )}
+
           <Button
-            title="Send OTP via WhatsApp"
+            title={needsEmail ? 'Send verification code' : 'Continue'}
             onPress={handleSend}
             isLoading={isLoading}
             disabled={!isValid}

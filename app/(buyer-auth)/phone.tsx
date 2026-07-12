@@ -4,7 +4,7 @@ import {
   Platform, TouchableOpacity, ScrollView, TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { X, Phone, ChevronDown, Check } from 'lucide-react-native';
+import { X, Phone, Mail, ChevronDown, Check } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { useToast } from '@/components/ui/Toast';
@@ -40,25 +40,38 @@ export default function BuyerPhoneScreen() {
   const [dialCode, setDialCode] = useState(DIAL_CODES[0]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [needsEmail, setNeedsEmail] = useState(false);
+  const [email, setEmail] = useState('');
 
   const cleanPhone = phone.replace(/\D/g, '');
-  const isValid = cleanPhone.length >= 7;
+  const isValidPhone = cleanPhone.length >= 7;
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const isValid = isValidPhone && (!needsEmail || isValidEmail);
 
   const handleSend = async () => {
-    if (!isValid) return;
+    if (!isValidPhone) return;
+    if (needsEmail && !isValidEmail) return;
     setIsLoading(true);
     haptics.light();
     try {
       const result = await buyerApi.sendOtp({
         phone_number: cleanPhone,
         country_dial_code: dialCode.code,
+        email: needsEmail ? email.trim() : undefined,
       });
+
+      if (result.needs_email) {
+        setNeedsEmail(true);
+        return;
+      }
+
       router.push({
         pathname: '/(buyer-auth)/verify',
         params: {
           phone: cleanPhone,
           dial_code: dialCode.code,
           formatted: result.phone ?? `${dialCode.code}${cleanPhone}`,
+          email: result.email ?? '',
         },
       });
     } catch (err: any) {
@@ -86,7 +99,7 @@ export default function BuyerPhoneScreen() {
             </View>
             <Text style={[styles.title, { color: theme.text }]}>Enter your{'\n'}WhatsApp number</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              We'll send you a code to verify your identity. No password needed.
+              We'll send a code to your email to verify your identity. No password needed.
             </Text>
           </View>
 
@@ -114,6 +127,7 @@ export default function BuyerPhoneScreen() {
                 value={phone}
                 onChangeText={setPhone}
                 maxLength={15}
+                editable={!needsEmail}
                 autoFocus
               />
             </View>
@@ -122,8 +136,31 @@ export default function BuyerPhoneScreen() {
             </Text>
           </View>
 
+          {needsEmail && (
+            <View style={[styles.card, { backgroundColor: theme.card }, Shadow.md as any]}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Email Address</Text>
+              <View style={styles.inputRow}>
+                <Mail size={18} color={theme.textTertiary} />
+                <TextInput
+                  style={[styles.phoneInput, { color: theme.text, fontFamily: FontFamily.headingBold, fontSize: FontSize.lg }]}
+                  placeholder="you@example.com"
+                  placeholderTextColor={theme.textTertiary}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoFocus
+                />
+              </View>
+              <Text style={[styles.note, { color: theme.textTertiary }]}>
+                We couldn't find an email on this account — enter one to receive your code
+              </Text>
+            </View>
+          )}
+
           <Button
-            title="Send Code via WhatsApp"
+            title={needsEmail ? 'Send verification code' : 'Continue'}
             onPress={handleSend}
             isLoading={isLoading}
             disabled={!isValid}

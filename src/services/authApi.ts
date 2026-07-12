@@ -2,11 +2,18 @@ import api from './api';
 import { AuthResponse } from '@/types/auth';
 
 export const authApi = {
-  // ── WhatsApp OTP (primary auth flow) ────────────────────────────────────
+  // ── Email OTP, identified by phone (primary auth flow) ──────────────────
   sendOtp: async (payload: {
     phone_number: string;
     country_dial_code?: string;
-  }): Promise<{ is_new_user: boolean; phone: string; message: string }> => {
+    email?: string;
+  }): Promise<{
+    is_new_user: boolean;
+    phone: string;
+    message: string;
+    needs_email: boolean;
+    email?: string;
+  }> => {
     const { data } = await api.post('/auth/send-otp', payload);
     return data;
   },
