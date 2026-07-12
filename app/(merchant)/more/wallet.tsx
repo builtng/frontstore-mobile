@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ArrowUpRight, TrendingUp, Wallet as WalletIcon, Clock, CheckCircle, XCircle } from 'lucide-react-native';
+import { ArrowLeft, ArrowUpRight, TrendingUp, Wallet as WalletIcon, Clock, CheckCircle, XCircle, ShieldCheck, BadgeCheck, Zap } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -19,6 +19,13 @@ import { format } from 'date-fns';
 
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(n);
+
+const PAYOUT_TIERS = [
+  { level: 1, name: 'New Seller', range: '0–40 pts', payout: '5-day hold', icon: Clock },
+  { level: 2, name: 'Verified Seller', range: '41–70 pts', payout: 'Next-day payout', icon: ShieldCheck },
+  { level: 3, name: 'Trusted Seller', range: '71–90 pts', payout: 'Same-day payout', icon: BadgeCheck },
+  { level: 4, name: 'Elite Seller', range: '91–100 pts', payout: 'Instant payout', icon: Zap },
+] as const;
 
 export default function WalletScreen() {
   const router = useRouter();
@@ -109,6 +116,37 @@ export default function WalletScreen() {
           </LinearGradient>
         </View>
 
+        {/* Payout level */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Payout Level</Text>
+        </View>
+        <View style={styles.tierList}>
+          {PAYOUT_TIERS.map((tier) => {
+            const isActive = (wallet?.seller_level ?? 1) === tier.level;
+            const Icon = tier.icon;
+            return (
+              <View
+                key={tier.level}
+                style={[
+                  styles.tierRow,
+                  { backgroundColor: theme.card, borderColor: isActive ? Colors.primary : theme.border },
+                ]}
+              >
+                <View style={[styles.tierIcon, { backgroundColor: isActive ? Colors.primary + '18' : theme.border }]}>
+                  <Icon size={18} color={isActive ? Colors.primary : theme.textTertiary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.tierName, { color: theme.text }]}>Level {tier.level} · {tier.name}</Text>
+                  <Text style={[styles.tierRange, { color: theme.textTertiary }]}>{tier.range}</Text>
+                </View>
+                <Text style={[styles.tierPayout, { color: isActive ? Colors.primary : theme.textTertiary }]}>
+                  {tier.payout}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+
         {/* Recent transactions */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Transactions</Text>
@@ -184,6 +222,12 @@ const styles = StyleSheet.create({
   withdrawBtn: { backgroundColor: Colors.white },
   sectionHeader: { marginBottom: Spacing[4] },
   sectionTitle: { fontFamily: FontFamily.headingSemiBold, fontSize: FontSize.lg },
+  tierList: { gap: Spacing[3], marginBottom: Spacing[6] },
+  tierRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[3], padding: Spacing[4], borderRadius: Radius.lg, borderWidth: 1.5 },
+  tierIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  tierName: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm },
+  tierRange: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs, marginTop: 2 },
+  tierPayout: { fontFamily: FontFamily.headingBold, fontSize: FontSize.xs },
   txSkeleton: { flexDirection: 'row', alignItems: 'center', gap: Spacing[4], padding: Spacing[4], borderRadius: Radius.lg, marginBottom: Spacing[3] },
   txCard: { flexDirection: 'row', alignItems: 'center', padding: Spacing[4], borderRadius: Radius.lg, marginBottom: Spacing[3], gap: Spacing[4] },
   txIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },

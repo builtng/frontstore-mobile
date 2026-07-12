@@ -99,6 +99,8 @@ export interface Wallet {
   total_withdrawn: number;
   currency: string;
   transactions: WalletTransaction[];
+  trust_score: number;
+  seller_level: number;
 }
 
 export interface WalletTransaction {
