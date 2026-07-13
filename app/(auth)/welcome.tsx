@@ -16,9 +16,16 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import Svg, { Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
-import { ShoppingBag, ShieldCheck, MessageCircle, LucideIcon } from 'lucide-react-native';
+import {
+  ShoppingBag,
+  BarChart2,
+  Wallet,
+  LucideIcon,
+  TrendingUp,
+  Package,
+  Bell,
+} from 'lucide-react-native';
 import { Image } from 'expo-image';
 
 import { Colors } from '@/constants/colors';
@@ -27,22 +34,10 @@ import { Radius, Spacing, Shadow } from '@/constants/spacing';
 
 const { width } = Dimensions.get('window');
 
-// WhatsApp Brand Icon
-const WhatsAppIcon = ({ color = '#FFFFFF', size = 22 }: { color?: string; size?: number }) => {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12.012 2C6.485 2 2 6.484 2 12.011c0 1.767.46 3.427 1.262 4.887L2 22l5.244-1.376A9.972 9.972 0 0012.012 22c5.528 0 10.013-4.484 10.013-10.011C22.025 6.484 17.54 2 12.012 2zm0 18.294c-1.61 0-3.183-.42-4.57-1.22l-.328-.194-3.1 .812.827-3.023-.213-.34a8.232 8.232 0 01-1.264-4.34C3.368 7.237 7.243 3.362 12.012 3.362c4.77 0 8.647 3.875 8.647 8.65 0 4.773-3.877 8.282-8.647 8.282zm4.743-6.495c-.26-.13-1.534-.757-1.77-.843-.238-.087-.41-.13-.583.13-.173.26-.67.843-.82.996-.152.152-.303.173-.563.043a7.086 7.086 0 01-2.09-1.288 7.822 7.822 0 01-1.446-1.8c-.152-.26-.016-.4.113-.53.118-.118.26-.303.39-.454.13-.151.173-.26.26-.433.086-.173.043-.325-.022-.454-.065-.13-.583-1.407-.798-1.927-.21-.506-.42-.437-.583-.445l-.497-.008c-.173 0-.455.065-.692.325-.238.26-.908.887-.908 2.164 0 1.277.93 2.51 1.06 2.684.13.173 1.83 2.793 4.433 3.916 2.603 1.122 2.603.748 3.078.705.476-.043 1.533-.627 1.75-1.233.216-.606.216-1.125.151-1.233-.065-.108-.238-.173-.497-.303z"
-        fill={color}
-      />
-    </Svg>
-  );
-};
-
 const FEATURES: { icon: LucideIcon; label: string; caption: string }[] = [
-  { icon: MessageCircle, label: 'Chat', caption: 'Orders over WhatsApp' },
-  { icon: ShieldCheck, label: 'Escrow', caption: 'Funds held until delivery' },
-  { icon: ShoppingBag, label: 'Nina', caption: 'Your AI sales partner' },
+  { icon: ShoppingBag, label: 'Catalog', caption: 'Manage products & inventory' },
+  { icon: TrendingUp, label: 'Analytics', caption: 'Real-time sales data' },
+  { icon: Wallet, label: 'Wallet', caption: 'Instant payouts & earnings' },
 ];
 
 export default function WelcomeScreen() {
@@ -80,50 +75,87 @@ export default function WelcomeScreen() {
           </View>
         </View>
 
-        {/* Hero + Product Mock */}
+        {/* Hero + Dashboard Mock */}
         <View style={styles.content}>
-          <Text style={styles.kicker}>Commerce through conversation</Text>
-          <Text style={styles.headline}>Turn WhatsApp chats{'\n'}into real sales.</Text>
+          <Text style={styles.kicker}>For Merchants</Text>
+          <Text style={styles.headline}>Manage your business{'\n'}from anywhere.</Text>
           <Text style={styles.subheadline}>
-            Frontstore runs your catalog, checkout, and secure payments right inside
-            the conversation your customers already trust.
+            Control your catalog, track orders, view real-time analytics, and withdraw
+            earnings — all in one place.
           </Text>
 
+          {/* Merchant dashboard preview mock card */}
           <Animated.View style={[styles.mockCard, entranceStyle]}>
+            {/* Mock header */}
             <View style={styles.mockHeader}>
-              <View style={styles.mockAvatar}>
-                <WhatsAppIcon color={Colors.teal} size={14} />
+              <View>
+                <Text style={styles.mockGreeting}>Good morning 👋</Text>
+                <Text style={styles.mockStoreName}>Chidi's Fashion Hub</Text>
+              </View>
+              <View style={styles.mockBellWrap}>
+                <Bell size={14} color={Colors.teal} />
+                <View style={styles.mockNotifDot} />
+              </View>
+            </View>
+
+            {/* Revenue strip */}
+            <LinearGradient
+              colors={['#128C7E', '#25D366']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.mockRevenue}
+            >
+              <View>
+                <Text style={styles.mockRevenueLabel}>Today's Revenue</Text>
+                <Text style={styles.mockRevenueAmount}>₦128,500</Text>
+              </View>
+              <View style={styles.mockRevenueStats}>
+                {[
+                  { label: 'Orders', value: '14' },
+                  { label: 'Pending', value: '3' },
+                ].map((s) => (
+                  <View key={s.label} style={styles.mockRevenueStat}>
+                    <Text style={styles.mockRevenueStatVal}>{s.value}</Text>
+                    <Text style={styles.mockRevenueStatLabel}>{s.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </LinearGradient>
+
+            {/* Recent order row */}
+            <View style={styles.mockOrderRow}>
+              <View style={[styles.mockOrderIcon, { backgroundColor: 'rgba(100,255,218,0.1)' }]}>
+                <Package size={13} color={Colors.teal} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.mockTitle}>Eko Fashion</Text>
-                <Text style={styles.mockSubtitle}>Online · Powered by Frontstore</Text>
+                <Text style={styles.mockOrderTitle}>Ankara Dress — Size M</Text>
+                <Text style={styles.mockOrderSub}>Order #1042 · Adaeze Obi</Text>
               </View>
-              <View style={styles.mockStatusDot} />
+              <View style={styles.mockOrderBadge}>
+                <Text style={styles.mockOrderBadgeText}>New</Text>
+              </View>
             </View>
 
-            <View style={styles.mockBubbleRight}>
-              <Text style={styles.mockBubbleRightText}>Can I get the Ankara dress in M?</Text>
-            </View>
-
-            <View style={styles.mockBubbleLeft}>
-              <Text style={styles.mockBubbleLeftLabel}>Nina</Text>
-              <Text style={styles.mockBubbleLeftText}>Yes! Size M is in stock. Here's the item — tap Pay to order now.</Text>
-            </View>
-
-            <View style={styles.mockProductRow}>
-              <View style={styles.mockThumb}>
-                <ShoppingBag size={16} color={Colors.teal} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.mockProductTitle} numberOfLines={1}>Bespoke Ankara Outfit</Text>
-                <Text style={styles.mockProductPrice}>₦38,000 · In stock</Text>
-              </View>
-              <View style={styles.mockPayChip}>
-                <Text style={styles.mockPayChipText}>Pay</Text>
-              </View>
+            {/* Fulfillment sparkline placeholder */}
+            <View style={styles.mockChartRow}>
+              {[40, 65, 50, 80, 60, 90, 75].map((h, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.mockBar,
+                    {
+                      height: h * 0.55,
+                      backgroundColor: i === 5
+                        ? Colors.teal
+                        : 'rgba(100,255,218,0.25)',
+                    },
+                  ]}
+                />
+              ))}
             </View>
           </Animated.View>
 
+          {/* Feature strip */}
           <View style={styles.featureRow}>
             {FEATURES.map((feature) => (
               <View key={feature.label} style={styles.featureItem}>
@@ -135,31 +167,33 @@ export default function WelcomeScreen() {
           </View>
         </View>
 
-        {/* Bottom Section - Social proof + CTA */}
+        {/* Bottom CTA */}
         <View style={styles.bottomSection}>
           <Text style={styles.socialProof}>
             Trusted by <Text style={styles.socialProofStrong}>10,000+ merchants</Text> across Africa
           </Text>
 
+          {/* Primary CTA — OTP login (email or phone) */}
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push('/(auth)/phone');
+              router.push('/(auth)/otp-login' as any);
             }}
             style={styles.ctaButtonWrapper}
           >
             <LinearGradient
-              colors={['#25D366', '#128C7E']}
+              colors={[Colors.primary, '#25D366']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.ctaButton}
             >
-              <WhatsAppIcon color="#FFFFFF" size={20} />
-              <Text style={styles.ctaButtonLabel}>Continue with WhatsApp</Text>
+              <BarChart2 size={20} color="#FFFFFF" />
+              <Text style={styles.ctaButtonLabel}>Get Started</Text>
             </LinearGradient>
           </TouchableOpacity>
 
+          {/* Secondary — password login */}
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => {
@@ -168,7 +202,7 @@ export default function WelcomeScreen() {
             }}
             style={styles.secondaryCtaButton}
           >
-            <Text style={styles.secondaryCtaButtonLabel}>Continue with Email</Text>
+            <Text style={styles.secondaryCtaButtonLabel}>Continue with Password</Text>
           </TouchableOpacity>
 
           <Text style={styles.terms}>
@@ -199,7 +233,7 @@ const styles = StyleSheet.create({
     width: width * 1.1,
     height: width * 1.1,
     borderRadius: 9999,
-    backgroundColor: 'rgba(100, 255, 218, 0.06)',
+    backgroundColor: 'rgba(100, 255, 218, 0.05)',
   },
 
   // Header
@@ -252,7 +286,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing[5],
   },
 
-  // Product mock card
+  // Dashboard mock card
   mockCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderWidth: 1,
@@ -265,117 +299,131 @@ const styles = StyleSheet.create({
   mockHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing[2],
+    justifyContent: 'space-between',
     paddingBottom: Spacing[3],
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
-  mockAvatar: {
-    width: 26,
-    height: 26,
+  mockGreeting: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: FontSize.xs - 1,
+    color: 'rgba(255,255,255,0.45)',
+  },
+  mockStoreName: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: FontSize.sm,
+    color: Colors.white,
+  },
+  mockBellWrap: {
+    width: 28,
+    height: 28,
     borderRadius: Radius.full,
-    backgroundColor: 'rgba(100, 255, 218, 0.1)',
+    backgroundColor: 'rgba(100,255,218,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
-  mockTitle: {
-    fontFamily: FontFamily.headingSemiBold,
-    fontSize: FontSize.sm,
-    color: Colors.white,
+  mockNotifDot: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.danger,
   },
-  mockSubtitle: {
+
+  // Revenue strip
+  mockRevenue: {
+    borderRadius: Radius.md,
+    padding: Spacing[3],
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  mockRevenueLabel: {
     fontFamily: FontFamily.bodyRegular,
     fontSize: FontSize.xs - 1,
-    color: 'rgba(255, 255, 255, 0.4)',
+    color: 'rgba(255,255,255,0.7)',
   },
-  mockStatusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: Colors.success,
+  mockRevenueAmount: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: FontSize.xl,
+    color: Colors.white,
+    letterSpacing: -0.5,
   },
-  mockBubbleRight: {
-    alignSelf: 'flex-end',
-    backgroundColor: 'rgba(100, 255, 218, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(100, 255, 218, 0.18)',
-    borderRadius: Radius.md,
-    borderBottomRightRadius: 4,
-    paddingHorizontal: Spacing[3],
-    paddingVertical: Spacing[2],
-    maxWidth: '85%',
+  mockRevenueStats: {
+    flexDirection: 'row',
+    gap: Spacing[4],
   },
-  mockBubbleRightText: {
-    fontFamily: FontFamily.bodyMedium,
-    fontSize: FontSize.sm,
+  mockRevenueStat: {
+    alignItems: 'center',
+  },
+  mockRevenueStatVal: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: FontSize.lg,
     color: Colors.white,
   },
-  mockBubbleLeft: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(18, 140, 126, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(18, 140, 126, 0.25)',
-    borderRadius: Radius.md,
-    borderBottomLeftRadius: 4,
-    paddingHorizontal: Spacing[3],
-    paddingVertical: Spacing[2],
-    maxWidth: '85%',
-    gap: 2,
-  },
-  mockBubbleLeftLabel: {
-    fontFamily: FontFamily.headingSemiBold,
-    fontSize: FontSize.xs - 1,
-    color: Colors.teal,
-    letterSpacing: 0.3,
-  },
-  mockBubbleLeftText: {
+  mockRevenueStatLabel: {
     fontFamily: FontFamily.bodyRegular,
-    fontSize: FontSize.sm,
-    color: 'rgba(255,255,255,0.85)',
+    fontSize: FontSize.xs - 1,
+    color: 'rgba(255,255,255,0.6)',
   },
-  mockProductRow: {
+
+  // Order row
+  mockOrderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing[3],
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderRadius: Radius.md,
     padding: Spacing[3],
   },
-  mockThumb: {
-    width: 40,
-    height: 40,
+  mockOrderIcon: {
+    width: 32,
+    height: 32,
     borderRadius: Radius.sm,
-    backgroundColor: 'rgba(100, 255, 218, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mockProductTitle: {
+  mockOrderTitle: {
     fontFamily: FontFamily.headingSemiBold,
-    fontSize: FontSize.sm,
+    fontSize: FontSize.xs,
     color: Colors.white,
   },
-  mockProductPrice: {
-    fontFamily: FontFamily.bodyMedium,
-    fontSize: FontSize.xs,
-    color: 'rgba(255, 255, 255, 0.5)',
+  mockOrderSub: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: FontSize.xs - 2,
+    color: 'rgba(255,255,255,0.4)',
     marginTop: 1,
   },
-  mockPayChip: {
-    backgroundColor: 'rgba(100, 255, 218, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(100, 255, 218, 0.3)',
+  mockOrderBadge: {
+    backgroundColor: 'rgba(100,255,218,0.12)',
     borderRadius: Radius.xs,
-    paddingHorizontal: Spacing[3],
-    paddingVertical: 6,
+    paddingHorizontal: Spacing[2],
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(100,255,218,0.3)',
   },
-  mockPayChipText: {
+  mockOrderBadgeText: {
     fontFamily: FontFamily.bodyBold,
-    fontSize: FontSize.xs - 1,
+    fontSize: FontSize.xs - 3,
     color: Colors.teal,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
+  },
+
+  // Chart row
+  mockChartRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 4,
+    height: 36,
+    paddingTop: Spacing[2],
+  },
+  mockBar: {
+    flex: 1,
+    borderRadius: 3,
   },
 
   // Feature strip

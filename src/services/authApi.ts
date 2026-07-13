@@ -18,6 +18,35 @@ export const authApi = {
     return data;
   },
 
+  sendEmailOtp: async (payload: {
+    email: string;
+    store_name?: string;
+    username?: string;
+  }): Promise<{
+    is_new_user: boolean;
+    email: string;
+    message: string;
+  }> => {
+    const { data } = await api.post('/auth/send-email-otp', payload);
+    return data;
+  },
+
+  verifyEmailOtp: async (payload: {
+    email: string;
+    otp: string;
+    store_name?: string;
+    username?: string;
+  }): Promise<{
+    is_new_user: boolean;
+    token?: string;
+    setup_token?: string;
+    email?: string;
+    data?: { user: any; store: any };
+  }> => {
+    const { data } = await api.post('/auth/verify-email-otp', payload);
+    return data;
+  },
+
   verifyOtp: async (payload: {
     phone_number: string;
     otp: string;

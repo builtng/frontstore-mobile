@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.frontstore.mobile",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow FrontStore to access your photos to add product images.",
         "NSPhotoLibraryAddUsageDescription": "Allow FrontStore to save QR codes and images to your photo library.",
@@ -30,7 +30,7 @@
         "backgroundColor": "#056839"
       },
       "package": "app.frontstore.mobile",
-      "versionCode": 1,
+      "versionCode": 3,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",

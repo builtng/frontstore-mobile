@@ -7,7 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Store, AtSign, ChevronRight, Check } from 'lucide-react-native';
+import { User, Store, AtSign, ChevronRight, Check, Phone } from 'lucide-react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, withSpring, withDelay,
 } from 'react-native-reanimated';
@@ -39,17 +39,26 @@ const BUSINESS_TYPES = [
   { value: 'other', label: 'Other' },
 ] as const;
 
-const schema = z.object({
-  name: z.string().min(2, 'Your name must be at least 2 characters'),
-  store_name: z.string().min(2, 'Business name must be at least 2 characters').max(100),
-  username: z
-    .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(30)
-    .regex(/^[a-z0-9-]+$/, 'Only lowercase letters, numbers, and hyphens'),
-});
+const buildSchema = (requirePhone: boolean) =>
+  z.object({
+    name: z.string().min(2, 'Your name must be at least 2 characters'),
+    store_name: z.string().min(2, 'Business name must be at least 2 characters').max(100),
+    username: z
+      .string()
+      .min(3, 'Username must be at least 3 characters')
+      .max(30)
+      .regex(/^[a-z0-9-]+$/, 'Only lowercase letters, numbers, and hyphens'),
+    whatsapp_phone: requirePhone
+      ? z.string().min(7, 'Enter a valid WhatsApp phone number')
+      : z.string().optional(),
+  });
 
-type FormData = z.infer<typeof schema>;
+type FormData = {
+  name: string;
+  store_name: string;
+  username: string;
+  whatsapp_phone?: string;
+};
 
 export default function SetupScreen() {
   const router = useRouter();
@@ -57,11 +66,15 @@ export default function SetupScreen() {
   const toast = useToast();
   const haptics = useHaptics();
   const setAuth = useAuthStore((s) => s.setAuth);
-  const params = useLocalSearchParams<{ setup_token: string; phone: string }>();
+  const params = useLocalSearchParams<{ setup_token: string; phone?: string; email?: string }>();
+
+  // If the merchant registered via Email OTP, they have no verified phone yet
+  const isEmailFlow = !params.phone;
 
   const [businessType, setBusinessType] = useState('physical');
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [dialCode] = useState('+234');
 
   const headerOpacity = useSharedValue(0);
   const headerY = useSharedValue(20);
@@ -76,6 +89,7 @@ export default function SetupScreen() {
     transform: [{ translateY: headerY.value }],
   }));
 
+  const schema = buildSchema(isEmailFlow);
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
@@ -104,6 +118,13 @@ export default function SetupScreen() {
         store_name: data.store_name,
         username: data.username,
         business_persona: businessType,
+        // Pass phone number when the merchant registered via Email OTP
+        ...(isEmailFlow && data.whatsapp_phone
+          ? {
+              phone_number: data.whatsapp_phone.replace(/\D/g, ''),
+              country_dial_code: dialCode,
+            }
+          : {}),
       });
       await setAuth(response.data!.user, response.token!);
       haptics.success();
@@ -192,6 +213,27 @@ export default function SetupScreen() {
               />
             )}
           />
+
+          {/* WhatsApp phone — required only when merchant registered via Email OTP */}
+          {isEmailFlow && (
+            <Controller
+              control={control}
+              name="whatsapp_phone"
+              render={({ field: { onChange, value, onBlur } }) => (
+                <Input
+                  label="WhatsApp Phone Number"
+                  placeholder="+234 800 000 0000"
+                  keyboardType="phone-pad"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.whatsapp_phone?.message}
+                  hint="Used for order notifications and customer contact"
+                  leftIcon={<Phone size={18} color={theme.textTertiary} />}
+                />
+              )}
+            />
+          )}
 
           {/* Business type */}
           <View style={styles.typeSection}>

@@ -14,7 +14,7 @@ import { authApi } from '@/services/authApi';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
-import { Spacing } from '@/constants/spacing';
+import { Radius, Spacing } from '@/constants/spacing';
 import { useTheme } from '@/hooks/useTheme';
 import { useHaptics } from '@/hooks/useHaptics';
 
@@ -24,13 +24,20 @@ export default function VerifyScreen() {
   const toast = useToast();
   const haptics = useHaptics();
   const setAuth = useAuthStore((s) => s.setAuth);
+
   const params = useLocalSearchParams<{
+    method: 'phone' | 'email';
+    // phone flow
     phone: string;
     dial_code: string;
     formatted: string;
+    // email flow
     email: string;
+    // shared
     is_new_user: string;
   }>();
+
+  const isEmailMethod = params.method === 'email';
 
   const [otp, setOtp] = useState('');
   const [hasError, setHasError] = useState(false);
@@ -47,29 +54,47 @@ export default function VerifyScreen() {
     haptics.light();
 
     try {
-      const result = await authApi.verifyOtp({
-        phone_number: params.phone,
-        otp: code,
-        country_dial_code: params.dial_code,
-      });
-
-      setSuccess(true);
-      successScale.value = withSpring(1, { damping: 12, stiffness: 180 });
-      haptics.success();
-
-      // Short delay for the success animation
-      await new Promise((r) => setTimeout(r, 600));
-
-      if (result.is_new_user) {
-        // New user → go to business setup
-        router.replace({
-          pathname: '/(auth)/setup',
-          params: { setup_token: result.setup_token!, phone: result.phone_number! },
+      if (isEmailMethod) {
+        const result = await authApi.verifyEmailOtp({
+          email: params.email,
+          otp: code,
         });
+
+        setSuccess(true);
+        successScale.value = withSpring(1, { damping: 12, stiffness: 180 });
+        haptics.success();
+        await new Promise((r) => setTimeout(r, 600));
+
+        if (result.is_new_user) {
+          router.replace({
+            pathname: '/(auth)/setup',
+            params: { setup_token: result.setup_token!, email: result.email ?? params.email },
+          });
+        } else {
+          await setAuth(result.data!.user, result.token!);
+          router.replace('/(merchant)');
+        }
       } else {
-        // Existing user → log them in
-        await setAuth(result.data!.user, result.token!);
-        router.replace('/(merchant)');
+        const result = await authApi.verifyOtp({
+          phone_number: params.phone,
+          otp: code,
+          country_dial_code: params.dial_code,
+        });
+
+        setSuccess(true);
+        successScale.value = withSpring(1, { damping: 12, stiffness: 180 });
+        haptics.success();
+        await new Promise((r) => setTimeout(r, 600));
+
+        if (result.is_new_user) {
+          router.replace({
+            pathname: '/(auth)/setup',
+            params: { setup_token: result.setup_token!, phone: result.phone_number! },
+          });
+        } else {
+          await setAuth(result.data!.user, result.token!);
+          router.replace('/(merchant)');
+        }
       }
     } catch (err: any) {
       setHasError(true);
@@ -84,12 +109,17 @@ export default function VerifyScreen() {
 
   const handleResend = async () => {
     try {
-      await authApi.sendOtp({
-        phone_number: params.phone,
-        country_dial_code: params.dial_code,
-        email: params.email || undefined,
-      });
-      toast.success(`New code sent to ${params.email || 'your email'}`);
+      if (isEmailMethod) {
+        await authApi.sendEmailOtp({ email: params.email });
+        toast.success(`New code sent to ${params.email}`);
+      } else {
+        await authApi.sendOtp({
+          phone_number: params.phone,
+          country_dial_code: params.dial_code,
+          email: params.email || undefined,
+        });
+        toast.success(`New code sent to ${params.email || 'your email'}`);
+      }
       setOtp('');
       setHasError(false);
     } catch {
@@ -97,7 +127,14 @@ export default function VerifyScreen() {
     }
   };
 
-  const displayPhone = params.formatted ?? `${params.dial_code}${params.phone}`;
+  // Display label for what we sent the code to
+  const sentTo = isEmailMethod
+    ? params.email
+    : params.email || `${params.dial_code}${params.phone}`;
+
+  const displayIdentifier = isEmailMethod
+    ? params.email
+    : (params.formatted ?? `${params.dial_code}${params.phone}`);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
@@ -112,8 +149,10 @@ export default function VerifyScreen() {
               <CheckCircle size={48} color={Colors.success} strokeWidth={1.5} />
             </Animated.View>
           ) : (
-            <View style={[styles.phoneIconWrap, { backgroundColor: Colors.primaryDim }]}>
-              <Text style={[styles.phoneDisplay, { color: Colors.primary }]}>{displayPhone}</Text>
+            <View style={[styles.identifierWrap, { backgroundColor: Colors.primaryDim }]}>
+              <Text style={[styles.identifierDisplay, { color: Colors.primary }]} numberOfLines={1}>
+                {displayIdentifier}
+              </Text>
             </View>
           )}
           <Text style={[styles.title, { color: theme.text }]}>
@@ -123,7 +162,7 @@ export default function VerifyScreen() {
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               We sent a 6-digit code to{' '}
               <Text style={{ fontFamily: FontFamily.bodySemiBold, color: theme.text }}>
-                {params.email || displayPhone}
+                {sentTo}
               </Text>
             </Text>
           )}
@@ -151,7 +190,8 @@ export default function VerifyScreen() {
             )}
 
             <Text style={[styles.note, { color: theme.textTertiary }]}>
-              Didn't receive it? Check your spam folder or tap resend below.
+              Didn't receive it? Check your{' '}
+              {isEmailMethod ? 'spam folder' : 'email inbox'} or tap resend below.
             </Text>
           </>
         )}
@@ -166,8 +206,13 @@ const styles = StyleSheet.create({
   back: { marginTop: Spacing[4], marginBottom: Spacing[8], width: 40, height: 40, justifyContent: 'center' },
 
   header: { alignItems: 'center', marginBottom: Spacing[10], gap: Spacing[4] },
-  phoneIconWrap: { paddingHorizontal: Spacing[5], paddingVertical: Spacing[3], borderRadius: Radius.full },
-  phoneDisplay: { fontFamily: FontFamily.headingBold, fontSize: FontSize.lg, letterSpacing: 0.5 },
+  identifierWrap: {
+    paddingHorizontal: Spacing[5], paddingVertical: Spacing[3],
+    borderRadius: Radius.full, maxWidth: '90%',
+  },
+  identifierDisplay: {
+    fontFamily: FontFamily.headingBold, fontSize: FontSize.base, letterSpacing: 0.3,
+  },
   successCircle: { marginBottom: Spacing[2] },
   title: { fontFamily: FontFamily.headingBold, fontSize: FontSize['3xl'], letterSpacing: -0.8, textAlign: 'center' },
   subtitle: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.base, lineHeight: 24, textAlign: 'center' },
@@ -175,5 +220,3 @@ const styles = StyleSheet.create({
   verifyBtn: { marginTop: Spacing[6] },
   note: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs, textAlign: 'center', lineHeight: 18, marginTop: Spacing[8] },
 });
-
-import { Radius } from '@/constants/spacing';

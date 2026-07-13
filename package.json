@@ -56,7 +56,18 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~18.3.12",
-    "typescript": "^5.3.3",
-    "babel-preset-expo": "~12.0.4"
+    "babel-preset-expo": "~12.0.4",
+    "eslint": "^8.57.0",
+    "eslint-config-expo": "~8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-confetti-cannon"
+        ]
+      }
+    }
   }
 }
