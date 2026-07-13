@@ -57,6 +57,7 @@ export default function StoreSetupScreen() {
     if (watchedName) {
       const slug = watchedName
         .toLowerCase()
+        .replace(/_/g, '-')
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .slice(0, 30);
@@ -133,7 +134,7 @@ export default function StoreSetupScreen() {
                   placeholder="your-store-name"
                   autoCapitalize="none"
                   value={value}
-                  onChangeText={(t) => onChange(t.toLowerCase())}
+                  onChangeText={(t) => onChange(t.toLowerCase().replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''))}
                   onBlur={onBlur}
                   error={errors.storeUsername?.message}
                   hint="Only lowercase letters, numbers, and hyphens"

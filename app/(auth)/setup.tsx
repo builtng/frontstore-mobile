@@ -86,6 +86,7 @@ export default function SetupScreen() {
     if (watchedName) {
       const slug = watchedName
         .toLowerCase()
+        .replace(/_/g, '-')
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .slice(0, 30);
@@ -183,7 +184,7 @@ export default function SetupScreen() {
                 placeholder="your-store-name"
                 autoCapitalize="none"
                 value={value}
-                onChangeText={(t) => onChange(t.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                onChangeText={(t) => onChange(t.toLowerCase().replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''))}
                 onBlur={onBlur}
                 error={errors.username?.message}
                 hint="frontstore.ng/your-username"

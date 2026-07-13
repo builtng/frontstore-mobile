@@ -270,7 +270,7 @@ export default function SettingsScreen() {
                       label="Store URL Username"
                       placeholder="my-store"
                       value={value}
-                      onChangeText={(text) => onChange(text.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                      onChangeText={(text) => onChange(text.toLowerCase().replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''))}
                       onBlur={onBlur}
                       error={errors.username?.message}
                       autoCapitalize="none"
