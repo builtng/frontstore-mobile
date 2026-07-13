@@ -1,6 +1,6 @@
 import api from './api';
 import * as SecureStore from 'expo-secure-store';
-import { BuyerAuthResponse } from '@/types/buyer';
+import { BuyerAuthResponse, BuyerUser } from '@/types/buyer';
 
 const withBuyerToken = async (config: Record<string, any>) => {
   const token = await SecureStore.getItemAsync('frontstore_buyer_token');

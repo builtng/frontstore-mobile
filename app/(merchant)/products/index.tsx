@@ -11,6 +11,7 @@ import { ProductCard } from '@/components/merchant/ProductCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { merchantApi } from '@/services/merchantApi';
+import { Product } from '@/types/merchant';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Radius, Spacing } from '@/constants/spacing';
@@ -36,7 +37,7 @@ export default function ProductsScreen() {
       }),
   });
 
-  const products = data?.data ?? [];
+  const products = (data?.data ?? []) as Product[];
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -118,7 +119,7 @@ export default function ProductsScreen() {
           {[1, 2, 3].map((i) => <SkeletonCard key={i} style={{ marginBottom: Spacing[3] }} />)}
         </View>
       ) : (
-        <FlashList
+        <FlashList<Product>
           data={products}
           keyExtractor={(item) => String(item.id)}
           estimatedItemSize={viewMode === 'grid' ? 240 : 88}
@@ -140,7 +141,6 @@ export default function ProductsScreen() {
               onAction={() => router.push('/(merchant)/products/add')}
             />
           }
-          columnWrapperStyle={viewMode === 'grid' ? styles.gridRow : undefined}
         />
       )}
     </SafeAreaView>

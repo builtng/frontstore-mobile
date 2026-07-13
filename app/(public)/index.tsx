@@ -43,9 +43,9 @@ export default function MarketplaceHome() {
     staleTime: 1000 * 60 * 10,
   });
 
-  const { data: marketplaceData, isLoading, refetch } = useQuery({
+  const { data: marketplaceData, isLoading, refetch } = useQuery<any>({
     queryKey: ['marketplace'],
-    queryFn: publicApi.getMarketplace,
+    queryFn: () => publicApi.getMarketplace(),
   });
 
   const { data: storesData, isLoading: storesLoading, refetch: refetchStores } = useQuery({

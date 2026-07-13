@@ -93,8 +93,8 @@ export const Input: React.FC<InputProps> = ({
           style={[
             styles.input,
             { color: theme.text, fontFamily: FontFamily.bodyRegular },
-            leftIcon && styles.inputWithLeft,
-            (rightIcon || isPassword) && styles.inputWithRight,
+            leftIcon ? styles.inputWithLeft : null,
+            (rightIcon || isPassword) ? styles.inputWithRight : null,
             style,
           ]}
           placeholderTextColor={theme.textTertiary}

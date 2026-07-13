@@ -134,6 +134,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     overflow: 'hidden',
     flex: 1,
+    marginHorizontal: Spacing[2],
+    marginBottom: Spacing[4],
   },
   gridImage: {
     height: 140,

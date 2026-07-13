@@ -42,6 +42,7 @@ export interface PublicStore {
   founder_bio?: string;
   founder_avatar_url?: string;
   about_facts?: { label: string; value: string }[];
+  business_type?: string;
 }
 
 export interface StoreReview {

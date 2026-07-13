@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TextStyle,
   View,
+  StyleProp,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -32,8 +33,8 @@ interface ButtonProps {
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
   fullWidth?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);

@@ -22,6 +22,7 @@ import { OrderCard } from '@/components/merchant/OrderCard';
 import { RevenueChart } from '@/components/merchant/RevenueChart';
 import { NinaCard } from '@/components/merchant/NinaCard';
 import { merchantApi } from '@/services/merchantApi';
+import { DashboardStats, TopProduct, Order } from '@/types/merchant';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
@@ -47,7 +48,7 @@ export default function DashboardScreen() {
   const isPro = user?.plan === 'pro_monthly' || user?.plan === 'pro_yearly';
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data: stats, isLoading, refetch } = useQuery({
+  const { data: stats, isLoading, refetch } = useQuery<DashboardStats>({
     queryKey: ['dashboard-stats'],
     queryFn: merchantApi.getDashboardStats,
   });
@@ -228,7 +229,7 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             </View>
             <View style={[styles.topProductsCard, { backgroundColor: theme.card }, Shadow.sm as any]}>
-              {stats!.top_products.slice(0, 4).map((tp, i) => (
+              {stats!.top_products.slice(0, 4).map((tp: TopProduct, i: number) => (
                 <View key={i} style={[styles.topProductRow, i < 3 && { borderBottomColor: theme.border, borderBottomWidth: 1 }]}>
                   <View style={[styles.rankBadge, { backgroundColor: Colors.primaryDim }]}>
                     <Text style={[styles.rank, { color: Colors.primary }]}>#{i + 1}</Text>
@@ -256,7 +257,7 @@ export default function DashboardScreen() {
         {isLoading ? (
           [1, 2, 3].map((i) => <SkeletonCard key={i} style={{ marginBottom: Spacing[3] }} />)
         ) : stats?.recent_orders?.length ? (
-          stats.recent_orders.slice(0, 5).map((order) => (
+          stats.recent_orders.slice(0, 5).map((order: Order) => (
             <OrderCard
               key={order.id}
               order={order}

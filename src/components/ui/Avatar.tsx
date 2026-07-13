@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, StyleProp } from 'react-native';
 import { Image } from 'expo-image';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
@@ -8,7 +8,7 @@ interface AvatarProps {
   uri?: string | null;
   name?: string;
   size?: number;
-  style?: ViewStyle;
+  style?: StyleProp<any>;
 }
 
 const getInitials = (name: string) => {

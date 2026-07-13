@@ -169,4 +169,6 @@ export interface CreateProductPayload {
   type: 'physical' | 'digital' | 'service';
   status: 'active' | 'draft';
   images?: string[];
+  sku?: string;
+  variants?: any;
 }

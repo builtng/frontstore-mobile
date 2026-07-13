@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/SkeletonLoader';
 import { useToast } from '@/components/ui/Toast';
 import { merchantApi } from '@/services/merchantApi';
-import { OrderStatus } from '@/types/merchant';
+import { Order, OrderItem, OrderStatus } from '@/types/merchant';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Radius, Shadow, Spacing } from '@/constants/spacing';
@@ -33,10 +33,12 @@ export default function OrderDetailScreen() {
   const haptics = useHaptics();
   const queryClient = useQueryClient();
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading } = useQuery<Order>({
     queryKey: ['order', id],
-    queryFn: () => merchantApi.getOrder(Number(id)),
-    select: (r) => r.data,
+    queryFn: async () => {
+      const res = await merchantApi.getOrder(Number(id));
+      return res.data;
+    },
   });
 
   const { mutate: updateStatus, isPending } = useMutation({
@@ -143,7 +145,7 @@ export default function OrderDetailScreen() {
         {/* Order items */}
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Items Ordered</Text>
         <View style={[styles.itemsCard, { backgroundColor: theme.card }, Shadow.sm as any]}>
-          {order.items.map((item, i) => (
+          {order.items.map((item: OrderItem, i: number) => (
             <View key={item.id} style={[styles.itemRow, i < order.items.length - 1 && { borderBottomColor: theme.border, borderBottomWidth: 1 }]}>
               <Text style={[styles.itemName, { color: theme.text }]} numberOfLines={1}>
                 {item.product.name}
