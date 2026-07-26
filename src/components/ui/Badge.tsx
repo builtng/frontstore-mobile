@@ -15,14 +15,16 @@ interface BadgeProps {
   style?: ViewStyle;
 }
 
-const variantConfig: Record<BadgeVariant, { bg: string; text: string; dot: string }> = {
-  success: { bg: Colors.successLight, text: '#16A34A', dot: Colors.success },
-  warning: { bg: Colors.warningLight, text: '#D97706', dot: Colors.warning },
-  danger: { bg: Colors.dangerLight, text: '#DC2626', dot: Colors.danger },
-  info: { bg: Colors.infoLight, text: '#2563EB', dot: Colors.info },
-  primary: { bg: Colors.primaryDim, text: Colors.primary, dot: Colors.primary },
-  neutral: { bg: Colors.gray100, text: Colors.gray600, dot: Colors.gray400 },
-  teal: { bg: '#CCFDF5', text: '#0D9488', dot: Colors.teal },
+// Tinted-glass pills: a low-opacity wash of the accent color over the dark
+// surface, with the accent itself carrying the text so it still reads bright.
+const variantConfig: Record<BadgeVariant, { bg: string; border: string; text: string; dot: string }> = {
+  success: { bg: 'rgba(46, 204, 113, 0.16)', border: 'rgba(46, 204, 113, 0.3)', text: '#4ADE80', dot: Colors.success },
+  warning: { bg: 'rgba(241, 196, 15, 0.16)', border: 'rgba(241, 196, 15, 0.3)', text: '#FBBF24', dot: Colors.warning },
+  danger: { bg: 'rgba(231, 76, 60, 0.16)', border: 'rgba(231, 76, 60, 0.3)', text: '#F87171', dot: Colors.danger },
+  info: { bg: 'rgba(59, 130, 246, 0.16)', border: 'rgba(59, 130, 246, 0.3)', text: '#60A5FA', dot: Colors.info },
+  primary: { bg: Colors.glow.primarySoft, border: 'rgba(37, 211, 102, 0.32)', text: Colors.primaryLight, dot: Colors.primaryLight },
+  neutral: { bg: Colors.glass.bg, border: Colors.glass.border, text: Colors.dark.textSecondary, dot: Colors.dark.textTertiary },
+  teal: { bg: 'rgba(100, 255, 218, 0.14)', border: 'rgba(100, 255, 218, 0.3)', text: Colors.teal, dot: Colors.teal },
 };
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -38,7 +40,7 @@ export const Badge: React.FC<BadgeProps> = ({
     <View
       style={[
         styles.badge,
-        { backgroundColor: config.bg },
+        { backgroundColor: config.bg, borderColor: config.border },
         size === 'sm' && styles.sm,
         style,
       ]}
@@ -83,6 +85,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing[3],
     paddingVertical: Spacing[1],
     borderRadius: Radius.full,
+    borderWidth: 1,
     alignSelf: 'flex-start',
   },
   sm: {

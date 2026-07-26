@@ -190,7 +190,7 @@ export default function SignUpScreen() {
               Already have an account?{' '}
             </Text>
             <TouchableOpacity onPress={() => router.replace('/(auth)/sign-in')}>
-              <Text style={[styles.footerLink, { color: Colors.primary }]}>Sign In</Text>
+              <Text style={[styles.footerLink, { color: Colors.primaryLight }]}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

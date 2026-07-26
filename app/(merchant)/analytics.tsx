@@ -76,7 +76,7 @@ export default function AnalyticsScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
         contentContainerStyle={styles.scroll}
       >
         {/* Period selector */}
@@ -87,10 +87,10 @@ export default function AnalyticsScreen() {
               onPress={() => setPeriod(p.value)}
               style={[
                 styles.periodChip,
-                { backgroundColor: period === p.value ? Colors.primary : theme.card, borderColor: period === p.value ? Colors.primary : theme.border },
+                { backgroundColor: period === p.value ? Colors.primaryLight : theme.card, borderColor: period === p.value ? Colors.primaryLight : theme.border },
               ]}
             >
-              <Text style={[styles.periodLabel, { color: period === p.value ? Colors.white : theme.textSecondary }]}>
+              <Text style={[styles.periodLabel, { color: period === p.value ? Colors.navy : theme.textSecondary }]}>
                 {p.label}
               </Text>
             </TouchableOpacity>
@@ -126,8 +126,8 @@ export default function AnalyticsScreen() {
               <StatCard
                 label="Total Orders"
                 value={String(totalOrders)}
-                icon={<ShoppingBag size={20} color={Colors.primary} strokeWidth={2} />}
-                accentColor={Colors.primary}
+                icon={<ShoppingBag size={20} color={Colors.primaryLight} strokeWidth={2} />}
+                accentColor={Colors.primaryLight}
               />
             </View>
             <View style={styles.statsGrid}>
@@ -151,7 +151,7 @@ export default function AnalyticsScreen() {
         {!loading && totalOrders > 0 && (
           <View style={[styles.avgCard, { backgroundColor: theme.card }, Shadow.sm as any]}>
             <Text style={[styles.avgLabel, { color: theme.textSecondary }]}>Average Order Value</Text>
-            <Text style={[styles.avgValue, { color: Colors.primary }]}>
+            <Text style={[styles.avgValue, { color: Colors.primaryLight }]}>
               {formatCurrency(totalRevenue / totalOrders)}
             </Text>
           </View>
@@ -169,8 +169,8 @@ export default function AnalyticsScreen() {
                     key={i}
                     style={[styles.productRow, i < topProducts.length - 1 && { borderBottomColor: theme.border, borderBottomWidth: 1 }]}
                   >
-                    <View style={[styles.rankBadge, { backgroundColor: Colors.primaryDim }]}>
-                      <Text style={[styles.rank, { color: Colors.primary }]}>#{i + 1}</Text>
+                    <View style={[styles.rankBadge, { backgroundColor: Colors.glow.primarySoft }]}>
+                      <Text style={[styles.rank, { color: Colors.primaryLight }]}>#{i + 1}</Text>
                     </View>
                     <View style={styles.productInfo}>
                       <Text style={[styles.productName, { color: theme.text }]} numberOfLines={1}>
@@ -178,7 +178,7 @@ export default function AnalyticsScreen() {
                       </Text>
                       <View style={styles.barWrap}>
                         <View style={[styles.barTrack, { backgroundColor: theme.border }]}>
-                          <View style={[styles.barFill, { width: `${Math.min(revenueShare, 100)}%`, backgroundColor: Colors.primary }]} />
+                          <View style={[styles.barFill, { width: `${Math.min(revenueShare, 100)}%`, backgroundColor: Colors.primaryLight }]} />
                         </View>
                         <Text style={[styles.barPct, { color: theme.textTertiary }]}>
                           {revenueShare.toFixed(0)}%
@@ -186,7 +186,7 @@ export default function AnalyticsScreen() {
                       </View>
                     </View>
                     <View style={styles.productStats}>
-                      <Text style={[styles.productRevenue, { color: Colors.primary }]}>
+                      <Text style={[styles.productRevenue, { color: Colors.primaryLight }]}>
                         {formatCurrency(tp.revenue)}
                       </Text>
                       <Text style={[styles.productSold, { color: theme.textTertiary }]}>

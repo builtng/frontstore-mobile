@@ -45,7 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               contentFit="cover"
             />
           ) : (
-            <View style={[StyleSheet.absoluteFill, styles.imagePlaceholder, { backgroundColor: Colors.primaryDim }]} />
+            <View style={[StyleSheet.absoluteFill, styles.imagePlaceholder, { backgroundColor: Colors.dark.surface }]} />
           )}
           <View style={styles.gridBadgeRow}>
             <Badge
@@ -59,7 +59,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
             {product.name}
           </Text>
-          <Text style={[styles.price, { color: Colors.primary }]}>
+          <Text style={[styles.price, { color: Colors.primaryLight }]}>
             {formatCurrency(product.price)}
           </Text>
           {product.track_stock && (
@@ -91,7 +91,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             contentFit="cover"
           />
         ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.primaryDim }]} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.dark.surface }]} />
         )}
       </View>
 
@@ -105,7 +105,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </Text>
         )}
         <View style={styles.listBottom}>
-          <Text style={[styles.price, { color: Colors.primary }]}>
+          <Text style={[styles.price, { color: Colors.primaryLight }]}>
             {formatCurrency(product.price)}
           </Text>
           <Badge
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: Radius.md,
     overflow: 'hidden',
-    backgroundColor: Colors.gray100,
+    backgroundColor: Colors.dark.surface,
   },
   listInfo: {
     flex: 1,

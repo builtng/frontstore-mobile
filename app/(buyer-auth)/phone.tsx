@@ -192,10 +192,10 @@ export default function BuyerPhoneScreen() {
               haptics.selection();
             }}
           >
-            <Text style={[styles.pickerCode, { color: Colors.primary }]}>{dc.code}</Text>
+            <Text style={[styles.pickerCode, { color: Colors.primaryLight }]}>{dc.code}</Text>
             <Text style={[styles.pickerCountry, { color: theme.text }]}>{dc.country}</Text>
             {dialCode.code === dc.code && (
-              <Check size={16} color={Colors.primary} strokeWidth={2.5} />
+              <Check size={16} color={Colors.primaryLight} strokeWidth={2.5} />
             )}
           </TouchableOpacity>
         ))}

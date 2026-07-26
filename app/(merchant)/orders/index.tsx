@@ -58,8 +58,8 @@ export default function OrdersScreen() {
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Orders</Text>
         {data?.meta?.total !== undefined && (
-          <View style={[styles.countBadge, { backgroundColor: Colors.primaryDim }]}>
-            <Text style={[styles.countText, { color: Colors.primary }]}>{data.meta.total}</Text>
+          <View style={[styles.countBadge, { backgroundColor: Colors.glow.primarySoft }]}>
+            <Text style={[styles.countText, { color: Colors.primaryLight }]}>{data.meta.total}</Text>
           </View>
         )}
       </View>
@@ -86,15 +86,15 @@ export default function OrdersScreen() {
             style={[
               styles.filterChip,
               {
-                backgroundColor: activeStatus === f.value ? Colors.primary : theme.card,
-                borderColor: activeStatus === f.value ? Colors.primary : theme.border,
+                backgroundColor: activeStatus === f.value ? Colors.primaryLight : theme.card,
+                borderColor: activeStatus === f.value ? Colors.primaryLight : theme.border,
               },
             ]}
           >
             <Text
               style={[
                 styles.filterLabel,
-                { color: activeStatus === f.value ? Colors.white : theme.textSecondary },
+                { color: activeStatus === f.value ? Colors.navy : theme.textSecondary },
               ]}
             >
               {f.label}
@@ -114,7 +114,7 @@ export default function OrdersScreen() {
           keyExtractor={(item) => String(item.id)}
           estimatedItemSize={90}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
           renderItem={({ item }) => (
             <OrderCard order={item} onPress={() => router.push(`/(merchant)/orders/${item.id}` as any)} />
           )}

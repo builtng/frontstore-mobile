@@ -57,7 +57,7 @@ export default function BuyerOrdersScreen() {
           keyExtractor={(o) => String(o.id)}
           estimatedItemSize={100}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
           renderItem={({ item: order }) => (
             <TouchableOpacity
               style={[styles.orderCard, { backgroundColor: theme.card }, Shadow.sm as any]}
@@ -65,14 +65,14 @@ export default function BuyerOrdersScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.orderTop}>
-                <View style={[styles.orderIcon, { backgroundColor: Colors.primaryDim }]}>
-                  <Package size={18} color={Colors.primary} strokeWidth={2} />
+                <View style={[styles.orderIcon, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <Package size={18} color={Colors.primaryLight} strokeWidth={2} />
                 </View>
                 <View style={styles.orderInfo}>
                   <Text style={[styles.orderRef, { color: theme.text }]}>#{order.reference}</Text>
                   <Text style={[styles.orderStore, { color: theme.textSecondary }]}>{order.store?.name}</Text>
                 </View>
-                <Text style={[styles.orderTotal, { color: Colors.primary }]}>{formatCurrency(order.total)}</Text>
+                <Text style={[styles.orderTotal, { color: Colors.primaryLight }]}>{formatCurrency(order.total)}</Text>
               </View>
               <View style={styles.orderBottom}>
                 <Badge label={order.status.replace(/_/g, ' ')} variant={getOrderStatusBadge(order.status)} size="sm" dot />

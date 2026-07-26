@@ -122,22 +122,22 @@ export default function QRCodeScreen() {
             <Text style={[styles.storeName, { color: theme.text }]}>{user?.store?.name ?? 'My Store'}</Text>
             {user?.store?.is_verified && <CheckCircle size={14} color={Colors.white} fill={Colors.info} />}
           </View>
-          <Text style={[styles.qrUrl, { color: Colors.primary }]}>{storeUrl}</Text>
+          <Text style={[styles.qrUrl, { color: Colors.primaryLight }]}>{storeUrl}</Text>
         </View>
 
         {/* Action buttons */}
         <View style={styles.qrActions}>
-          <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.primaryDim }]} onPress={downloadQRCode}>
-            <Download size={18} color={Colors.primary} strokeWidth={2} />
-            <Text style={[styles.qrActionText, { color: Colors.primary }]}>Save</Text>
+          <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.glow.primarySoft }]} onPress={downloadQRCode}>
+            <Download size={18} color={Colors.primaryLight} strokeWidth={2} />
+            <Text style={[styles.qrActionText, { color: Colors.primaryLight }]}>Save</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.primaryDim }]} onPress={shareStoreLink}>
-            <Share2 size={18} color={Colors.primary} strokeWidth={2} />
-            <Text style={[styles.qrActionText, { color: Colors.primary }]}>Share</Text>
+          <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.glow.primarySoft }]} onPress={shareStoreLink}>
+            <Share2 size={18} color={Colors.primaryLight} strokeWidth={2} />
+            <Text style={[styles.qrActionText, { color: Colors.primaryLight }]}>Share</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.primaryDim }]} onPress={printQRCode}>
-            <Printer size={18} color={Colors.primary} strokeWidth={2} />
-            <Text style={[styles.qrActionText, { color: Colors.primary }]}>Print</Text>
+          <TouchableOpacity style={[styles.qrActionBtn, { backgroundColor: Colors.glow.primarySoft }]} onPress={printQRCode}>
+            <Printer size={18} color={Colors.primaryLight} strokeWidth={2} />
+            <Text style={[styles.qrActionText, { color: Colors.primaryLight }]}>Print</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -159,13 +159,13 @@ export default function SettingsScreen() {
               {logoUrl ? (
                 <Image source={{ uri: logoUrl }} style={styles.logo} contentFit="cover" />
               ) : (
-                <View style={[styles.logoPlaceholder, { backgroundColor: Colors.primaryDim }]}>
+                <View style={[styles.logoPlaceholder, { backgroundColor: Colors.glow.primarySoft }]}>
                   <Text style={styles.logoInitial}>
                     {(store?.name ?? user?.store?.name ?? 'S')[0]?.toUpperCase()}
                   </Text>
                 </View>
               )}
-              <View style={[styles.cameraBtn, { backgroundColor: Colors.primary }]}>
+              <View style={[styles.cameraBtn, { backgroundColor: Colors.primaryLight }]}>
                 <Camera size={14} color={Colors.white} />
               </View>
             </TouchableOpacity>
@@ -175,8 +175,8 @@ export default function SettingsScreen() {
               </Text>
               {storeUsername && (
                 <View style={styles.urlRow}>
-                  <Globe size={12} color={Colors.primary} />
-                  <Text style={[styles.logoUrl, { color: Colors.primary }]}>frontstore.ng/{storeUsername}</Text>
+                  <Globe size={12} color={Colors.primaryLight} />
+                  <Text style={[styles.logoUrl, { color: Colors.primaryLight }]}>frontstore.ng/{storeUsername}</Text>
                 </View>
               )}
               {store?.is_verified && (
@@ -192,7 +192,7 @@ export default function SettingsScreen() {
           <View style={styles.bannerSection}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Store Banner</Text>
             <TouchableOpacity
-              style={[styles.bannerWrapper, { backgroundColor: Colors.primaryDim, borderColor: theme.border }]}
+              style={[styles.bannerWrapper, { backgroundColor: Colors.glow.primarySoft, borderColor: theme.border }]}
               onPress={pickAndUploadBanner}
               activeOpacity={0.85}
               disabled={uploadingBanner}
@@ -201,12 +201,12 @@ export default function SettingsScreen() {
                 <Image source={{ uri: bannerUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
               ) : (
                 <View style={styles.bannerPlaceholder}>
-                  <ImagePlus size={28} color={Colors.primary} strokeWidth={1.5} />
-                  <Text style={[styles.bannerPlaceholderText, { color: Colors.primary }]}>Tap to upload banner</Text>
+                  <ImagePlus size={28} color={Colors.primaryLight} strokeWidth={1.5} />
+                  <Text style={[styles.bannerPlaceholderText, { color: Colors.primaryLight }]}>Tap to upload banner</Text>
                   <Text style={[styles.bannerPlaceholderSub, { color: theme.textTertiary }]}>Recommended: 1200 × 400px</Text>
                 </View>
               )}
-              <View style={[styles.bannerEditBtn, { backgroundColor: Colors.primary }]}>
+              <View style={[styles.bannerEditBtn, { backgroundColor: Colors.primaryLight }]}>
                 <Camera size={13} color={Colors.white} />
                 <Text style={styles.bannerEditText}>{uploadingBanner ? 'Uploading…' : bannerUrl ? 'Change' : 'Upload'}</Text>
               </View>
@@ -252,8 +252,8 @@ export default function SettingsScreen() {
                 render={({ field: { value } }) => (
                   <View style={[styles.currencyRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
                     <Text style={[styles.currencyLabel, { color: theme.text }]}>Currency</Text>
-                    <View style={[styles.currencyBadge, { backgroundColor: Colors.primaryDim }]}>
-                      <Text style={[styles.currencyValue, { color: Colors.primary }]}>{value}</Text>
+                    <View style={[styles.currencyBadge, { backgroundColor: Colors.glow.primarySoft }]}>
+                      <Text style={[styles.currencyValue, { color: Colors.primaryLight }]}>{value}</Text>
                     </View>
                   </View>
                 )}
@@ -283,7 +283,7 @@ export default function SettingsScreen() {
                     <Text style={[styles.urlLabel, { color: theme.textSecondary }]}>Store URL</Text>
                     <Badge label="Pro" variant="primary" size="sm" />
                   </View>
-                  <Text style={[styles.urlValue, { color: Colors.primary }]}>
+                  <Text style={[styles.urlValue, { color: Colors.primaryLight }]}>
                     frontstore.ng/{storeUsername ?? '—'}
                   </Text>
                   <Text style={[styles.urlNote, { color: theme.textTertiary }]}>
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   logoWrapper: { position: 'relative' },
   logo: { width: 80, height: 80, borderRadius: Radius.xl },
   logoPlaceholder: { width: 80, height: 80, borderRadius: Radius.xl, alignItems: 'center', justifyContent: 'center' },
-  logoInitial: { fontFamily: FontFamily.headingBold, fontSize: FontSize['3xl'], color: Colors.primary },
+  logoInitial: { fontFamily: FontFamily.headingBold, fontSize: FontSize['3xl'], color: Colors.primaryLight },
   cameraBtn: { position: 'absolute', bottom: 0, right: 0, width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: Colors.white },
   logoInfo: { flex: 1, gap: Spacing[1] },
   logoStoreName: { fontFamily: FontFamily.headingBold, fontSize: FontSize.xl, letterSpacing: -0.3 },

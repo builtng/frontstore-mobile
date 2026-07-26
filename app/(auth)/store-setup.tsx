@@ -100,7 +100,7 @@ export default function StoreSetupScreen() {
           </TouchableOpacity>
 
           <View style={styles.header}>
-            <Text style={[styles.step, { color: Colors.primary }]}>Step 2 of 8</Text>
+            <Text style={[styles.step, { color: Colors.primaryLight }]}>Step 2 of 8</Text>
             <Text style={[styles.title, { color: theme.text }]}>Name your store</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               This is how customers will find and remember you
@@ -144,8 +144,8 @@ export default function StoreSetupScreen() {
             />
 
             {/* Live preview */}
-            <Animated.View style={[styles.preview, { backgroundColor: Colors.primaryDim, borderRadius: Radius.lg }, previewStyle]}>
-              <Text style={[styles.previewLabel, { color: Colors.primary }]}>Your store URL</Text>
+            <Animated.View style={[styles.preview, { backgroundColor: Colors.glow.primarySoft, borderRadius: Radius.lg }, previewStyle]}>
+              <Text style={[styles.previewLabel, { color: Colors.primaryLight }]}>Your store URL</Text>
               <Text style={[styles.previewUrl, { color: Colors.primaryLight }]}>
                 frontstore.ng/<Text style={{ fontFamily: FontFamily.headingBold }}>{watchedUsername || 'your-store'}</Text>
               </Text>
@@ -179,7 +179,7 @@ export default function StoreSetupScreen() {
           title="Continue"
           onPress={handleSubmit(onSubmit)}
           size="xl"
-          icon={<ArrowRight size={20} color={Colors.white} />}
+          icon={<ArrowRight size={20} color={Colors.navy} />}
           iconPosition="right"
         />
       </View>
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   flex: { flex: 1 },
   progressTrack: { height: 3 },
-  progressFill: { height: 3, backgroundColor: Colors.primary, borderRadius: 2 },
+  progressFill: { height: 3, backgroundColor: Colors.primaryLight, borderRadius: 2 },
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: Spacing[4] },
   back: { marginTop: Spacing[4], marginBottom: Spacing[6], width: 40, height: 40, justifyContent: 'center' },
   header: { marginBottom: Spacing[7] },

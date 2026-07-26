@@ -91,8 +91,8 @@ export default function BuyerVerifyScreen() {
               <CheckCircle size={52} color={Colors.success} strokeWidth={1.5} />
             </Animated.View>
           ) : (
-            <View style={[styles.phoneTag, { backgroundColor: Colors.primaryDim }]}>
-              <Text style={[styles.phoneText, { color: Colors.primary }]}>{params.formatted}</Text>
+            <View style={[styles.phoneTag, { backgroundColor: Colors.glow.primarySoft }]}>
+              <Text style={[styles.phoneText, { color: Colors.primaryLight }]}>{params.formatted}</Text>
             </View>
           )}
           <Text style={[styles.title, { color: theme.text }]}>

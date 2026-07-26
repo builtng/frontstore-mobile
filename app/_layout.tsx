@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
   useFonts,
   Outfit_400Regular,
@@ -35,7 +35,6 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [showVideoSplash, setShowVideoSplash] = useState(true);
 
   const [fontsLoaded, fontError] = useFonts({
@@ -61,7 +60,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.flex}>
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <StatusBar style="light" />
           <Stack screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />

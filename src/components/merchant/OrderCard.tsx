@@ -33,8 +33,8 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onPress }) => {
     >
       <View style={styles.top}>
         <View style={styles.refRow}>
-          <View style={[styles.iconBg, { backgroundColor: Colors.primaryDim }]}>
-            <Package size={16} color={Colors.primary} strokeWidth={2} />
+          <View style={[styles.iconBg, { backgroundColor: Colors.glow.primarySoft }]}>
+            <Package size={16} color={Colors.primaryLight} strokeWidth={2} />
           </View>
           <View style={styles.refInfo}>
             <Text style={[styles.ref, { color: theme.text }]}>#{order.reference}</Text>

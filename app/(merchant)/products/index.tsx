@@ -96,15 +96,15 @@ export default function ProductsScreen() {
             style={[
               styles.filterChip,
               {
-                backgroundColor: activeStatus === f ? Colors.primary : theme.card,
-                borderColor: activeStatus === f ? Colors.primary : theme.border,
+                backgroundColor: activeStatus === f ? Colors.primaryLight : theme.card,
+                borderColor: activeStatus === f ? Colors.primaryLight : theme.border,
               },
             ]}
           >
             <Text
               style={[
                 styles.filterLabel,
-                { color: activeStatus === f ? Colors.white : theme.textSecondary },
+                { color: activeStatus === f ? Colors.navy : theme.textSecondary },
               ]}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -125,7 +125,7 @@ export default function ProductsScreen() {
           estimatedItemSize={viewMode === 'grid' ? 240 : 88}
           numColumns={viewMode === 'grid' ? 2 : 1}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
           renderItem={({ item }) => (
             <ProductCard
               product={item}

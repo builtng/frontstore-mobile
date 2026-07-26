@@ -71,7 +71,7 @@ export default function UploadLogoScreen() {
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <Text style={[styles.step, { color: Colors.primary }]}>Step 3 of 8</Text>
+          <Text style={[styles.step, { color: Colors.primaryLight }]}>Step 3 of 8</Text>
           <Text style={[styles.title, { color: theme.text }]}>Add your logo</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             A great logo builds trust with your customers
@@ -97,13 +97,13 @@ export default function UploadLogoScreen() {
               ) : (
                 <View style={styles.logoPlaceholder}>
                   <LinearGradient
-                    colors={[Colors.primaryDim, '#BBF7D0']}
+                    colors={[Colors.glow.primarySoft, '#BBF7D0']}
                     style={StyleSheet.absoluteFill}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                   />
                   <Text style={styles.logoInitial}>{getInitial()}</Text>
-                  <View style={[styles.uploadBadge, { backgroundColor: Colors.primary }]}>
+                  <View style={[styles.uploadBadge, { backgroundColor: Colors.primaryLight }]}>
                     <Upload size={14} color={Colors.white} />
                   </View>
                 </View>
@@ -124,7 +124,7 @@ export default function UploadLogoScreen() {
             'PNG or JPG format accepted',
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
-              <View style={[styles.tipDot, { backgroundColor: Colors.primary }]} />
+              <View style={[styles.tipDot, { backgroundColor: Colors.primaryLight }]} />
               <Text style={[styles.tipText, { color: theme.textSecondary }]}>{tip}</Text>
             </View>
           ))}
@@ -137,7 +137,7 @@ export default function UploadLogoScreen() {
           onPress={() => router.push('/(auth)/theme-select')}
           size="xl"
           variant={logoUri ? 'primary' : 'secondary'}
-          icon={<ArrowRight size={20} color={logoUri ? Colors.white : Colors.primary} />}
+          icon={<ArrowRight size={20} color={logoUri ? Colors.navy : Colors.primaryLight} />}
           iconPosition="right"
         />
       </View>
@@ -148,7 +148,7 @@ export default function UploadLogoScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   progressTrack: { height: 3 },
-  progressFill: { height: 3, backgroundColor: Colors.primary, borderRadius: 2 },
+  progressFill: { height: 3, backgroundColor: Colors.primaryLight, borderRadius: 2 },
   content: { flex: 1, paddingHorizontal: Spacing[6] },
   back: { marginTop: Spacing[4], marginBottom: Spacing[6], width: 40, height: 40, justifyContent: 'center' },
   header: { marginBottom: Spacing[8] },
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   logoInitial: {
     fontFamily: FontFamily.headingBold,
     fontSize: LOGO_SIZE * 0.45,
-    color: Colors.primary,
+    color: Colors.primaryLight,
   },
   uploadBadge: {
     position: 'absolute',

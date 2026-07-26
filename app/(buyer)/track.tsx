@@ -47,8 +47,8 @@ export default function TrackOrderScreen() {
       </View>
 
       <View style={styles.content}>
-        <View style={[styles.iconWrap, { backgroundColor: Colors.primaryDim }]}>
-          <Package size={36} color={Colors.primary} strokeWidth={1.5} />
+        <View style={[styles.iconWrap, { backgroundColor: Colors.glow.primarySoft }]}>
+          <Package size={36} color={Colors.primaryLight} strokeWidth={1.5} />
         </View>
         <Text style={[styles.heading, { color: theme.text }]}>Find your order</Text>
         <Text style={[styles.sub, { color: theme.textSecondary }]}>

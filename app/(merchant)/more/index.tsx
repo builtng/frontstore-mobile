@@ -59,19 +59,19 @@ export default function MoreScreen() {
       items: [
         { label: 'Customers', Icon: Users, route: '/(merchant)/customers', color: Colors.info },
         { label: 'Analytics', Icon: BarChart2, route: '/(merchant)/analytics', color: Colors.success },
-        { label: 'WhatsApp Inbox', Icon: MessageCircle, route: '/(merchant)/whatsapp-inbox', color: Colors.primary, badge: isPro ? undefined : 'Pro' },
-        { label: 'WhatsApp Order', Icon: MessageCircle, route: '/(merchant)/whatsapp-order', color: Colors.primary },
+        { label: 'WhatsApp Inbox', Icon: MessageCircle, route: '/(merchant)/whatsapp-inbox', color: Colors.primaryLight, badge: isPro ? undefined : 'Pro' },
+        { label: 'WhatsApp Order', Icon: MessageCircle, route: '/(merchant)/whatsapp-order', color: Colors.primaryLight },
         { label: 'WhatsApp Order Alerts', Icon: Bell, route: '/(merchant)/whatsapp-order-alerts', color: Colors.warning },
         { label: 'Discounts & Coupons', Icon: Tag, route: '/(merchant)/more/discounts', color: Colors.amber },
         { label: 'Wallet & Payouts', Icon: Wallet, route: '/(merchant)/more/wallet', color: '#0891B2' },
-        { label: 'Bookings', Icon: Calendar, route: '/(merchant)/more/bookings', color: Colors.primary },
+        { label: 'Bookings', Icon: Calendar, route: '/(merchant)/more/bookings', color: Colors.primaryLight },
       ],
     },
     {
       title: 'Account',
       items: [
         { label: 'Notifications', Icon: Bell, route: '/(merchant)/more/notifications', color: Colors.warning },
-        { label: 'Store Settings', Icon: Settings, route: '/(merchant)/more/settings', color: Colors.primary },
+        { label: 'Store Settings', Icon: Settings, route: '/(merchant)/more/settings', color: Colors.primaryLight },
         {
           label: 'Reviews',
           Icon: Star,
@@ -115,8 +115,8 @@ export default function MoreScreen() {
 
   const planConfig = {
     free: { label: 'Free Plan', color: Colors.gray600 },
-    pro_monthly: { label: 'Pro Plan', color: Colors.primary },
-    pro_yearly: { label: 'Pro Plan', color: Colors.primary },
+    pro_monthly: { label: 'Pro Plan', color: Colors.primaryLight },
+    pro_yearly: { label: 'Pro Plan', color: Colors.primaryLight },
   };
   const plan = planConfig[user?.plan ?? 'free'];
 
@@ -132,7 +132,7 @@ export default function MoreScreen() {
             <Text style={[styles.profileName, { color: theme.text }]}>{user?.name}</Text>
             <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>{user?.email}</Text>
             {user?.store?.username && (
-              <Text style={[styles.profileStore, { color: Colors.primary }]}>
+              <Text style={[styles.profileStore, { color: Colors.primaryLight }]}>
                 frontstore.ng/{user.store.username}
               </Text>
             )}
@@ -144,14 +144,14 @@ export default function MoreScreen() {
 
         {/* Upgrade banner (free users) */}
         {user?.plan === 'free' && (
-          <TouchableOpacity style={[styles.upgradeBanner, { backgroundColor: Colors.primaryDim }]} activeOpacity={0.85}>
+          <TouchableOpacity style={[styles.upgradeBanner, { backgroundColor: Colors.glow.primarySoft }]} activeOpacity={0.85}>
             <View>
-              <Text style={[styles.upgradeBannerTitle, { color: Colors.primary }]}>Upgrade to Pro</Text>
+              <Text style={[styles.upgradeBannerTitle, { color: Colors.primaryLight }]}>Upgrade to Pro</Text>
               <Text style={[styles.upgradeBannerSub, { color: Colors.primaryLight ?? Colors.primary }]}>
                 Unlock custom domain, broadcasts & advanced analytics
               </Text>
             </View>
-            <ChevronRight size={20} color={Colors.primary} />
+            <ChevronRight size={20} color={Colors.primaryLight} />
           </TouchableOpacity>
         )}
 

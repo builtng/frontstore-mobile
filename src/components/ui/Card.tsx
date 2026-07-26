@@ -4,21 +4,21 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { BlurView } from 'expo-blur';
 import { Colors } from '@/constants/colors';
 import { Radius, Shadow, Spacing } from '@/constants/spacing';
-import { useTheme } from '@/hooks/useTheme';
 
 interface CardProps {
   children: React.ReactNode;
   onPress?: () => void;
   style?: ViewStyle;
   padding?: number;
-  shadow?: 'none' | 'sm' | 'md' | 'lg';
+  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'glow' | 'glowTeal';
   radius?: number;
   bordered?: boolean;
+  variant?: 'glass' | 'solid';
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -28,9 +28,9 @@ export const Card: React.FC<CardProps> = ({
   padding = Spacing[5],
   shadow = 'md',
   radius = Radius.lg,
-  bordered = false,
+  bordered = true,
+  variant = 'glass',
 }) => {
-  const { theme } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -39,15 +39,26 @@ export const Card: React.FC<CardProps> = ({
 
   const containerStyle: ViewStyle[] = [
     styles.card,
-    { backgroundColor: theme.card, borderRadius: radius, padding },
+    { borderRadius: radius, padding },
+    variant === 'solid' && { backgroundColor: Colors.dark.card },
     shadow !== 'none' && (Shadow[shadow] as ViewStyle),
-    bordered && { borderWidth: 1, borderColor: theme.border },
+    bordered && { borderWidth: 1, borderColor: Colors.glass.border },
     style as ViewStyle,
   ].filter(Boolean) as ViewStyle[];
 
-  if (!onPress) {
-    return <Animated.View style={containerStyle}>{children}</Animated.View>;
-  }
+  const content = (
+    <Animated.View style={[animatedStyle, containerStyle]}>
+      {variant === 'glass' && (
+        <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+      )}
+      {variant === 'glass' && (
+        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass.bg }]} />
+      )}
+      {children}
+    </Animated.View>
+  );
+
+  if (!onPress) return content;
 
   const gesture = Gesture.Tap()
     .onBegin(() => {
@@ -61,11 +72,7 @@ export const Card: React.FC<CardProps> = ({
       scale.value = withSpring(1, { damping: 15, stiffness: 400 });
     });
 
-  return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={[animatedStyle, containerStyle]}>{children}</Animated.View>
-    </GestureDetector>
-  );
+  return <GestureDetector gesture={gesture}>{content}</GestureDetector>;
 };
 
 const styles = StyleSheet.create({

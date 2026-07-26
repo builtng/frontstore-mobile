@@ -113,9 +113,9 @@ export const OTPInput: React.FC<OTPInputProps> = ({
                     borderColor: error
                       ? Colors.danger
                       : isFocused
-                      ? Colors.primary
+                      ? Colors.primaryLight
                       : filled
-                      ? Colors.primaryDim
+                      ? 'rgba(37, 211, 102, 0.45)'
                       : theme.border,
                     borderWidth: isFocused || error ? 2 : 1.5,
                   },
@@ -147,7 +147,7 @@ export const OTPInput: React.FC<OTPInputProps> = ({
           </TouchableOpacity>
         ) : (
           <Text style={[styles.resendTimer, { color: theme.textTertiary }]}>
-            Resend in <Text style={{ color: Colors.primary }}>{countdown}s</Text>
+            Resend in <Text style={{ color: Colors.primaryLight }}>{countdown}s</Text>
           </Text>
         )}
       </View>
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   resendActive: {
     fontFamily: FontFamily.bodySemiBold,
     fontSize: FontSize.sm,
-    color: Colors.primary,
+    color: Colors.primaryLight,
     textDecorationLine: 'underline',
   },
 });

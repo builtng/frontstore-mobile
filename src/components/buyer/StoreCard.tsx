@@ -46,7 +46,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onPress, horizontal
           {store.logo_url ? (
             <Image source={{ uri: store.logo_url }} style={StyleSheet.absoluteFill} contentFit="cover" />
           ) : (
-            <View style={[StyleSheet.absoluteFill, styles.logoFallback, { backgroundColor: Colors.primaryDim }]}>
+            <View style={[StyleSheet.absoluteFill, styles.logoFallback, { backgroundColor: Colors.dark.surface }]}>
               <Text style={styles.logoEmoji}>{emoji}</Text>
             </View>
           )}
@@ -92,7 +92,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onPress, horizontal
         {store.logo_url ? (
           <Image source={{ uri: store.logo_url }} style={StyleSheet.absoluteFill} contentFit="cover" />
         ) : (
-          <View style={[StyleSheet.absoluteFill, styles.logoFallback, { backgroundColor: Colors.primaryDim }]}>
+          <View style={[StyleSheet.absoluteFill, styles.logoFallback, { backgroundColor: Colors.dark.surface }]}>
             <Text style={styles.logoEmojiLarge}>{emoji}</Text>
           </View>
         )}

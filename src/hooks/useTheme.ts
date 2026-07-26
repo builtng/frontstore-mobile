@@ -1,15 +1,12 @@
-import { useColorScheme } from 'react-native';
 import { Colors } from '@/constants/colors';
 
+// Frontstore's signature look is a single dark, glassy theme — always on,
+// regardless of the device's system appearance.
 export const useTheme = () => {
-  const scheme = useColorScheme() ?? 'light';
-  const isDark = scheme === 'dark';
-  const theme = isDark ? Colors.dark : Colors.light;
-
   return {
-    isDark,
-    scheme,
+    isDark: true as const,
+    scheme: 'dark' as const,
     colors: Colors,
-    theme,
+    theme: Colors.dark,
   };
 };

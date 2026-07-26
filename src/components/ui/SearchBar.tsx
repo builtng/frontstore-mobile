@@ -30,7 +30,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   const animatedBorder = useAnimatedStyle(() => ({
     borderColor: withTiming(
-      borderAnim.value === 1 ? Colors.primary : theme.border,
+      borderAnim.value === 1 ? Colors.primaryLight : theme.border,
       { duration: 200 }
     ),
     borderWidth: withTiming(borderAnim.value === 1 ? 2 : 1.5, { duration: 150 }),
@@ -45,7 +45,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         style,
       ]}
     >
-      <Search size={18} color={focused ? Colors.primary : theme.textTertiary} strokeWidth={2} />
+      <Search size={18} color={focused ? Colors.primaryLight : theme.textTertiary} strokeWidth={2} />
       <TextInput
         style={[styles.input, { color: theme.text, fontFamily: FontFamily.bodyRegular }]}
         value={value}
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: Colors.gray400,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },

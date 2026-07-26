@@ -70,7 +70,7 @@ export default function DashboardScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
         contentContainerStyle={styles.scroll}
       >
         {/* Header */}
@@ -85,22 +85,23 @@ export default function DashboardScreen() {
               <View style={styles.notifDot} />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.storeBtn, { backgroundColor: Colors.primaryDim }]}
+              style={[styles.storeBtn, { backgroundColor: Colors.glow.primarySoft }]}
               onPress={() => router.push('/(merchant)/more/settings')}
             >
               {user?.store?.logo_url ? (
                 <Image source={{ uri: user.store.logo_url }} style={styles.storeLogo} contentFit="cover" />
               ) : (
-                <Store size={18} color={Colors.primary} strokeWidth={2} />
+                <Store size={18} color={Colors.primaryLight} strokeWidth={2} />
               )}
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Revenue hero card */}
-        <View style={styles.heroCard}>
+        <View style={[styles.heroCardWrap, Shadow.glow as any]}>
+          <View style={styles.heroCard}>
           <LinearGradient
-            colors={isDark ? ['#022C22', '#128C7E'] : ['#128C7E', '#25D366']}
+            colors={['#022C22', '#0A3D2E', '#128C7E']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.heroGradient}
@@ -137,6 +138,7 @@ export default function DashboardScreen() {
               ))}
             </View>
           </LinearGradient>
+          </View>
         </View>
 
         {/* Nina proactive card */}
@@ -159,7 +161,7 @@ export default function DashboardScreen() {
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActions}>
           {[
-            { label: 'Add Product', icon: <Plus size={20} color={Colors.white} />, color: Colors.primary, route: '/(merchant)/products/add' },
+            { label: 'Add Product', icon: <Plus size={20} color={Colors.white} />, color: Colors.primaryLight, route: '/(merchant)/products/add' },
             { label: 'View Orders', icon: <ShoppingBag size={20} color={Colors.white} />, color: Colors.success, route: '/(merchant)/orders/index' },
             { label: 'Marketing', icon: <Megaphone size={20} color={Colors.white} />, color: '#D97706', route: '/(merchant)/marketing' },
             { label: 'Analytics', icon: <TrendingUp size={20} color={Colors.white} />, color: Colors.info, route: '/(merchant)/more/index' },
@@ -191,8 +193,8 @@ export default function DashboardScreen() {
               <StatCard
                 label="Total Orders"
                 value={String(stats?.total_orders ?? 0)}
-                icon={<ShoppingBag size={20} color={Colors.primary} strokeWidth={2} />}
-                accentColor={Colors.primary}
+                icon={<ShoppingBag size={20} color={Colors.primaryLight} strokeWidth={2} />}
+                accentColor={Colors.primaryLight}
               />
               <StatCard
                 label="Customers"
@@ -208,7 +210,7 @@ export default function DashboardScreen() {
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Revenue Trend</Text>
           <TouchableOpacity>
-            <Text style={[styles.sectionLink, { color: Colors.primary }]}>7 days</Text>
+            <Text style={[styles.sectionLink, { color: Colors.primaryLight }]}>7 days</Text>
           </TouchableOpacity>
         </View>
         <View style={[styles.chartCard, { backgroundColor: theme.card }, Shadow.md as any]}>
@@ -225,19 +227,19 @@ export default function DashboardScreen() {
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>Top Products</Text>
               <TouchableOpacity onPress={() => router.push('/(merchant)/products/index')}>
-                <Text style={[styles.sectionLink, { color: Colors.primary }]}>See all</Text>
+                <Text style={[styles.sectionLink, { color: Colors.primaryLight }]}>See all</Text>
               </TouchableOpacity>
             </View>
             <View style={[styles.topProductsCard, { backgroundColor: theme.card }, Shadow.sm as any]}>
               {stats!.top_products.slice(0, 4).map((tp: TopProduct, i: number) => (
                 <View key={i} style={[styles.topProductRow, i < 3 && { borderBottomColor: theme.border, borderBottomWidth: 1 }]}>
-                  <View style={[styles.rankBadge, { backgroundColor: Colors.primaryDim }]}>
-                    <Text style={[styles.rank, { color: Colors.primary }]}>#{i + 1}</Text>
+                  <View style={[styles.rankBadge, { backgroundColor: Colors.glow.primarySoft }]}>
+                    <Text style={[styles.rank, { color: Colors.primaryLight }]}>#{i + 1}</Text>
                   </View>
                   <Text style={[styles.productName, { color: theme.text }]} numberOfLines={1}>
                     {tp.product.name}
                   </Text>
-                  <Text style={[styles.productRevenue, { color: Colors.primary }]}>
+                  <Text style={[styles.productRevenue, { color: Colors.primaryLight }]}>
                     {formatCurrency(tp.revenue)}
                   </Text>
                 </View>
@@ -250,7 +252,7 @@ export default function DashboardScreen() {
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Orders</Text>
           <TouchableOpacity onPress={() => router.push('/(merchant)/orders/index')}>
-            <Text style={[styles.sectionLink, { color: Colors.primary }]}>View all</Text>
+            <Text style={[styles.sectionLink, { color: Colors.primaryLight }]}>View all</Text>
           </TouchableOpacity>
         </View>
 
@@ -287,8 +289,8 @@ export default function DashboardScreen() {
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.qrCardLeft}>
-                <View style={[styles.qrIconWrap, { backgroundColor: Colors.primaryDim }]}>
-                  <QrCode size={24} color={Colors.primary} strokeWidth={2} />
+                <View style={[styles.qrIconWrap, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <QrCode size={24} color={Colors.primaryLight} strokeWidth={2} />
                 </View>
                 <View style={styles.qrCardInfo}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing[2] }}>
@@ -330,20 +332,22 @@ export default function DashboardScreen() {
       </ScrollView>
 
       {/* FAB */}
-      <TouchableOpacity
-        style={[styles.fab, Shadow.xl as any]}
-        onPress={() => router.push('/(merchant)/products/add')}
-        activeOpacity={0.85}
-      >
-        <LinearGradient
-          colors={[Colors.primary, Colors.primaryLight ?? '#25D366']}
-          style={styles.fabGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+      <View style={[styles.fabShadowWrap, Shadow.glow as any]}>
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/(merchant)/products/add')}
+          activeOpacity={0.85}
         >
-          <Plus size={26} color={Colors.white} strokeWidth={2.5} />
-        </LinearGradient>
-      </TouchableOpacity>
+          <LinearGradient
+            colors={[Colors.primary, Colors.primaryLight]}
+            style={styles.fabGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Plus size={26} color={Colors.navy} strokeWidth={2.5} />
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -367,11 +371,12 @@ const styles = StyleSheet.create({
   storeBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   storeLogo: { width: 42, height: 42 },
 
-  heroCard: { borderRadius: Radius.xl, overflow: 'hidden', marginBottom: Spacing[6] },
+  heroCardWrap: { borderRadius: Radius.xl, marginBottom: Spacing[6] },
+  heroCard: { borderRadius: Radius.xl, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(37, 211, 102, 0.25)' },
   heroGradient: { padding: Spacing[5], gap: Spacing[5] },
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   heroLabel: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.sm, color: 'rgba(255,255,255,0.7)' },
-  heroAmount: { fontFamily: FontFamily.headingBold, fontSize: FontSize['4xl'], color: Colors.white, letterSpacing: -1, marginTop: 4 },
+  heroAmount: { fontFamily: FontFamily.headingBold, fontSize: FontSize['5xl'], color: Colors.white, letterSpacing: -1.5, marginTop: 4, fontVariant: ['tabular-nums'] },
   heroBtn: { flexDirection: 'row', alignItems: 'center', gap: Spacing[2], backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: Spacing[3], paddingVertical: Spacing[2], borderRadius: Radius.full },
   heroBtnText: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm, color: Colors.white },
   heroStats: { flexDirection: 'row', justifyContent: 'space-between' },
@@ -418,10 +423,13 @@ const styles = StyleSheet.create({
   qrCardTitle: { fontFamily: FontFamily.headingSemiBold, fontSize: FontSize.base },
   qrCardSub: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs, marginTop: 2 },
 
-  fab: {
+  fabShadowWrap: {
     position: 'absolute',
     bottom: 100,
     right: Spacing[6],
+    borderRadius: 29,
+  },
+  fab: {
     width: 58,
     height: 58,
     borderRadius: 29,

@@ -72,8 +72,8 @@ export default function AccountScreen() {
                   style={[styles.menuItem, i < 1 && { borderBottomColor: theme.border, borderBottomWidth: 1 }]}
                   onPress={() => router.push(item.route as any)}
                 >
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.primaryDim }]}>
-                    <item.Icon size={18} color={Colors.primary} strokeWidth={2} />
+                  <View style={[styles.menuIcon, { backgroundColor: Colors.glow.primarySoft }]}>
+                    <item.Icon size={18} color={Colors.primaryLight} strokeWidth={2} />
                   </View>
                   <Text style={[styles.menuLabel, { color: theme.text }]}>{item.label}</Text>
                   <ChevronRight size={16} color={theme.textTertiary} />
@@ -93,8 +93,8 @@ export default function AccountScreen() {
           <>
             {/* Guest state */}
             <View style={[styles.guestCard, { backgroundColor: theme.card }, Shadow.md as any]}>
-              <View style={[styles.guestIcon, { backgroundColor: Colors.primaryDim }]}>
-                <User size={36} color={Colors.primary} strokeWidth={1.5} />
+              <View style={[styles.guestIcon, { backgroundColor: Colors.glow.primarySoft }]}>
+                <User size={36} color={Colors.primaryLight} strokeWidth={1.5} />
               </View>
               <Text style={[styles.guestTitle, { color: theme.text }]}>Sign in to your account</Text>
               <Text style={[styles.guestDesc, { color: theme.textSecondary }]}>
@@ -116,10 +116,10 @@ export default function AccountScreen() {
         )}
 
         {/* Merchant section — always visible */}
-        <View style={[styles.merchantSection, { backgroundColor: theme.card, borderColor: Colors.primaryDim }]}>
+        <View style={[styles.merchantSection, { backgroundColor: theme.card, borderColor: Colors.glow.primarySoft }]}>
           <View style={styles.merchantSectionHeader}>
-            <View style={[styles.merchantIcon, { backgroundColor: Colors.primaryDim }]}>
-              <Store size={22} color={Colors.primary} strokeWidth={2} />
+            <View style={[styles.merchantIcon, { backgroundColor: Colors.glow.primarySoft }]}>
+              <Store size={22} color={Colors.primaryLight} strokeWidth={2} />
             </View>
             <View style={styles.merchantSectionInfo}>
               <Text style={[styles.merchantSectionTitle, { color: theme.text }]}>

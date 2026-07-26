@@ -72,8 +72,8 @@ export default function BookingsScreen() {
           <ArrowLeft size={22} color={theme.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Bookings</Text>
-        <TouchableOpacity style={[styles.addBtn, { backgroundColor: Colors.primaryDim }]}>
-          <Plus size={18} color={Colors.primary} />
+        <TouchableOpacity style={[styles.addBtn, { backgroundColor: Colors.glow.primarySoft }]}>
+          <Plus size={18} color={Colors.primaryLight} />
         </TouchableOpacity>
       </View>
 
@@ -83,9 +83,9 @@ export default function BookingsScreen() {
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab)}
-            style={[styles.tab, activeTab === tab && { backgroundColor: Colors.primary }]}
+            style={[styles.tab, activeTab === tab && { backgroundColor: Colors.primaryLight }]}
           >
-            <Text style={[styles.tabLabel, { color: activeTab === tab ? Colors.white : theme.textSecondary }]}>
+            <Text style={[styles.tabLabel, { color: activeTab === tab ? Colors.navy : theme.textSecondary }]}>
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -100,10 +100,10 @@ export default function BookingsScreen() {
             onPress={() => setActiveStatus(f)}
             style={[
               styles.filterChip,
-              { backgroundColor: activeStatus === f ? Colors.primary : theme.card, borderColor: activeStatus === f ? Colors.primary : theme.border },
+              { backgroundColor: activeStatus === f ? Colors.primaryLight : theme.card, borderColor: activeStatus === f ? Colors.primaryLight : theme.border },
             ]}
           >
-            <Text style={[styles.filterLabel, { color: activeStatus === f ? Colors.white : theme.textSecondary }]}>
+            <Text style={[styles.filterLabel, { color: activeStatus === f ? Colors.navy : theme.textSecondary }]}>
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -111,7 +111,7 @@ export default function BookingsScreen() {
       </ScrollView>
 
       <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
@@ -121,8 +121,8 @@ export default function BookingsScreen() {
           (bookings as Booking[]).map((booking) => (
             <View key={booking.id} style={[styles.bookingCard, { backgroundColor: theme.card }, Shadow.sm as any]}>
               <View style={styles.bookingTop}>
-                <View style={[styles.bookingIcon, { backgroundColor: Colors.primaryDim }]}>
-                  <CalendarDays size={18} color={Colors.primary} strokeWidth={2} />
+                <View style={[styles.bookingIcon, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <CalendarDays size={18} color={Colors.primaryLight} strokeWidth={2} />
                 </View>
                 <View style={styles.bookingInfo}>
                   <Text style={[styles.bookingRef, { color: theme.text }]}>#{booking.booking_reference}</Text>
@@ -163,7 +163,7 @@ export default function BookingsScreen() {
                     onPress={() => updateStatus({ id: booking.id, status: 'confirmed' })}
                     size="sm"
                     isLoading={isPending}
-                    icon={<Check size={14} color={Colors.white} />}
+                    icon={<Check size={14} color={Colors.navy} />}
                     style={styles.confirmBtn}
                   />
                   <Button

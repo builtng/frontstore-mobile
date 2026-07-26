@@ -103,7 +103,7 @@ export default function DiscountsScreen() {
         </TouchableOpacity>
         <Text style={[styles.title, { color: theme.text }]}>Discounts</Text>
         <TouchableOpacity
-          style={[styles.addBtn, { backgroundColor: Colors.primary }]}
+          style={[styles.addBtn, { backgroundColor: Colors.primaryLight }]}
           onPress={() => setSheetOpen(true)}
         >
           <Plus size={20} color={Colors.white} strokeWidth={2.5} />
@@ -117,15 +117,15 @@ export default function DiscountsScreen() {
       ) : discounts.length ? (
         <ScrollView
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await refetch(); setRefreshing(false); }} tintColor={Colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await refetch(); setRefreshing(false); }} tintColor={Colors.primaryLight} />}
           showsVerticalScrollIndicator={false}
         >
           {discounts.map((d: any) => (
             <View key={d.id} style={[styles.card, { backgroundColor: theme.card }, Shadow.sm as any]}>
               <View style={styles.cardTop}>
-                <View style={[styles.codeTag, { backgroundColor: Colors.primaryDim }]}>
-                  <Tag size={14} color={Colors.primary} />
-                  <Text style={[styles.code, { color: Colors.primary }]}>{d.code}</Text>
+                <View style={[styles.codeTag, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <Tag size={14} color={Colors.primaryLight} />
+                  <Text style={[styles.code, { color: Colors.primaryLight }]}>{d.code}</Text>
                 </View>
                 <Badge
                   label={d.is_active ? 'Active' : 'Inactive'}
@@ -170,8 +170,8 @@ export default function DiscountsScreen() {
                 <Switch
                   value={d.is_active}
                   onValueChange={() => toggleDiscount(d.id)}
-                  trackColor={{ false: theme.border, true: Colors.primaryDim }}
-                  thumbColor={d.is_active ? Colors.primary : Colors.gray400}
+                  trackColor={{ false: theme.border, true: Colors.glow.primarySoft }}
+                  thumbColor={d.is_active ? Colors.primaryLight : Colors.gray400}
                 />
                 <TouchableOpacity
                   style={[styles.deleteBtn, { backgroundColor: Colors.dangerLight }]}
@@ -227,11 +227,11 @@ export default function DiscountsScreen() {
                   onPress={() => setDiscountType(value as any)}
                   style={[
                     styles.typeChip,
-                    { backgroundColor: discountType === value ? Colors.primaryDim : theme.card, borderColor: discountType === value ? Colors.primary : theme.border },
+                    { backgroundColor: discountType === value ? Colors.glow.primarySoft : theme.card, borderColor: discountType === value ? Colors.primaryLight : theme.border },
                   ]}
                 >
-                  <Icon size={16} color={discountType === value ? Colors.primary : theme.textSecondary} strokeWidth={2} />
-                  <Text style={[styles.typeChipText, { color: discountType === value ? Colors.primary : theme.textSecondary }]}>
+                  <Icon size={16} color={discountType === value ? Colors.primaryLight : theme.textSecondary} strokeWidth={2} />
+                  <Text style={[styles.typeChipText, { color: discountType === value ? Colors.primaryLight : theme.textSecondary }]}>
                     {label}
                   </Text>
                 </TouchableOpacity>

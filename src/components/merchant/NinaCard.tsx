@@ -57,7 +57,7 @@ export function NinaCard({ merchantName, hint }: NinaCardProps) {
 
           <View style={styles.body}>
             <View style={styles.nameRow}>
-              <Text style={[styles.name, { color: Colors.primary }]}>Nina</Text>
+              <Text style={[styles.name, { color: Colors.primaryLight }]}>Nina</Text>
               <View style={styles.liveDot} />
             </View>
             <Text style={[styles.hint, { color: theme.text }]} numberOfLines={2}>
@@ -65,8 +65,8 @@ export function NinaCard({ merchantName, hint }: NinaCardProps) {
             </Text>
           </View>
 
-          <View style={[styles.arrowWrap, { backgroundColor: Colors.primary + '18' }]}>
-            <ArrowRight size={16} color={Colors.primary} strokeWidth={2.5} />
+          <View style={[styles.arrowWrap, { backgroundColor: Colors.glow.primarySoft }]}>
+            <ArrowRight size={16} color={Colors.primaryLight} strokeWidth={2.5} />
           </View>
         </View>
       </LinearGradient>

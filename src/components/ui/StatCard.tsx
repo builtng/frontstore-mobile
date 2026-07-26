@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { TrendingUp, TrendingDown } from 'lucide-react-native';
+import { Card } from './Card';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
-import { Radius, Shadow, Spacing } from '@/constants/spacing';
-import { useTheme } from '@/hooks/useTheme';
+import { Radius, Spacing } from '@/constants/spacing';
 
 interface StatCardProps {
   label: string;
@@ -20,62 +20,55 @@ export const StatCard: React.FC<StatCardProps> = ({
   value,
   change,
   icon,
-  accentColor = Colors.primary,
+  accentColor = Colors.primaryLight,
   compact = false,
 }) => {
-  const { theme } = useTheme();
   const isPositive = (change ?? 0) >= 0;
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: theme.card },
-        Shadow.md,
-        compact && styles.compact,
-      ]}
+    <Card
+      style={StyleSheet.flatten([styles.card, compact && styles.compact])}
+      padding={compact ? Spacing[4] : Spacing[5]}
+      shadow="sm"
     >
-      <View style={[styles.iconWrapper, { backgroundColor: accentColor + '18' }]}>
+      <View style={[styles.iconWrapper, { backgroundColor: accentColor + '20', borderColor: accentColor + '35' }]}>
         {icon}
       </View>
 
-      <Text style={[styles.value, { color: theme.text }, compact && styles.valueCompact]}>
+      <Text style={[styles.value, { color: Colors.dark.text }, compact && styles.valueCompact]}>
         {value}
       </Text>
 
-      <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
+      <Text style={[styles.label, { color: Colors.dark.textSecondary }]}>{label}</Text>
 
       {change !== undefined && (
         <View style={styles.changeRow}>
           {isPositive ? (
-            <TrendingUp size={12} color={Colors.success} strokeWidth={2.5} />
+            <TrendingUp size={12} color="#4ADE80" strokeWidth={2.5} />
           ) : (
-            <TrendingDown size={12} color={Colors.danger} strokeWidth={2.5} />
+            <TrendingDown size={12} color="#F87171" strokeWidth={2.5} />
           )}
           <Text
             style={[
               styles.changeText,
-              { color: isPositive ? Colors.success : Colors.danger },
+              { color: isPositive ? '#4ADE80' : '#F87171' },
             ]}
           >
             {Math.abs(change)}%
           </Text>
         </View>
       )}
-    </View>
+    </Card>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    padding: Spacing[5],
-    borderRadius: Radius.lg,
     minHeight: 120,
   },
   compact: {
     minHeight: 100,
-    padding: Spacing[4],
   },
   iconWrapper: {
     width: 40,
@@ -84,6 +77,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing[3],
+    borderWidth: 1,
   },
   value: {
     fontFamily: FontFamily.headingBold,

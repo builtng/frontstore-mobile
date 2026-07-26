@@ -19,7 +19,7 @@ const OPTIONS: {
   Icon: any;
   color: string;
 }[] = [
-  { id: 'pickup', label: 'Pickup', desc: 'Customers collect from your location', Icon: MapPin, color: Colors.primary },
+  { id: 'pickup', label: 'Pickup', desc: 'Customers collect from your location', Icon: MapPin, color: Colors.primaryLight },
   { id: 'delivery', label: 'Local Delivery', desc: 'You deliver to customers in your area', Icon: Truck, color: Colors.success },
   { id: 'shipping', label: 'Nationwide Shipping', desc: 'Ship via courier services', Icon: Globe, color: Colors.info },
   { id: 'digital', label: 'Digital Delivery', desc: 'Instant download or email delivery', Icon: Download, color: Colors.amber },
@@ -43,7 +43,7 @@ export default function DeliverySetupScreen() {
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <Text style={[styles.step, { color: Colors.primary }]}>Step 6 of 8</Text>
+          <Text style={[styles.step, { color: Colors.primaryLight }]}>Step 6 of 8</Text>
           <Text style={[styles.title, { color: theme.text }]}>How will you deliver?</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Select all delivery methods you offer. You can change this later.
@@ -99,7 +99,7 @@ export default function DeliverySetupScreen() {
           onPress={() => router.push('/(auth)/add-product')}
           disabled={deliveryOptions.length === 0}
           size="xl"
-          icon={<ArrowRight size={20} color={Colors.white} />}
+          icon={<ArrowRight size={20} color={Colors.navy} />}
           iconPosition="right"
         />
       </View>
@@ -110,7 +110,7 @@ export default function DeliverySetupScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   progressTrack: { height: 3 },
-  progressFill: { height: 3, backgroundColor: Colors.primary, borderRadius: 2 },
+  progressFill: { height: 3, backgroundColor: Colors.primaryLight, borderRadius: 2 },
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: Spacing[4] },
   back: { marginTop: Spacing[4], marginBottom: Spacing[6], width: 40, height: 40, justifyContent: 'center' },
   header: { marginBottom: Spacing[6] },

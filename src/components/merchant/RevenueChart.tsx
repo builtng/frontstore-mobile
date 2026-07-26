@@ -78,8 +78,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, title = 'Reven
       <Svg width={chartWidth + PADDING.left + PADDING.right} height={totalHeight}>
         <Defs>
           <LinearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={Colors.primary} stopOpacity="0.25" />
-            <Stop offset="1" stopColor={Colors.primary} stopOpacity="0" />
+            <Stop offset="0" stopColor={Colors.primaryLight} stopOpacity="0.35" />
+            <Stop offset="1" stopColor={Colors.primaryLight} stopOpacity="0" />
           </LinearGradient>
         </Defs>
 
@@ -100,7 +100,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, title = 'Reven
         <Path d={fillPath} fill="url(#grad)" />
 
         {/* Line */}
-        <Path d={path} stroke={Colors.primary} strokeWidth={2.5} fill="none" strokeLinecap="round" />
+        <Path d={path} stroke={Colors.primaryLight} strokeWidth={2.5} fill="none" strokeLinecap="round" />
 
         {/* Labels */}
         {labels.map((l, i) => (

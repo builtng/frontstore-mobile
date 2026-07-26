@@ -130,7 +130,7 @@ export default function AddProductScreen() {
           </TouchableOpacity>
 
           <View style={styles.header}>
-            <Text style={[styles.step, { color: Colors.primary }]}>Step 7 of 8</Text>
+            <Text style={[styles.step, { color: Colors.primaryLight }]}>Step 7 of 8</Text>
             <Text style={[styles.title, { color: theme.text }]}>Add your first product</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Don't worry — you can add more products from your dashboard
@@ -218,8 +218,8 @@ export default function AddProductScreen() {
             <Switch
               value={trackStock}
               onValueChange={setTrackStock}
-              trackColor={{ false: theme.border, true: Colors.primaryDim }}
-              thumbColor={trackStock ? Colors.primary : Colors.gray400}
+              trackColor={{ false: theme.border, true: Colors.glow.primarySoft }}
+              thumbColor={trackStock ? Colors.primaryLight : Colors.gray400}
             />
           </View>
 
@@ -243,11 +243,11 @@ export default function AddProductScreen() {
           <View style={styles.descHeader}>
             <Text style={[styles.descLabel, { color: theme.textSecondary }]}>Description</Text>
             <TouchableOpacity
-              style={[styles.aiBtn, { backgroundColor: Colors.primaryDim }]}
+              style={[styles.aiBtn, { backgroundColor: Colors.glow.primarySoft }]}
               onPress={generateDescription}
             >
-              <Sparkles size={14} color={Colors.primary} />
-              <Text style={[styles.aiBtnText, { color: Colors.primary }]}>
+              <Sparkles size={14} color={Colors.primaryLight} />
+              <Text style={[styles.aiBtnText, { color: Colors.primaryLight }]}>
                 {isGenerating ? 'Generating...' : 'AI Generate'}
               </Text>
             </TouchableOpacity>
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   flex: { flex: 1 },
   progressTrack: { height: 3 },
-  progressFill: { height: 3, backgroundColor: Colors.primary, borderRadius: 2 },
+  progressFill: { height: 3, backgroundColor: Colors.primaryLight, borderRadius: 2 },
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: Spacing[4] },
   back: { marginTop: Spacing[4], marginBottom: Spacing[6], width: 40, height: 40, justifyContent: 'center' },
   header: { marginBottom: Spacing[6] },

@@ -17,7 +17,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { format } from 'date-fns';
 
 const NOTIF_ICONS: Record<string, { Icon: any; color: string }> = {
-  order: { Icon: ShoppingBag, color: Colors.primary },
+  order: { Icon: ShoppingBag, color: Colors.primaryLight },
   payment: { Icon: CreditCard, color: Colors.success },
   product: { Icon: Package, color: Colors.warning },
   customer: { Icon: Users, color: Colors.info },
@@ -58,7 +58,7 @@ export default function NotificationsScreen() {
         <Text style={[styles.title, { color: theme.text }]}>Notifications</Text>
         {unreadCount > 0 ? (
           <TouchableOpacity onPress={() => markAllRead()}>
-            <CheckCheck size={20} color={Colors.primary} />
+            <CheckCheck size={20} color={Colors.primaryLight} />
           </TouchableOpacity>
         ) : (
           <View style={{ width: 20 }} />
@@ -66,13 +66,13 @@ export default function NotificationsScreen() {
       </View>
 
       {unreadCount > 0 && (
-        <View style={[styles.unreadBanner, { backgroundColor: Colors.primaryDim }]}>
-          <Bell size={14} color={Colors.primary} />
-          <Text style={[styles.unreadText, { color: Colors.primary }]}>
+        <View style={[styles.unreadBanner, { backgroundColor: Colors.glow.primarySoft }]}>
+          <Bell size={14} color={Colors.primaryLight} />
+          <Text style={[styles.unreadText, { color: Colors.primaryLight }]}>
             {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
           </Text>
           <TouchableOpacity onPress={() => markAllRead()}>
-            <Text style={[styles.markAllText, { color: Colors.primary }]}>Mark all read</Text>
+            <Text style={[styles.markAllText, { color: Colors.primaryLight }]}>Mark all read</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -85,7 +85,7 @@ export default function NotificationsScreen() {
         <ScrollView
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await refetch(); setRefreshing(false); }} tintColor={Colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await refetch(); setRefreshing(false); }} tintColor={Colors.primaryLight} />}
         >
           {notifications.map((notif: any) => {
             const { Icon, color } = NOTIF_ICONS[notif.type] ?? NOTIF_ICONS.default;
@@ -94,7 +94,7 @@ export default function NotificationsScreen() {
                 key={notif.id}
                 style={[
                   styles.notifCard,
-                  { backgroundColor: notif.is_read ? theme.card : Colors.primaryDim + '60' },
+                  { backgroundColor: notif.is_read ? theme.card : Colors.glow.primarySoft + '60' },
                   Shadow.sm as any,
                 ]}
                 onPress={() => {
@@ -117,7 +117,7 @@ export default function NotificationsScreen() {
                     {format(new Date(notif.created_at), 'MMM d · h:mm a')}
                   </Text>
                 </View>
-                {!notif.is_read && <View style={[styles.unreadDot, { backgroundColor: Colors.primary }]} />}
+                {!notif.is_read && <View style={[styles.unreadDot, { backgroundColor: Colors.primaryLight }]} />}
               </TouchableOpacity>
             );
           })}

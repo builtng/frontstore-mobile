@@ -158,11 +158,11 @@ export default function OtpLoginScreen() {
 
           {/* Header */}
           <Animated.View style={[styles.header, titleStyle]}>
-            <View style={[styles.iconWrap, { backgroundColor: Colors.primary + '20' }]}>
+            <View style={[styles.iconWrap, { backgroundColor: Colors.primaryLight + '20' }]}>
               {method === 'phone' ? (
-                <Phone size={28} color={Colors.primary} strokeWidth={2} />
+                <Phone size={28} color={Colors.primaryLight} strokeWidth={2} />
               ) : (
-                <Mail size={28} color={Colors.primary} strokeWidth={2} />
+                <Mail size={28} color={Colors.primaryLight} strokeWidth={2} />
               )}
             </View>
             <Text style={[styles.title, { color: theme.text }]}>
@@ -183,8 +183,8 @@ export default function OtpLoginScreen() {
               onPress={() => toggleMethod('phone')}
               activeOpacity={0.8}
             >
-              <MessageSquare size={14} color={method === 'phone' ? Colors.primary : theme.textSecondary} />
-              <Text style={[styles.switcherLabel, { color: method === 'phone' ? Colors.primary : theme.textSecondary }]}>
+              <MessageSquare size={14} color={method === 'phone' ? Colors.primaryLight : theme.textSecondary} />
+              <Text style={[styles.switcherLabel, { color: method === 'phone' ? Colors.primaryLight : theme.textSecondary }]}>
                 WhatsApp Phone
               </Text>
             </TouchableOpacity>
@@ -197,8 +197,8 @@ export default function OtpLoginScreen() {
               onPress={() => toggleMethod('email')}
               activeOpacity={0.8}
             >
-              <Mail size={14} color={method === 'email' ? Colors.primary : theme.textSecondary} />
-              <Text style={[styles.switcherLabel, { color: method === 'email' ? Colors.primary : theme.textSecondary }]}>
+              <Mail size={14} color={method === 'email' ? Colors.primaryLight : theme.textSecondary} />
+              <Text style={[styles.switcherLabel, { color: method === 'email' ? Colors.primaryLight : theme.textSecondary }]}>
                 Email Address
               </Text>
             </TouchableOpacity>
@@ -317,10 +317,10 @@ export default function OtpLoginScreen() {
               haptics.selection();
             }}
           >
-            <Text style={[styles.pickerCode, { color: Colors.primary }]}>{dc.code}</Text>
+            <Text style={[styles.pickerCode, { color: Colors.primaryLight }]}>{dc.code}</Text>
             <Text style={[styles.pickerCountry, { color: theme.text }]}>{dc.country}</Text>
             {dialCode.code === dc.code && (
-              <Check size={16} color={Colors.primary} strokeWidth={2.5} />
+              <Check size={16} color={Colors.primaryLight} strokeWidth={2.5} />
             )}
           </TouchableOpacity>
         ))}

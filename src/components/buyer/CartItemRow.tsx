@@ -43,7 +43,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
         {item.productImage ? (
           <Image source={{ uri: item.productImage }} style={StyleSheet.absoluteFill} contentFit="cover" />
         ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.primaryDim, alignItems: 'center', justifyContent: 'center' }]}>
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.dark.surface, alignItems: 'center', justifyContent: 'center' }]}>
             <Text style={{ fontSize: 20 }}>🛍️</Text>
           </View>
         )}
@@ -52,7 +52,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
       <View style={styles.info}>
         <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>{item.productName}</Text>
         <Text style={[styles.store, { color: theme.textTertiary }]}>{item.storeName}</Text>
-        <Text style={[styles.price, { color: Colors.primary }]}>{formatCurrency(item.price)}</Text>
+        <Text style={[styles.price, { color: Colors.primaryLight }]}>{formatCurrency(item.price)}</Text>
       </View>
 
       <View style={styles.controls}>

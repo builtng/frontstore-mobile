@@ -57,6 +57,20 @@ export const Shadow = {
     shadowRadius: 32,
     elevation: 12,
   },
+  glow: {
+    shadowColor: '#25D366',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 22,
+    elevation: 10,
+  },
+  glowTeal: {
+    shadowColor: '#64FFDA',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    elevation: 8,
+  },
   none: {
     shadowColor: 'transparent',
     shadowOffset: { width: 0, height: 0 },

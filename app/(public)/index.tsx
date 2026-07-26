@@ -80,7 +80,7 @@ export default function MarketplaceHome() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
         contentContainerStyle={styles.scroll}
       >
         {/* Header */}
@@ -131,14 +131,14 @@ export default function MarketplaceHome() {
               style={[
                 styles.categoryChip,
                 {
-                  backgroundColor: activeCategory === cat.type ? Colors.primary : theme.card,
-                  borderColor: activeCategory === cat.type ? Colors.primary : theme.border,
+                  backgroundColor: activeCategory === cat.type ? Colors.primaryLight : theme.card,
+                  borderColor: activeCategory === cat.type ? Colors.primaryLight : theme.border,
                 },
                 Shadow.sm as any,
               ]}
             >
-              <cat.Icon size={14} color={activeCategory === cat.type ? Colors.white : theme.textSecondary} strokeWidth={1.8} />
-              <Text style={[styles.categoryLabel, { color: activeCategory === cat.type ? Colors.white : theme.text }]}>
+              <cat.Icon size={14} color={activeCategory === cat.type ? Colors.navy : theme.textSecondary} strokeWidth={1.8} />
+              <Text style={[styles.categoryLabel, { color: activeCategory === cat.type ? Colors.navy : theme.text }]}>
                 {cat.label}
               </Text>
             </TouchableOpacity>
@@ -151,7 +151,7 @@ export default function MarketplaceHome() {
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>Featured Stores</Text>
               <TouchableOpacity onPress={() => router.push('/(public)/search')}>
-                <Text style={[styles.seeAll, { color: Colors.primary }]}>See all</Text>
+                <Text style={[styles.seeAll, { color: Colors.primaryLight }]}>See all</Text>
               </TouchableOpacity>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredRow}>
@@ -207,8 +207,8 @@ export default function MarketplaceHome() {
           onPress={() => router.push('/(auth)/welcome')}
           activeOpacity={0.85}
         >
-          <View style={[styles.merchantCtaIcon, { backgroundColor: Colors.primaryDim }]}>
-            <Store size={20} color={Colors.primary} strokeWidth={2} />
+          <View style={[styles.merchantCtaIcon, { backgroundColor: Colors.glow.primarySoft }]}>
+            <Store size={20} color={Colors.primaryLight} strokeWidth={2} />
           </View>
           <View style={styles.merchantCtaText}>
             <Text style={[styles.merchantCtaTitle, { color: theme.text }]}>Sell on FrontStore</Text>

@@ -48,18 +48,34 @@ export const Colors = {
 
   // Dark mode
   dark: {
-    background: '#020C1B',
+    background: '#030810',
     surface: '#0A192F',
-    card: '#0A192F',
-    border: '#112240',
-    borderStrong: '#1d3461',
-    text: '#E8F4F8',
+    card: '#0D1F3C',
+    border: '#16294A',
+    borderStrong: '#24395c',
+    text: '#F1F6F9',
     textSecondary: '#8892B0',
-    textTertiary: '#4A5568',
+    textTertiary: '#546080',
     textInverse: '#0A192F',
-    overlay: 'rgba(2, 12, 27, 0.7)',
-    tabBar: '#0A192F',
-    tabBarBorder: '#112240',
+    overlay: 'rgba(2, 6, 14, 0.78)',
+    tabBar: 'rgba(9, 20, 39, 0.92)',
+    tabBarBorder: '#16294A',
+  },
+
+  // Glass — frosted surfaces layered over the dark background
+  glass: {
+    bg: 'rgba(20, 40, 74, 0.5)',
+    bgStrong: 'rgba(20, 40, 74, 0.72)',
+    border: 'rgba(255, 255, 255, 0.09)',
+    borderStrong: 'rgba(255, 255, 255, 0.16)',
+    sheen: 'rgba(255, 255, 255, 0.05)',
+  },
+
+  // Glow — accent light bleed for hero/CTA surfaces
+  glow: {
+    primary: 'rgba(37, 211, 102, 0.4)',
+    primarySoft: 'rgba(37, 211, 102, 0.18)',
+    teal: 'rgba(100, 255, 218, 0.32)',
   },
 
   // Always

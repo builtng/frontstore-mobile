@@ -152,7 +152,7 @@ export default function SetupScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Animated.View style={[styles.header, headerStyle]}>
-            <Text style={[styles.step, { color: Colors.primary }]}>Almost done</Text>
+            <Text style={[styles.step, { color: Colors.primaryLight }]}>Almost done</Text>
             <Text style={[styles.title, { color: theme.text }]}>Set up your store</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Your store will be live in seconds. You can change all this later.
@@ -256,7 +256,7 @@ export default function SetupScreen() {
                     style={[
                       styles.typeItem,
                       { borderBottomColor: theme.border },
-                      bt.value === businessType && { backgroundColor: Colors.primaryDim },
+                      bt.value === businessType && { backgroundColor: Colors.glow.primarySoft },
                     ]}
                     onPress={() => {
                       setBusinessType(bt.value);
@@ -264,10 +264,10 @@ export default function SetupScreen() {
                       haptics.selection();
                     }}
                   >
-                    <Text style={[styles.typeItemText, { color: bt.value === businessType ? Colors.primary : theme.text }]}>
+                    <Text style={[styles.typeItemText, { color: bt.value === businessType ? Colors.primaryLight : theme.text }]}>
                       {bt.label}
                     </Text>
-                    {bt.value === businessType && <Check size={16} color={Colors.primary} strokeWidth={2.5} />}
+                    {bt.value === businessType && <Check size={16} color={Colors.primaryLight} strokeWidth={2.5} />}
                   </TouchableOpacity>
                 ))}
               </View>
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   flex: { flex: 1 },
   progressTrack: { height: 3 },
-  progressFill: { height: 3, width: '100%', backgroundColor: Colors.primary, borderRadius: 2 },
+  progressFill: { height: 3, width: '100%', backgroundColor: Colors.primaryLight, borderRadius: 2 },
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: Spacing[10] },
 
   header: { paddingTop: Spacing[7], marginBottom: Spacing[7], gap: Spacing[2] },

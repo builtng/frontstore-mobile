@@ -92,7 +92,7 @@ export default function BuyerOrderDetailScreen() {
             </View>
             <View>
               <Text style={[styles.statusLabel, { color: theme.textTertiary }]}>Total</Text>
-              <Text style={[styles.statusTotal, { color: Colors.primary }]}>{formatCurrency(order.total)}</Text>
+              <Text style={[styles.statusTotal, { color: Colors.primaryLight }]}>{formatCurrency(order.total)}</Text>
             </View>
           </View>
 
@@ -103,11 +103,11 @@ export default function BuyerOrderDetailScreen() {
               const isCurrent = i === currentStepIndex;
               return (
                 <View key={step} style={styles.stepItem}>
-                  <View style={[styles.stepDot, { backgroundColor: done ? Colors.primary : theme.border, transform: [{ scale: isCurrent ? 1.3 : 1 }] }]}>
+                  <View style={[styles.stepDot, { backgroundColor: done ? Colors.primaryLight : theme.border, transform: [{ scale: isCurrent ? 1.3 : 1 }] }]}>
                     {done && <CheckCircle size={8} color={Colors.white} strokeWidth={3} />}
                   </View>
                   {i < STATUS_STEPS.length - 1 && (
-                    <View style={[styles.stepLine, { backgroundColor: i < currentStepIndex ? Colors.primary : theme.border }]} />
+                    <View style={[styles.stepLine, { backgroundColor: i < currentStepIndex ? Colors.primaryLight : theme.border }]} />
                   )}
                   <Text style={[styles.stepLabel, { color: done ? theme.text : theme.textTertiary }]} numberOfLines={1}>
                     {step.charAt(0).toUpperCase() + step.slice(1)}
@@ -134,7 +134,7 @@ export default function BuyerOrderDetailScreen() {
           ))}
           <View style={[styles.totalRow, { borderTopColor: theme.border }]}>
             <Text style={[styles.totalLabel, { color: theme.text }]}>Total</Text>
-            <Text style={[styles.totalValue, { color: Colors.primary }]}>{formatCurrency(order.total)}</Text>
+            <Text style={[styles.totalValue, { color: Colors.primaryLight }]}>{formatCurrency(order.total)}</Text>
           </View>
         </View>
 
@@ -145,7 +145,7 @@ export default function BuyerOrderDetailScreen() {
             <Text style={[styles.storeName, { color: theme.text }]}>{order.store?.name}</Text>
             {order.store?.is_verified && <CheckCircle size={14} color={Colors.white} fill={Colors.info} />}
           </View>
-          <Text style={[styles.storeUrl, { color: Colors.primary }]}>frontstore.ng/{order.store?.username}</Text>
+          <Text style={[styles.storeUrl, { color: Colors.primaryLight }]}>frontstore.ng/{order.store?.username}</Text>
           {order.store?.whatsapp_number && (
             <TouchableOpacity style={styles.waBtn} onPress={openWhatsApp}>
               <MessageCircle size={16} color={Colors.white} />

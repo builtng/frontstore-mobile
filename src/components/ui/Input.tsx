@@ -64,7 +64,7 @@ export const Input: React.FC<InputProps> = ({
     borderColor: interpolateColor(
       focusAnim.value,
       [0, 1],
-      [error ? Colors.danger : theme.border, error ? Colors.danger : Colors.primary]
+      [error ? Colors.danger : theme.border, error ? Colors.danger : Colors.primaryLight]
     ),
     borderWidth: withTiming(focusAnim.value === 1 ? 2 : 1.5, { duration: 150 }),
   }));

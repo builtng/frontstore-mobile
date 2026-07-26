@@ -108,7 +108,7 @@ export default function ProductDetailScreen() {
           {images[selectedImageIndex] ? (
             <Image source={{ uri: images[selectedImageIndex].url }} style={StyleSheet.absoluteFill} contentFit="cover" />
           ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.primaryDim, alignItems: 'center', justifyContent: 'center' }]}>
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glow.primarySoft, alignItems: 'center', justifyContent: 'center' }]}>
               <Text style={{ fontSize: 60 }}>📦</Text>
             </View>
           )}
@@ -126,7 +126,7 @@ export default function ProductDetailScreen() {
               <TouchableOpacity
                 key={i}
                 onPress={() => setSelectedImageIndex(i)}
-                style={[styles.thumb, i === selectedImageIndex && { borderColor: Colors.primary, borderWidth: 2.5 }]}
+                style={[styles.thumb, i === selectedImageIndex && { borderColor: Colors.primaryLight, borderWidth: 2.5 }]}
               >
                 <Image source={{ uri: img.url }} style={StyleSheet.absoluteFill} contentFit="cover" />
               </TouchableOpacity>
@@ -147,7 +147,7 @@ export default function ProductDetailScreen() {
 
           {/* Price */}
           <View style={styles.priceRow}>
-            <Text style={[styles.price, { color: Colors.primary }]}>{formatCurrency(product.price)}</Text>
+            <Text style={[styles.price, { color: Colors.primaryLight }]}>{formatCurrency(product.price)}</Text>
             {product.compare_price && (
               <Text style={[styles.comparePrice, { color: theme.textTertiary }]}>{formatCurrency(product.compare_price)}</Text>
             )}
@@ -161,18 +161,18 @@ export default function ProductDetailScreen() {
             {product.store?.logo_url ? (
               <Image source={{ uri: product.store.logo_url }} style={styles.storeLogo} contentFit="cover" />
             ) : (
-              <View style={[styles.storeLogo, { backgroundColor: Colors.primaryDim, alignItems: 'center', justifyContent: 'center' }]}>
+              <View style={[styles.storeLogo, { backgroundColor: Colors.glow.primarySoft, alignItems: 'center', justifyContent: 'center' }]}>
                 <Text style={{ fontSize: 14 }}>🏪</Text>
               </View>
             )}
             <View style={styles.storeInfo}>
               <Text style={[styles.storeLabel, { color: theme.textTertiary }]}>Sold by</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Text style={[styles.storeName, { color: Colors.primary }]}>{product.store?.name ?? username}</Text>
+                <Text style={[styles.storeName, { color: Colors.primaryLight }]}>{product.store?.name ?? username}</Text>
                 {product.store?.is_verified && <CheckCircle size={13} color={Colors.white} fill={Colors.info} />}
               </View>
             </View>
-            <Text style={[styles.viewStore, { color: Colors.primary }]}>View Store →</Text>
+            <Text style={[styles.viewStore, { color: Colors.primaryLight }]}>View Store →</Text>
           </TouchableOpacity>
 
           {/* Description */}
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   floatingBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.92)', alignItems: 'center', justifyContent: 'center', position: 'relative' },
   cartDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.danger, borderWidth: 1, borderColor: Colors.white },
 
-  mainImage: { height: 320, backgroundColor: Colors.gray100 },
+  mainImage: { height: 320, backgroundColor: Colors.dark.surface },
   discountBadge: { position: 'absolute', top: Spacing[4], left: Spacing[4], backgroundColor: Colors.danger, borderRadius: Radius.sm, paddingHorizontal: Spacing[3], paddingVertical: Spacing[1] },
   discountText: { fontFamily: FontFamily.headingBold, fontSize: FontSize.xs, color: Colors.white },
 

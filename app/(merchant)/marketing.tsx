@@ -70,17 +70,17 @@ export default function MarketingScreen() {
           <Text style={[styles.title, { color: theme.text }]}>Marketing</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Engage your customers</Text>
         </View>
-        <TouchableOpacity style={[styles.newBtn, { backgroundColor: Colors.primary }]} onPress={() => setSheetOpen(true)}>
+        <TouchableOpacity style={[styles.newBtn, { backgroundColor: Colors.primaryLight }]} onPress={() => setSheetOpen(true)}>
           <Plus size={20} color={Colors.white} strokeWidth={2.5} />
           <Text style={styles.newBtnText}>Broadcast</Text>
         </TouchableOpacity>
       </View>
 
       {/* Pro tip banner */}
-      <View style={[styles.banner, { backgroundColor: Colors.primaryDim }]}>
-        <Zap size={20} color={Colors.primary} fill={Colors.primary} />
+      <View style={[styles.banner, { backgroundColor: Colors.glow.primarySoft }]}>
+        <Zap size={20} color={Colors.primaryLight} fill={Colors.primary} />
         <View style={styles.bannerText}>
-          <Text style={[styles.bannerTitle, { color: Colors.primary }]}>Reach customers directly on WhatsApp</Text>
+          <Text style={[styles.bannerTitle, { color: Colors.primaryLight }]}>Reach customers directly on WhatsApp</Text>
           <Text style={[styles.bannerSub, { color: Colors.primaryLight ?? Colors.primary }]}>
             Broadcast promotions, restocks, and announcements to your customer list.
           </Text>
@@ -96,8 +96,8 @@ export default function MarketingScreen() {
           broadcasts.map((b) => (
             <View key={b.id} style={[styles.broadcastCard, { backgroundColor: theme.card }, Shadow.sm as any]}>
               <View style={styles.broadcastTop}>
-                <View style={[styles.broadcastIcon, { backgroundColor: Colors.primaryDim }]}>
-                  <MessageCircle size={18} color={Colors.primary} strokeWidth={2} />
+                <View style={[styles.broadcastIcon, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <MessageCircle size={18} color={Colors.primaryLight} strokeWidth={2} />
                 </View>
                 <View style={styles.broadcastInfo}>
                   <Text style={[styles.broadcastTitle, { color: theme.text }]}>{b.title}</Text>
@@ -143,13 +143,13 @@ export default function MarketingScreen() {
                 style={[
                   styles.audienceCard,
                   {
-                    backgroundColor: audience === value ? Colors.primaryDim : theme.card,
-                    borderColor: audience === value ? Colors.primary : theme.border,
+                    backgroundColor: audience === value ? Colors.glow.primarySoft : theme.card,
+                    borderColor: audience === value ? Colors.primaryLight : theme.border,
                   },
                 ]}
               >
-                <Icon size={18} color={audience === value ? Colors.primary : theme.textTertiary} strokeWidth={2} />
-                <Text style={[styles.audienceLabel, { color: audience === value ? Colors.primary : theme.text }]}>{label}</Text>
+                <Icon size={18} color={audience === value ? Colors.primaryLight : theme.textTertiary} strokeWidth={2} />
+                <Text style={[styles.audienceLabel, { color: audience === value ? Colors.primaryLight : theme.text }]}>{label}</Text>
                 <Text style={[styles.audienceDesc, { color: theme.textTertiary }]}>{desc}</Text>
               </TouchableOpacity>
             ))}
@@ -196,7 +196,7 @@ export default function MarketingScreen() {
             isLoading={isPending}
             disabled={!broadcastTitle.trim() || !broadcastMessage.trim()}
             size="xl"
-            icon={<Send size={18} color={Colors.white} />}
+            icon={<Send size={18} color={Colors.navy} />}
             iconPosition="right"
           />
         </View>

@@ -18,7 +18,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
-import { Radius, Spacing } from '@/constants/spacing';
+import { Radius, Shadow, Spacing } from '@/constants/spacing';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
 type Size = 'sm' | 'md' | 'lg' | 'xl';
@@ -75,6 +75,7 @@ export const Button: React.FC<ButtonProps> = ({
     styles.base,
     styles[variant],
     styles[`size_${size}`],
+    variant === 'primary' && !disabled && !isLoading && (Shadow.glow as any),
     fullWidth && styles.fullWidth,
     (disabled || isLoading) && styles.disabled,
     style,
@@ -98,7 +99,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {isLoading ? (
         <ActivityIndicator
-          color={variant === 'primary' || variant === 'danger' ? Colors.white : Colors.primary}
+          color={variant === 'primary' ? Colors.navy : variant === 'danger' ? Colors.white : Colors.primaryLight}
           size="small"
         />
       ) : (
@@ -132,10 +133,12 @@ const styles = StyleSheet.create({
 
   // Variants
   primary: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryLight,
   },
   secondary: {
-    backgroundColor: Colors.primaryDim,
+    backgroundColor: Colors.glow.primarySoft,
+    borderWidth: 1,
+    borderColor: 'rgba(37, 211, 102, 0.32)',
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -146,7 +149,7 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: Colors.primary,
+    borderColor: Colors.primaryLight,
   },
 
   // Sizes
@@ -182,11 +185,11 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bodySemiBold,
     textAlign: 'center',
   },
-  label_primary: { color: Colors.white },
-  label_secondary: { color: Colors.primary },
-  label_ghost: { color: Colors.primary },
+  label_primary: { color: Colors.navy },
+  label_secondary: { color: Colors.primaryLight },
+  label_ghost: { color: Colors.primaryLight },
   label_danger: { color: Colors.white },
-  label_outline: { color: Colors.primary },
+  label_outline: { color: Colors.primaryLight },
 
   label_sm: { fontSize: FontSize.sm },
   label_md: { fontSize: FontSize.base },

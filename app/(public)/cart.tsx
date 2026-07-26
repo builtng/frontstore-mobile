@@ -50,8 +50,8 @@ export default function CartScreen() {
           <Text style={[styles.title, { color: theme.text }]}>Cart</Text>
         </View>
         <View style={styles.emptyContainer}>
-          <View style={[styles.emptyIcon, { backgroundColor: Colors.primaryDim }]}>
-            <ShoppingCart size={40} color={Colors.primary} strokeWidth={1.5} />
+          <View style={[styles.emptyIcon, { backgroundColor: Colors.glow.primarySoft }]}>
+            <ShoppingCart size={40} color={Colors.primaryLight} strokeWidth={1.5} />
           </View>
           <Text style={[styles.emptyTitle, { color: theme.text }]}>Your cart is empty</Text>
           <Text style={[styles.emptyDesc, { color: theme.textSecondary }]}>
@@ -117,7 +117,7 @@ export default function CartScreen() {
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
           <View style={styles.summaryRow}>
             <Text style={[styles.grandLabel, { color: theme.text }]}>Estimated Total</Text>
-            <Text style={[styles.grandValue, { color: Colors.primary }]}>{formatCurrency(total)}</Text>
+            <Text style={[styles.grandValue, { color: Colors.primaryLight }]}>{formatCurrency(total)}</Text>
           </View>
         </View>
       </ScrollView>
@@ -128,7 +128,7 @@ export default function CartScreen() {
             title={`Checkout — ${formatCurrency(total)}`}
             onPress={handleCheckout}
             size="xl"
-            icon={<ArrowRight size={20} color={Colors.white} />}
+            icon={<ArrowRight size={20} color={Colors.navy} />}
             iconPosition="right"
           />
         </View>

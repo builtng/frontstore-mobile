@@ -63,7 +63,7 @@ export default function WalletScreen() {
       </View>
 
       <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
@@ -129,17 +129,18 @@ export default function WalletScreen() {
                 key={tier.level}
                 style={[
                   styles.tierRow,
-                  { backgroundColor: theme.card, borderColor: isActive ? Colors.primary : theme.border },
+                  { backgroundColor: theme.card, borderColor: isActive ? Colors.primaryLight : theme.border },
+                  isActive && (Shadow.glow as any),
                 ]}
               >
-                <View style={[styles.tierIcon, { backgroundColor: isActive ? Colors.primary + '18' : theme.border }]}>
-                  <Icon size={18} color={isActive ? Colors.primary : theme.textTertiary} />
+                <View style={[styles.tierIcon, { backgroundColor: isActive ? Colors.glow.primarySoft : theme.border }]}>
+                  <Icon size={18} color={isActive ? Colors.primaryLight : theme.textTertiary} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.tierName, { color: theme.text }]}>Level {tier.level} · {tier.name}</Text>
                   <Text style={[styles.tierRange, { color: theme.textTertiary }]}>{tier.range}</Text>
                 </View>
-                <Text style={[styles.tierPayout, { color: isActive ? Colors.primary : theme.textTertiary }]}>
+                <Text style={[styles.tierPayout, { color: isActive ? Colors.primaryLight : theme.textTertiary }]}>
                   {tier.payout}
                 </Text>
               </View>

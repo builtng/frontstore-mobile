@@ -6,6 +6,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Home, ClipboardList, Package, Bot, MoreHorizontal } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -52,21 +53,21 @@ function TabBarIcon({ focused, Icon, label, isNina = false }: {
       <Animated.View style={iconStyle}>
         <Icon
           size={22}
-          color={focused ? Colors.primary : theme.textTertiary}
+          color={focused ? Colors.primaryLight : theme.textTertiary}
           strokeWidth={focused ? 2.5 : 1.8}
         />
       </Animated.View>
       <Text
         style={[
           styles.tabLabel,
-          { color: focused ? Colors.primary : theme.textTertiary },
+          { color: focused ? Colors.primaryLight : theme.textTertiary },
           focused && styles.tabLabelActive,
         ]}
         numberOfLines={1}
       >
         {label}
       </Text>
-      <Animated.View style={[styles.activeDot, { backgroundColor: Colors.primary }, dotStyle]} />
+      <Animated.View style={[styles.activeDot, { backgroundColor: Colors.primaryLight }, dotStyle]} />
     </View>
   );
 }
@@ -79,7 +80,7 @@ export default function MerchantLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.tabBar,
+          backgroundColor: 'transparent',
           borderTopColor: theme.tabBarBorder,
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 84 : 68,
@@ -87,7 +88,11 @@ export default function MerchantLayout() {
           paddingTop: Spacing[2],
           elevation: 0,
           shadowOpacity: 0,
+          position: 'absolute',
         },
+        tabBarBackground: () => (
+          <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+        ),
         tabBarShowLabel: false,
       }}
     >
@@ -168,7 +173,7 @@ const styles = StyleSheet.create({
   },
   ninaTabGlow: {
     borderRadius: 28,
-    shadowColor: Colors.primary,
+    shadowColor: Colors.primaryLight,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,

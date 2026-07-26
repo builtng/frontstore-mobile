@@ -67,14 +67,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   actionLabel,
   onAction,
 }) => {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
   const config = configs[type];
   const Icon = config.Icon;
 
   return (
     <View style={styles.container}>
-      <View style={[styles.iconWrapper, { backgroundColor: isDark ? Colors.navyLight : Colors.primaryDim }]}>
-        <Icon size={36} color={Colors.primary} strokeWidth={1.5} />
+      <View style={[styles.iconWrapper, { backgroundColor: Colors.glow.primarySoft, borderColor: 'rgba(37, 211, 102, 0.28)' }]}>
+        <Icon size={36} color={Colors.primaryLight} strokeWidth={1.5} />
       </View>
       <Text style={[styles.title, { color: theme.text }]}>{title ?? config.title}</Text>
       <Text style={[styles.description, { color: theme.textSecondary }]}>
@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 24,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing[5],

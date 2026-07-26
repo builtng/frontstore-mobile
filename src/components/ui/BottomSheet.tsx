@@ -18,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { X } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Radius, Spacing, Shadow } from '@/constants/spacing';
@@ -113,11 +114,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           <Animated.View
             style={[
               styles.sheet,
-              { backgroundColor: theme.surface, height: sheetHeight },
+              { height: sheetHeight, borderWidth: 1, borderColor: Colors.glass.borderStrong },
               Shadow.xl,
               sheetStyle,
             ]}
           >
+            <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass.bgStrong }]} />
             <View style={styles.handle} />
 
             {title && (
@@ -145,7 +148,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
 const styles = StyleSheet.create({
   overlay: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(2, 6, 14, 0.72)',
   },
   keyboardView: {
     flex: 1,
@@ -159,7 +162,7 @@ const styles = StyleSheet.create({
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: Colors.gray300,
+    backgroundColor: 'rgba(255,255,255,0.24)',
     borderRadius: 2,
     alignSelf: 'center',
     marginTop: Spacing[3],

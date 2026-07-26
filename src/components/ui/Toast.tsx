@@ -9,6 +9,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { CheckCircle, AlertCircle, XCircle, Info } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
@@ -63,18 +64,18 @@ const ToastItem: React.FC<{ toast: ToastData; onDismiss: (id: string) => void }>
   }));
 
   const config = {
-    success: { Icon: CheckCircle, color: Colors.success, bg: Colors.successLight },
-    error: { Icon: XCircle, color: Colors.danger, bg: Colors.dangerLight },
-    warning: { Icon: AlertCircle, color: '#D97706', bg: Colors.warningLight },
-    info: { Icon: Info, color: Colors.info, bg: Colors.infoLight },
+    success: { Icon: CheckCircle, color: '#4ADE80', bg: 'rgba(46, 204, 113, 0.16)' },
+    error: { Icon: XCircle, color: '#F87171', bg: 'rgba(231, 76, 60, 0.16)' },
+    warning: { Icon: AlertCircle, color: '#FBBF24', bg: 'rgba(241, 196, 15, 0.16)' },
+    info: { Icon: Info, color: '#60A5FA', bg: 'rgba(59, 130, 246, 0.16)' },
   }[toast.type];
 
   const Icon = config.Icon;
 
   return (
-    <Animated.View
-      style={[styles.toast, { backgroundColor: theme.surface }, Shadow.lg, animStyle]}
-    >
+    <Animated.View style={[styles.toast, animStyle]}>
+      <BlurView intensity={45} tint="dark" style={StyleSheet.absoluteFill} />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass.bgStrong, borderRadius: Radius.lg, borderWidth: 1, borderColor: Colors.glass.border }]} />
       <View style={[styles.iconWrap, { backgroundColor: config.bg }]}>
         <Icon size={18} color={config.color} strokeWidth={2} />
       </View>
@@ -145,6 +146,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing[4],
     paddingVertical: Spacing[4],
     borderRadius: Radius.lg,
+    overflow: 'hidden',
     gap: Spacing[3],
   },
   iconWrap: {

@@ -56,6 +56,8 @@ const styles = StyleSheet.create({
   placeholder: {
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   initials: {
     fontFamily: FontFamily.headingBold,

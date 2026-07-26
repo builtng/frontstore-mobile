@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Home, Search, ShoppingCart, User } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
 import { Colors } from '@/constants/colors';
 import { FontFamily } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -24,7 +25,7 @@ function TabIcon({ focused, Icon, label, badgeCount }: { focused: boolean; Icon:
       <Animated.View style={[animStyle, styles.iconWrap]}>
         <Icon
           size={22}
-          color={focused ? Colors.primary : theme.textTertiary}
+          color={focused ? Colors.primaryLight : theme.textTertiary}
           strokeWidth={focused ? 2.5 : 1.8}
         />
         {(badgeCount ?? 0) > 0 && (
@@ -34,7 +35,7 @@ function TabIcon({ focused, Icon, label, badgeCount }: { focused: boolean; Icon:
         )}
       </Animated.View>
       <Text
-        style={[styles.label, { color: focused ? Colors.primary : theme.textTertiary }, focused && styles.labelActive]}
+        style={[styles.label, { color: focused ? Colors.primaryLight : theme.textTertiary }, focused && styles.labelActive]}
         numberOfLines={1}
       >
         {label}
@@ -56,7 +57,7 @@ export default function PublicLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.tabBar,
+          backgroundColor: 'transparent',
           borderTopColor: theme.tabBarBorder,
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 84 : 68,
@@ -64,7 +65,11 @@ export default function PublicLayout() {
           paddingTop: Spacing[2],
           elevation: 0,
           shadowOpacity: 0,
+          position: 'absolute',
         },
+        tabBarBackground: () => (
+          <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+        ),
         tabBarShowLabel: false,
       }}
     >

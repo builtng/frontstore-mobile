@@ -59,7 +59,7 @@ function TypingIndicator({ theme }: { theme: any }) {
             key={i}
             style={[
               styles.typingDot,
-              { backgroundColor: Colors.primary, opacity: dot, transform: [{ translateY: dot.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }] },
+              { backgroundColor: Colors.primaryLight, opacity: dot, transform: [{ translateY: dot.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }] },
             ]}
           />
         ))}
@@ -82,7 +82,7 @@ function MessageBubble({ msg, theme }: { msg: NinaMessage; theme: any }) {
         style={[
           styles.bubble,
           isUser
-            ? [styles.bubbleUser, { backgroundColor: Colors.primary }]
+            ? [styles.bubbleUser, { backgroundColor: Colors.primaryLight }]
             : [styles.bubbleAssistant, { backgroundColor: theme.card, borderColor: theme.border }],
         ]}
       >
@@ -187,7 +187,7 @@ export default function NinaScreen() {
         {messages.length === 0 && (
           <View style={styles.quickPromptsWrap}>
             <View style={styles.quickPromptsRow}>
-              <Sparkles size={13} color={Colors.primary} strokeWidth={2} />
+              <Sparkles size={13} color={Colors.primaryLight} strokeWidth={2} />
               <Text style={[styles.quickPromptsLabel, { color: theme.textSecondary }]}>Try asking</Text>
             </View>
             <FlatList
@@ -198,11 +198,11 @@ export default function NinaScreen() {
               contentContainerStyle={styles.quickPromptsList}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.quickChip, { backgroundColor: Colors.primaryDim, borderColor: Colors.primary + '30' }]}
+                  style={[styles.quickChip, { backgroundColor: Colors.glow.primarySoft, borderColor: Colors.primaryLight + '30' }]}
                   onPress={() => sendMessage(item)}
                   activeOpacity={0.75}
                 >
-                  <Text style={[styles.quickChipText, { color: Colors.primary }]}>{item}</Text>
+                  <Text style={[styles.quickChipText, { color: Colors.primaryLight }]}>{item}</Text>
                 </TouchableOpacity>
               )}
             />
@@ -225,7 +225,7 @@ export default function NinaScreen() {
           <TouchableOpacity
             style={[
               styles.sendBtn,
-              { backgroundColor: input.trim() && !isTyping ? Colors.primary : theme.border },
+              { backgroundColor: input.trim() && !isTyping ? Colors.primaryLight : theme.border },
             ]}
             onPress={() => sendMessage(input)}
             disabled={!input.trim() || isTyping}
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,

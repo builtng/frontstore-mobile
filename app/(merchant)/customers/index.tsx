@@ -59,9 +59,9 @@ export default function CustomersScreen() {
             {data?.length ?? 0} total customers
           </Text>
         </View>
-        <View style={[styles.statChip, { backgroundColor: Colors.primaryDim }]}>
-          <Users size={14} color={Colors.primary} />
-          <Text style={[styles.statChipText, { color: Colors.primary }]}>
+        <View style={[styles.statChip, { backgroundColor: Colors.glow.primarySoft }]}>
+          <Users size={14} color={Colors.primaryLight} />
+          <Text style={[styles.statChipText, { color: Colors.primaryLight }]}>
             {data?.length ?? 0}
           </Text>
         </View>
@@ -81,7 +81,7 @@ export default function CustomersScreen() {
           keyExtractor={(c) => String(c.id ?? c.phone)}
           estimatedItemSize={80}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
           renderItem={({ item: customer }) => (
             <TouchableOpacity
               style={[styles.card, { backgroundColor: theme.card }, Shadow.sm as any]}
@@ -100,7 +100,7 @@ export default function CustomersScreen() {
                     {customer.order_count ?? 0} orders
                   </Text>
                   {customer.total_spent > 0 && (
-                    <Text style={[styles.meta, { color: Colors.primary }]}>
+                    <Text style={[styles.meta, { color: Colors.primaryLight }]}>
                       · {formatCurrency(customer.total_spent)}
                     </Text>
                   )}

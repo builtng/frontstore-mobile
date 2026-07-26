@@ -118,7 +118,7 @@ export default function CheckoutScreen() {
             ))}
             <View style={[styles.totalRow, { borderTopColor: theme.border }]}>
               <Text style={[styles.totalLabel, { color: theme.text }]}>Total</Text>
-              <Text style={[styles.totalValue, { color: Colors.primary }]}>{formatCurrency(subtotal)}</Text>
+              <Text style={[styles.totalValue, { color: Colors.primaryLight }]}>{formatCurrency(subtotal)}</Text>
             </View>
           </View>
 
@@ -132,18 +132,18 @@ export default function CheckoutScreen() {
                 style={[
                   styles.deliveryOption,
                   {
-                    backgroundColor: deliveryType === value ? Colors.primaryDim : theme.card,
-                    borderColor: deliveryType === value ? Colors.primary : theme.border,
+                    backgroundColor: deliveryType === value ? Colors.glow.primarySoft : theme.card,
+                    borderColor: deliveryType === value ? Colors.primaryLight : theme.border,
                   },
                 ]}
               >
-                <Icon size={20} color={deliveryType === value ? Colors.primary : theme.textTertiary} strokeWidth={2} />
+                <Icon size={20} color={deliveryType === value ? Colors.primaryLight : theme.textTertiary} strokeWidth={2} />
                 <View style={styles.deliveryInfo}>
-                  <Text style={[styles.deliveryLabel, { color: deliveryType === value ? Colors.primary : theme.text }]}>{label}</Text>
+                  <Text style={[styles.deliveryLabel, { color: deliveryType === value ? Colors.primaryLight : theme.text }]}>{label}</Text>
                   <Text style={[styles.deliveryDesc, { color: theme.textTertiary }]}>{desc}</Text>
                 </View>
                 {deliveryType === value && (
-                  <View style={[styles.checkCircle, { backgroundColor: Colors.primary }]}>
+                  <View style={[styles.checkCircle, { backgroundColor: Colors.primaryLight }]}>
                     <Check size={12} color={Colors.white} strokeWidth={3} />
                   </View>
                 )}

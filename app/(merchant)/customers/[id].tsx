@@ -100,7 +100,7 @@ export default function CustomerDetailScreen() {
         {/* Stats */}
         <View style={styles.statsRow}>
           {[
-            { label: 'Total Orders', value: customer.order_count ?? orders.length, Icon: ShoppingBag, color: Colors.primary },
+            { label: 'Total Orders', value: customer.order_count ?? orders.length, Icon: ShoppingBag, color: Colors.primaryLight },
             { label: 'Lifetime Spend', value: formatCurrency(customer.total_spent ?? 0), Icon: TrendingUp, color: Colors.success },
           ].map(({ label, value, Icon, color }) => (
             <View key={label} style={[styles.statCard, { backgroundColor: theme.card }, Shadow.sm as any]}>

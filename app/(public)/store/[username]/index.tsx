@@ -109,7 +109,7 @@ function ProductCard({ product, storeUsername, onPress }: { product: PublicProdu
         {primaryImage ? (
           <Image source={{ uri: primaryImage.url }} style={StyleSheet.absoluteFill} contentFit="cover" />
         ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.primaryDim, alignItems: 'center', justifyContent: 'center' }]}>
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glow.primarySoft, alignItems: 'center', justifyContent: 'center' }]}>
             <Text style={{ fontSize: 28 }}>📦</Text>
           </View>
         )}
@@ -122,16 +122,16 @@ function ProductCard({ product, storeUsername, onPress }: { product: PublicProdu
       <View style={styles.productInfo}>
         <Text style={[styles.productName, { color: theme.text }]} numberOfLines={2}>{product.name}</Text>
         <View style={styles.priceRow}>
-          <Text style={[styles.productPrice, { color: Colors.primary }]}>{formatCurrency(product.price)}</Text>
+          <Text style={[styles.productPrice, { color: Colors.primaryLight }]}>{formatCurrency(product.price)}</Text>
           {product.compare_price && (
             <Text style={[styles.comparePrice, { color: theme.textTertiary }]}>{formatCurrency(product.compare_price)}</Text>
           )}
         </View>
         <TouchableOpacity
-          style={[styles.addBtn, { backgroundColor: Colors.primaryDim }]}
+          style={[styles.addBtn, { backgroundColor: Colors.glow.primarySoft }]}
           onPress={handleAddToCart}
         >
-          <Text style={[styles.addBtnText, { color: Colors.primary }]}>Add to Cart</Text>
+          <Text style={[styles.addBtnText, { color: Colors.primaryLight }]}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -227,7 +227,7 @@ export default function StoreScreen() {
           {store.banner_url ? (
             <Image source={{ uri: store.banner_url }} style={StyleSheet.absoluteFill} contentFit="cover" />
           ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? Colors.navyLight : Colors.primaryDim }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? Colors.navyLight : Colors.glow.primarySoft }]} />
           )}
         </View>
 
@@ -238,7 +238,7 @@ export default function StoreScreen() {
               {store.logo_url ? (
                 <Image source={{ uri: store.logo_url }} style={styles.logo} contentFit="cover" />
               ) : (
-                <View style={[styles.logo, { backgroundColor: Colors.primaryDim, alignItems: 'center', justifyContent: 'center' }]}>
+                <View style={[styles.logo, { backgroundColor: Colors.glow.primarySoft, alignItems: 'center', justifyContent: 'center' }]}>
                   <Text style={{ fontSize: 28 }}>🏪</Text>
                 </View>
               )}
@@ -253,8 +253,8 @@ export default function StoreScreen() {
               <Text style={[styles.storeName, { color: theme.text }]}>{store.name}</Text>
               <Text style={[styles.storeUsername, { color: theme.textTertiary }]}>@{store.username}</Text>
               {personaLabel && (
-                <View style={[styles.personaTag, { backgroundColor: Colors.primaryDim }]}>
-                  <Text style={[styles.personaTagText, { color: Colors.primary }]}>{personaLabel}</Text>
+                <View style={[styles.personaTag, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <Text style={[styles.personaTagText, { color: Colors.primaryLight }]}>{personaLabel}</Text>
                 </View>
               )}
               {store.rating !== undefined && (
@@ -296,7 +296,7 @@ export default function StoreScreen() {
               title="Shop Now"
               onPress={() => setActiveTab('products')}
               size="md"
-              icon={<ShoppingBag size={16} color={Colors.white} />}
+              icon={<ShoppingBag size={16} color={Colors.navy} />}
               style={styles.shopBtn}
             />
             {store.whatsapp_number && (
@@ -316,9 +316,9 @@ export default function StoreScreen() {
               <TouchableOpacity
                 key={tab}
                 onPress={() => setActiveTab(tab)}
-                style={[styles.tab, activeTab === tab && { borderBottomColor: Colors.primary, borderBottomWidth: 2 }]}
+                style={[styles.tab, activeTab === tab && { borderBottomColor: Colors.primaryLight, borderBottomWidth: 2 }]}
               >
-                <Text style={[styles.tabText, { color: activeTab === tab ? Colors.primary : theme.textTertiary }, activeTab === tab && styles.tabTextActive]}>
+                <Text style={[styles.tabText, { color: activeTab === tab ? Colors.primaryLight : theme.textTertiary }, activeTab === tab && styles.tabTextActive]}>
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   {tab === 'products' && products.length > 0 ? ` (${products.length})` : ''}
                   {tab === 'reviews' && reviews.length > 0 ? ` (${reviews.length})` : ''}
@@ -429,26 +429,26 @@ export default function StoreScreen() {
                   {store.whatsapp_number && (
                     <TouchableOpacity style={styles.socialRow} onPress={handleWhatsApp}>
                       <WhatsAppIcon size={16} color="#25D366" />
-                      <Text style={[styles.socialText, { color: Colors.primary }]}>{store.whatsapp_number}</Text>
+                      <Text style={[styles.socialText, { color: Colors.primaryLight }]}>{store.whatsapp_number}</Text>
                     </TouchableOpacity>
                   )}
                   {store.instagram_handle && (
                     <TouchableOpacity style={styles.socialRow} onPress={handleInstagram}>
                       <Instagram size={16} color="#E1306C" />
-                      <Text style={[styles.socialText, { color: Colors.primary }]}>@{store.instagram_handle.replace('@', '')}</Text>
+                      <Text style={[styles.socialText, { color: Colors.primaryLight }]}>@{store.instagram_handle.replace('@', '')}</Text>
                     </TouchableOpacity>
                   )}
                   {store.tiktok_handle && (
                     <TouchableOpacity style={styles.socialRow} onPress={handleTikTok}>
                       <Globe size={16} color={theme.textSecondary} />
-                      <Text style={[styles.socialText, { color: Colors.primary }]}>TikTok: @{store.tiktok_handle.replace('@', '')}</Text>
+                      <Text style={[styles.socialText, { color: Colors.primaryLight }]}>TikTok: @{store.tiktok_handle.replace('@', '')}</Text>
                     </TouchableOpacity>
                   )}
                 </AboutCard>
               )}
 
               <AboutCard label="Store URL" theme={theme}>
-                <Text style={[styles.aboutText, { color: Colors.primary }]}>frontstore.ng/{store.username}</Text>
+                <Text style={[styles.aboutText, { color: Colors.primaryLight }]}>frontstore.ng/{store.username}</Text>
               </AboutCard>
 
               {/* FAQs */}
@@ -481,8 +481,8 @@ export default function StoreScreen() {
                       <Text style={[styles.reviewComment, { color: theme.textSecondary }]}>{review.body}</Text>
                     ) : null}
                     {review.reply && (
-                      <View style={[styles.reviewReply, { backgroundColor: Colors.primaryDim }]}>
-                        <Text style={[styles.reviewReplyLabel, { color: Colors.primary }]}>Store reply</Text>
+                      <View style={[styles.reviewReply, { backgroundColor: Colors.glow.primarySoft }]}>
+                        <Text style={[styles.reviewReplyLabel, { color: Colors.primaryLight }]}>Store reply</Text>
                         <Text style={[styles.reviewReplyText, { color: theme.textSecondary }]}>{review.reply}</Text>
                       </View>
                     )}
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   floatingHeader: { position: 'absolute', top: 56, left: Spacing[6], right: Spacing[6], flexDirection: 'row', justifyContent: 'space-between', zIndex: 10 },
   floatingBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
 
-  banner: { height: 180, backgroundColor: Colors.gray100 },
+  banner: { height: 180, backgroundColor: Colors.dark.surface },
   content: { paddingHorizontal: Spacing[6] },
 
   storeHeader: { flexDirection: 'row', gap: Spacing[4], marginTop: -28, marginBottom: Spacing[4] },
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', borderBottomWidth: 1, marginBottom: Spacing[5] },
   tab: { flex: 1, paddingVertical: Spacing[3], alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
   tabText: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm },
-  tabTextActive: { color: Colors.primary },
+  tabTextActive: { color: Colors.primaryLight },
 
   productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing[4] },
   productCard: { width: (width - Spacing[6] * 2 - Spacing[4]) / 2, borderRadius: Radius.lg, overflow: 'hidden' },

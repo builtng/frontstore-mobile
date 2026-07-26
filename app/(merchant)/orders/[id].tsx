@@ -90,7 +90,7 @@ export default function OrderDetailScreen() {
         {/* Customer card */}
         <View style={[styles.customerCard, { backgroundColor: theme.card }, Shadow.md as any]}>
           <View style={styles.customerRow}>
-            <View style={[styles.customerAvatar, { backgroundColor: Colors.primaryDim }]}>
+            <View style={[styles.customerAvatar, { backgroundColor: Colors.glow.primarySoft }]}>
               <Text style={styles.customerInitial}>
                 {order.customer_name[0]?.toUpperCase()}
               </Text>
@@ -168,7 +168,7 @@ export default function OrderDetailScreen() {
             )}
             <View style={styles.totalRow}>
               <Text style={[styles.grandLabel, { color: theme.text }]}>Total</Text>
-              <Text style={[styles.grandValue, { color: Colors.primary }]}>{formatCurrency(order.total)}</Text>
+              <Text style={[styles.grandValue, { color: Colors.primaryLight }]}>{formatCurrency(order.total)}</Text>
             </View>
           </View>
         </View>
@@ -193,9 +193,9 @@ export default function OrderDetailScreen() {
             return (
               <View key={s} style={styles.timelineItem}>
                 <View style={styles.timelineLine}>
-                  <View style={[styles.timelineDot, { backgroundColor: isDone ? Colors.primary : theme.border, borderColor: isCurrent ? Colors.primary : 'transparent', borderWidth: isCurrent ? 3 : 0 }]} />
+                  <View style={[styles.timelineDot, { backgroundColor: isDone ? Colors.primaryLight : theme.border, borderColor: isCurrent ? Colors.primaryLight : 'transparent', borderWidth: isCurrent ? 3 : 0 }]} />
                   {i < STATUS_FLOW.length - 1 && (
-                    <View style={[styles.timelineConnector, { backgroundColor: isDone && i < currentIdx ? Colors.primary : theme.border }]} />
+                    <View style={[styles.timelineConnector, { backgroundColor: isDone && i < currentIdx ? Colors.primaryLight : theme.border }]} />
                   )}
                 </View>
                 <Text style={[styles.timelineLabel, { color: isDone ? theme.text : theme.textTertiary, fontFamily: isCurrent ? FontFamily.bodySemiBold : FontFamily.bodyRegular }]}>
@@ -215,7 +215,7 @@ export default function OrderDetailScreen() {
           variant="secondary"
           size="md"
           isLoading={isSending}
-          icon={<Send size={16} color={Colors.primary} />}
+          icon={<Send size={16} color={Colors.primaryLight} />}
           fullWidth={false}
           style={styles.actionBtn}
         />
@@ -225,7 +225,7 @@ export default function OrderDetailScreen() {
             onPress={() => updateStatus(nextStatus)}
             size="md"
             isLoading={isPending}
-            icon={<Check size={16} color={Colors.white} />}
+            icon={<Check size={16} color={Colors.navy} />}
             style={styles.actionBtn}
           />
         )}
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   customerCard: { borderRadius: Radius.lg, padding: Spacing[5], marginBottom: Spacing[5] },
   customerRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[3] },
   customerAvatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  customerInitial: { fontFamily: FontFamily.headingBold, fontSize: FontSize.xl, color: Colors.primary },
+  customerInitial: { fontFamily: FontFamily.headingBold, fontSize: FontSize.xl, color: Colors.primaryLight },
   customerInfo: { flex: 1 },
   customerName: { fontFamily: FontFamily.headingSemiBold, fontSize: FontSize.md },
   customerContact: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.sm, marginTop: 2 },

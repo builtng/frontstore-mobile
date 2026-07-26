@@ -149,8 +149,8 @@ export default function VerifyScreen() {
               <CheckCircle size={48} color={Colors.success} strokeWidth={1.5} />
             </Animated.View>
           ) : (
-            <View style={[styles.identifierWrap, { backgroundColor: Colors.primaryDim }]}>
-              <Text style={[styles.identifierDisplay, { color: Colors.primary }]} numberOfLines={1}>
+            <View style={[styles.identifierWrap, { backgroundColor: Colors.glow.primarySoft }]}>
+              <Text style={[styles.identifierDisplay, { color: Colors.primaryLight }]} numberOfLines={1}>
                 {displayIdentifier}
               </Text>
             </View>

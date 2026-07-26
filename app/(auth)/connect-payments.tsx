@@ -97,7 +97,7 @@ export default function ConnectPaymentsScreen() {
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <Text style={[styles.step, { color: Colors.primary }]}>Step 5 of 8</Text>
+          <Text style={[styles.step, { color: Colors.primaryLight }]}>Step 5 of 8</Text>
           <Text style={[styles.title, { color: theme.text }]}>Connect payments</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Choose how you want to receive payments from customers
@@ -105,7 +105,7 @@ export default function ConnectPaymentsScreen() {
         </View>
 
         {loading ? (
-          <ActivityIndicator color={Colors.primary} style={{ marginVertical: Spacing[8] }} />
+          <ActivityIndicator color={Colors.primaryLight} style={{ marginVertical: Spacing[8] }} />
         ) : (
           <View style={styles.list}>
             {availableProviders.map((id) => {
@@ -120,7 +120,7 @@ export default function ConnectPaymentsScreen() {
                   <View
                     style={[
                       styles.card,
-                      { backgroundColor: theme.card, borderColor: selected ? Colors.primary : theme.border },
+                      { backgroundColor: theme.card, borderColor: selected ? Colors.primaryLight : theme.border },
                       (Shadow.sm as any),
                     ]}
                   >
@@ -138,7 +138,7 @@ export default function ConnectPaymentsScreen() {
                       style={[
                         styles.checkbox,
                         selected
-                          ? { backgroundColor: Colors.primary, borderColor: Colors.primary }
+                          ? { backgroundColor: Colors.primaryLight, borderColor: Colors.primaryLight }
                           : { backgroundColor: 'transparent', borderColor: theme.border },
                       ]}
                     >
@@ -164,7 +164,7 @@ export default function ConnectPaymentsScreen() {
           onPress={handleContinue}
           size="xl"
           isLoading={saving}
-          icon={<ArrowRight size={20} color={Colors.white} />}
+          icon={<ArrowRight size={20} color={Colors.navy} />}
           iconPosition="right"
         />
         <Button
@@ -181,7 +181,7 @@ export default function ConnectPaymentsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   progressTrack: { height: 3 },
-  progressFill: { height: 3, backgroundColor: Colors.primary, borderRadius: 2 },
+  progressFill: { height: 3, backgroundColor: Colors.primaryLight, borderRadius: 2 },
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: Spacing[4] },
   back: { marginTop: Spacing[4], marginBottom: Spacing[6], width: 40, height: 40, justifyContent: 'center' },
   header: { marginBottom: Spacing[6] },

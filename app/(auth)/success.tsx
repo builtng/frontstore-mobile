@@ -100,17 +100,17 @@ export default function SuccessScreen() {
 
           <View style={styles.cardBody}>
             <Text style={[styles.urlLabel, { color: theme.textTertiary }]}>Store URL</Text>
-            <Text style={[styles.url, { color: Colors.primary }]}>
+            <Text style={[styles.url, { color: Colors.primaryLight }]}>
               {storeUrl}
             </Text>
 
             <View style={styles.actions}>
               <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: Colors.primaryDim }]}
+                style={[styles.actionBtn, { backgroundColor: Colors.glow.primarySoft }]}
                 onPress={handleShare}
               >
-                <Share2 size={18} color={Colors.primary} />
-                <Text style={[styles.actionBtnText, { color: Colors.primary }]}>Share Store</Text>
+                <Share2 size={18} color={Colors.primaryLight} />
+                <Text style={[styles.actionBtnText, { color: Colors.primaryLight }]}>Share Store</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -129,12 +129,12 @@ export default function SuccessScreen() {
             title="Go to Dashboard"
             onPress={() => router.replace('/(merchant)')}
             size="xl"
-            icon={<ArrowRight size={20} color={Colors.white} />}
+            icon={<ArrowRight size={20} color={Colors.navy} />}
             iconPosition="right"
           />
           <TouchableOpacity style={styles.viewStore}>
-            <ExternalLink size={16} color={Colors.primary} />
-            <Text style={[styles.viewStoreText, { color: Colors.primary }]}>View Live Store</Text>
+            <ExternalLink size={16} color={Colors.primaryLight} />
+            <Text style={[styles.viewStoreText, { color: Colors.primaryLight }]}>View Live Store</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>

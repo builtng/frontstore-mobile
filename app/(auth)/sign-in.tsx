@@ -74,7 +74,7 @@ export default function SignInScreen() {
 
           <View style={styles.header}>
             <View style={styles.logoMark}>
-              <View style={[styles.bubble, { backgroundColor: Colors.primary }]} />
+              <View style={[styles.bubble, { backgroundColor: Colors.primaryLight }]} />
               <View style={[styles.bubbleSmall, { backgroundColor: Colors.teal }]} />
             </View>
             <Text style={[styles.title, { color: theme.text }]}>Welcome back</Text>
@@ -121,7 +121,7 @@ export default function SignInScreen() {
             />
 
             <TouchableOpacity style={styles.forgotRow}>
-              <Text style={[styles.forgot, { color: Colors.primary }]}>Forgot password?</Text>
+              <Text style={[styles.forgot, { color: Colors.primaryLight }]}>Forgot password?</Text>
             </TouchableOpacity>
 
             <Button
@@ -139,7 +139,7 @@ export default function SignInScreen() {
               Don't have an account?{' '}
             </Text>
             <TouchableOpacity onPress={() => router.replace('/(auth)/sign-up')}>
-              <Text style={[styles.footerLink, { color: Colors.primary }]}>Get Started</Text>
+              <Text style={[styles.footerLink, { color: Colors.primaryLight }]}>Get Started</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

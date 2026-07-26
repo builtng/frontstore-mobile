@@ -68,18 +68,18 @@ const BusinessTypeCard = ({
         style={[
           styles.typeCard,
           {
-            backgroundColor: selected ? Colors.primaryDim : theme.card,
-            borderColor: selected ? Colors.primary : theme.border,
+            backgroundColor: selected ? Colors.glow.primarySoft : theme.card,
+            borderColor: selected ? Colors.primaryLight : theme.border,
             borderWidth: selected ? 2 : 1.5,
           },
           !selected && (Shadow.sm as any),
         ]}
       >
-        <View style={[styles.iconWrap, { backgroundColor: selected ? Colors.primary + '20' : theme.background }]}>
-          <item.Icon size={22} color={selected ? Colors.primary : theme.textSecondary} strokeWidth={1.8} />
+        <View style={[styles.iconWrap, { backgroundColor: selected ? Colors.primaryLight + '20' : theme.background }]}>
+          <item.Icon size={22} color={selected ? Colors.primaryLight : theme.textSecondary} strokeWidth={1.8} />
         </View>
         <View style={styles.typeInfo}>
-          <Text style={[styles.typeName, { color: selected ? Colors.primary : theme.text }]}>
+          <Text style={[styles.typeName, { color: selected ? Colors.primaryLight : theme.text }]}>
             {item.label}
           </Text>
           <Text style={[styles.typeDesc, { color: theme.textTertiary }]}>{item.desc}</Text>
@@ -121,7 +121,7 @@ export default function BusinessTypeScreen() {
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <Text style={[styles.step, { color: Colors.primary }]}>Step 1 of 8</Text>
+          <Text style={[styles.step, { color: Colors.primaryLight }]}>Step 1 of 8</Text>
           <Text style={[styles.title, { color: theme.text }]}>What do you sell?</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             This helps us personalise your store experience
@@ -140,12 +140,12 @@ export default function BusinessTypeScreen() {
         </View>
 
         {businessType && (
-          <View style={[styles.ninaHint, { backgroundColor: Colors.primaryDim, borderColor: Colors.primary + '40' }]}>
-            <View style={[styles.ninaHintAvatar, { backgroundColor: Colors.primary }]}>
+          <View style={[styles.ninaHint, { backgroundColor: Colors.glow.primarySoft, borderColor: Colors.primaryLight + '40' }]}>
+            <View style={[styles.ninaHintAvatar, { backgroundColor: Colors.primaryLight }]}>
               <Bot size={14} color={Colors.white} strokeWidth={2} />
             </View>
             <View style={styles.ninaHintBody}>
-              <Text style={[styles.ninaHintName, { color: Colors.primary }]}>Nina</Text>
+              <Text style={[styles.ninaHintName, { color: Colors.primaryLight }]}>Nina</Text>
               <Text style={[styles.ninaHintText, { color: theme.text }]}>
                 {NINA_HINTS[businessType]}
               </Text>
@@ -160,7 +160,7 @@ export default function BusinessTypeScreen() {
           onPress={() => businessType && router.push('/(auth)/store-setup')}
           disabled={!businessType}
           size="xl"
-          icon={<ArrowRight size={20} color={Colors.white} />}
+          icon={<ArrowRight size={20} color={Colors.navy} />}
           iconPosition="right"
         />
       </View>
@@ -171,7 +171,7 @@ export default function BusinessTypeScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   progressTrack: { height: 3 },
-  progressFill: { height: 3, backgroundColor: Colors.primary, borderRadius: 2 },
+  progressFill: { height: 3, backgroundColor: Colors.primaryLight, borderRadius: 2 },
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: Spacing[4] },
   back: { marginTop: Spacing[4], marginBottom: Spacing[6], width: 40, height: 40, justifyContent: 'center' },
   header: { marginBottom: Spacing[7] },
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },

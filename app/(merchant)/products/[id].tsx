@@ -107,7 +107,7 @@ export default function ProductDetailScreen() {
           {primaryImage ? (
             <Image source={{ uri: primaryImage.url }} style={StyleSheet.absoluteFill} contentFit="cover" />
           ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.primaryDim }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glow.primarySoft }]} />
           )}
           {/* Image thumbnails */}
           {images.length > 1 && (
@@ -136,7 +136,7 @@ export default function ProductDetailScreen() {
 
           {/* Price */}
           <View style={styles.priceRow}>
-            <Text style={[styles.price, { color: Colors.primary }]}>{formatCurrency(product.price)}</Text>
+            <Text style={[styles.price, { color: Colors.primaryLight }]}>{formatCurrency(product.price)}</Text>
             {product.compare_price && (
               <Text style={[styles.comparePrice, { color: theme.textTertiary }]}>
                 {formatCurrency(product.compare_price)}
@@ -182,7 +182,7 @@ export default function ProductDetailScreen() {
           title="Edit"
           onPress={() => {}}
           size="md"
-          icon={<Edit2 size={16} color={Colors.white} />}
+          icon={<Edit2 size={16} color={Colors.navy} />}
           style={styles.actionBtn}
         />
         <Button
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   header: { position: 'absolute', top: 56, left: Spacing[6], right: Spacing[6], flexDirection: 'row', justifyContent: 'space-between', zIndex: 10 },
   headerBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   headerActions: { flexDirection: 'row', gap: Spacing[2] },
-  heroImage: { height: 300, backgroundColor: Colors.gray100, position: 'relative' },
+  heroImage: { height: 300, backgroundColor: Colors.dark.surface, position: 'relative' },
   thumbRow: { position: 'absolute', bottom: Spacing[4], left: Spacing[4], flexDirection: 'row', gap: Spacing[2] },
   thumb: { width: 44, height: 44, borderRadius: Radius.sm, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.5)' },
   thumbActive: { borderColor: Colors.white, borderWidth: 2 },

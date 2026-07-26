@@ -258,11 +258,11 @@ export default function AddProductScreen() {
                       onPress={() => onChange(t.value)}
                       style={[
                         styles.typeChip,
-                        { backgroundColor: value === t.value ? Colors.primaryDim : theme.card, borderColor: value === t.value ? Colors.primary : theme.border },
+                        { backgroundColor: value === t.value ? Colors.glow.primarySoft : theme.card, borderColor: value === t.value ? Colors.primaryLight : theme.border },
                       ]}
                     >
-                      <t.Icon size={16} color={value === t.value ? Colors.primary : theme.textSecondary} strokeWidth={1.8} />
-                      <Text style={[styles.typeLabel, { color: value === t.value ? Colors.primary : theme.textSecondary }]}>{t.label}</Text>
+                      <t.Icon size={16} color={value === t.value ? Colors.primaryLight : theme.textSecondary} strokeWidth={1.8} />
+                      <Text style={[styles.typeLabel, { color: value === t.value ? Colors.primaryLight : theme.textSecondary }]}>{t.label}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -324,8 +324,8 @@ export default function AddProductScreen() {
             <Switch
               value={trackStock}
               onValueChange={setTrackStock}
-              trackColor={{ false: theme.border, true: Colors.primaryDim }}
-              thumbColor={trackStock ? Colors.primary : Colors.gray400}
+              trackColor={{ false: theme.border, true: Colors.glow.primarySoft }}
+              thumbColor={trackStock ? Colors.primaryLight : Colors.gray400}
             />
           </View>
 
@@ -352,9 +352,9 @@ export default function AddProductScreen() {
           <View style={styles.section}>
             <View style={styles.descHeader}>
               <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Product Variants</Text>
-              <TouchableOpacity style={[styles.aiBtn, { backgroundColor: Colors.primaryDim }]} onPress={addVariant}>
-                <Plus size={13} color={Colors.primary} />
-                <Text style={[styles.aiBtnText, { color: Colors.primary }]}>Add Variant</Text>
+              <TouchableOpacity style={[styles.aiBtn, { backgroundColor: Colors.glow.primarySoft }]} onPress={addVariant}>
+                <Plus size={13} color={Colors.primaryLight} />
+                <Text style={[styles.aiBtnText, { color: Colors.primaryLight }]}>Add Variant</Text>
               </TouchableOpacity>
             </View>
             {variants.map((v) => (
@@ -394,9 +394,9 @@ export default function AddProductScreen() {
           {/* Description */}
           <View style={styles.descHeader}>
             <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Description</Text>
-            <TouchableOpacity style={[styles.aiBtn, { backgroundColor: Colors.primaryDim }]} onPress={generateDescription}>
-              <Sparkles size={13} color={Colors.primary} />
-              <Text style={[styles.aiBtnText, { color: Colors.primary }]}>{isGenerating ? 'Generating…' : 'AI Write'}</Text>
+            <TouchableOpacity style={[styles.aiBtn, { backgroundColor: Colors.glow.primarySoft }]} onPress={generateDescription}>
+              <Sparkles size={13} color={Colors.primaryLight} />
+              <Text style={[styles.aiBtnText, { color: Colors.primaryLight }]}>{isGenerating ? 'Generating…' : 'AI Write'}</Text>
             </TouchableOpacity>
           </View>
           <Controller
@@ -422,7 +422,7 @@ export default function AddProductScreen() {
             onPress={() => { setSelectedCategory(cat); setCategorySheetOpen(false); }}
           >
             <Text style={[styles.catName, { color: theme.text }]}>{cat.name}</Text>
-            {selectedCategory?.id === cat.id && <View style={[styles.catCheck, { backgroundColor: Colors.primary }]} />}
+            {selectedCategory?.id === cat.id && <View style={[styles.catCheck, { backgroundColor: Colors.primaryLight }]} />}
           </TouchableOpacity>
         ))}
       </BottomSheet>
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   sectionLabel: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm, marginBottom: Spacing[3] },
   imageRow: { gap: Spacing[3] },
   imageThumb: { width: 88, height: 88, borderRadius: Radius.md, overflow: 'hidden', position: 'relative' },
-  primaryBadge: { position: 'absolute', bottom: 4, left: 4, backgroundColor: Colors.primary, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1, zIndex: 1 },
+  primaryBadge: { position: 'absolute', bottom: 4, left: 4, backgroundColor: Colors.primaryLight, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1, zIndex: 1 },
   primaryBadgeText: { color: Colors.white, fontSize: 9, fontFamily: FontFamily.bodySemiBold },
   removeImage: { position: 'absolute', top: 5, right: 5, width: 18, height: 18, borderRadius: 9, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center' },
   addImage: { width: 88, height: 88, borderRadius: Radius.md, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },

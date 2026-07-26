@@ -53,7 +53,7 @@ const ThemeCard = ({
         style={[
           styles.themeCard,
           {
-            borderColor: selected ? Colors.primary : appTheme.border,
+            borderColor: selected ? Colors.primaryLight : appTheme.border,
             borderWidth: selected ? 2.5 : 1.5,
           },
           !selected && (Shadow.sm as any),
@@ -87,13 +87,13 @@ const ThemeCard = ({
         {/* Info */}
         <View style={[styles.themeInfo, { backgroundColor: appTheme.card }]}>
           <View>
-            <Text style={[styles.themeName, { color: selected ? Colors.primary : appTheme.text }]}>
+            <Text style={[styles.themeName, { color: selected ? Colors.primaryLight : appTheme.text }]}>
               {t.name}
             </Text>
             <Text style={[styles.themeTagline, { color: appTheme.textTertiary }]}>{t.tagline}</Text>
           </View>
           {selected && (
-            <View style={[styles.check, { backgroundColor: Colors.primary }]}>
+            <View style={[styles.check, { backgroundColor: Colors.primaryLight }]}>
               <Check size={12} color={Colors.white} strokeWidth={3} />
             </View>
           )}
@@ -121,7 +121,7 @@ export default function ThemeSelectScreen() {
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <Text style={[styles.step, { color: Colors.primary }]}>Step 4 of 8</Text>
+          <Text style={[styles.step, { color: Colors.primaryLight }]}>Step 4 of 8</Text>
           <Text style={[styles.title, { color: theme.text }]}>Choose your theme</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Your theme sets the look and feel of your storefront
@@ -146,7 +146,7 @@ export default function ThemeSelectScreen() {
           onPress={() => router.push('/(auth)/connect-payments')}
           disabled={!selectedTheme}
           size="xl"
-          icon={<ArrowRight size={20} color={Colors.white} />}
+          icon={<ArrowRight size={20} color={Colors.navy} />}
           iconPosition="right"
         />
       </View>
@@ -157,7 +157,7 @@ export default function ThemeSelectScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   progressTrack: { height: 3 },
-  progressFill: { height: 3, backgroundColor: Colors.primary, borderRadius: 2 },
+  progressFill: { height: 3, backgroundColor: Colors.primaryLight, borderRadius: 2 },
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: Spacing[4] },
   back: { marginTop: Spacing[4], marginBottom: Spacing[6], width: 40, height: 40, justifyContent: 'center' },
   header: { marginBottom: Spacing[6] },
