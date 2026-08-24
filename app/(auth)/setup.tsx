@@ -23,19 +23,18 @@ import { useTheme } from '@/hooks/useTheme';
 import { useHaptics } from '@/hooks/useHaptics';
 
 const BUSINESS_TYPES = [
-  { value: 'fashion', label: 'Fashion & Apparel' },
-  { value: 'food', label: 'Food & Beverage' },
-  { value: 'beauty', label: 'Beauty & Wellness' },
-  { value: 'electronics', label: 'Electronics & Gadgets' },
-  { value: 'physical', label: 'Physical Products' },
-  { value: 'digital', label: 'Digital Products' },
-  { value: 'services', label: 'Services' },
-  { value: 'creator', label: 'Creator & Media' },
-  { value: 'barber-shop', label: 'Barbershop' },
-  { value: 'home-services', label: 'Home Services' },
-  { value: 'auto-repair', label: 'Auto Repair' },
-  { value: 'cleaning-service', label: 'Cleaning Service' },
-  { value: 'event-services', label: 'Events & Catering' },
+  { value: 'retail-groceries', label: 'Retail & Groceries' },
+  { value: 'fashion-clothing', label: 'Fashion & Clothing' },
+  { value: 'confectionaries-food', label: 'Confectionaries & Food' },
+  { value: 'personal-care-beauty', label: 'Personal Care & Beauty' },
+  { value: 'gadgets-electronics', label: 'Gadgets & Electronics' },
+  { value: 'shoes-sneakers', label: 'Shoes & Sneakers' },
+  { value: 'jewellery', label: 'Jewellery' },
+  { value: 'gifts-hampers', label: 'Gifts & Hampers' },
+  { value: 'home-auto', label: 'Home & Auto Services' },
+  { value: 'digital-products', label: 'Digital Products' },
+  { value: 'pharmacy-health', label: 'Pharmacy & Health' },
+  { value: 'schools-faith', label: 'Schools & Faith' },
   { value: 'other', label: 'Other' },
 ] as const;
 
