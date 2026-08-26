@@ -69,5 +69,8 @@
         ]
       }
     }
+  },
+  "optionalDependencies": {
+    "lightningcss-darwin-arm64": "^1.27.0"
   }
 }
