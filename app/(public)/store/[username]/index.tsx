@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
-  TouchableOpacity, Dimensions, Share, Linking,
+  TouchableOpacity, Dimensions, Share, Linking, ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -78,13 +78,16 @@ function FaqItem({ faq, theme }: { faq: StoreFaq; theme: any }) {
 
 function ProductCard({ product, storeUsername, onPress }: { product: PublicProduct; storeUsername: string; onPress: () => void }) {
   const { theme } = useTheme();
-  const { addItem } = useCartStore();
+  const addItem = useCartStore((s) => s.addItem);
   const toast = useToast();
   const haptics = useHaptics();
-  const primaryImage = product.images?.find((i) => i.is_primary) ?? product.images?.[0];
+  const [imgLoading, setImgLoading] = useState(true);
 
-  const handleAddToCart = () => {
-    haptics.success();
+  const primaryImage = product.images?.find((i: any) => i.is_primary) ?? product.images?.[0];
+
+  const handleAddToCart = (e: any) => {
+    e.stopPropagation();
+    haptics.impactMedium();
     addItem({
       productId: product.id,
       storeUsername,
@@ -106,8 +109,16 @@ function ProductCard({ product, storeUsername, onPress }: { product: PublicProdu
       activeOpacity={0.85}
     >
       <View style={styles.productImage}>
+        {imgLoading && primaryImage && (
+          <Skeleton style={StyleSheet.absoluteFill} />
+        )}
         {primaryImage ? (
-          <Image source={{ uri: primaryImage.url }} style={StyleSheet.absoluteFill} contentFit="cover" />
+          <Image 
+            source={{ uri: primaryImage.url }} 
+            style={StyleSheet.absoluteFill} 
+            contentFit="cover"
+            onLoadEnd={() => setImgLoading(false)}
+          />
         ) : (
           <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glow.primarySoft, alignItems: 'center', justifyContent: 'center' }]}>
             <Text style={{ fontSize: 28 }}>📦</Text>
@@ -189,12 +200,11 @@ export default function StoreScreen() {
             <ArrowLeft size={22} color={theme.text} />
           </TouchableOpacity>
         </View>
-        <View style={styles.pad}>
-          <Skeleton height={200} radius={0} style={{ marginHorizontal: -Spacing[6], marginBottom: Spacing[5] }} />
-          <Skeleton height={56} radius={28} width={56} style={{ marginBottom: Spacing[4] }} />
-          <Skeleton height={24} width="60%" style={{ marginBottom: 8 }} />
-          <Skeleton height={14} width="80%" style={{ marginBottom: Spacing[5] }} />
-          <Skeleton height={180} radius={16} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+          <ActivityIndicator size="large" color={Colors.primaryLight} />
+          <Text style={{ fontSize: 14, fontFamily: FontFamily.headingMedium, color: theme.textSecondary }}>
+            Loading store...
+          </Text>
         </View>
       </SafeAreaView>
     );
