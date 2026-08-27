@@ -134,7 +134,11 @@ export default function StoreSetupScreen() {
                   placeholder="your-store-name"
                   autoCapitalize="none"
                   value={value}
-                  onChangeText={(t) => onChange(t.toLowerCase().replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''))}
+                  onChangeText={(t) => {
+                    const raw = t.toLowerCase();
+                    const cleaned = raw.includes('@') ? raw.split('@')[0] : raw;
+                    onChange(cleaned.replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''));
+                  }}
                   onBlur={onBlur}
                   error={errors.storeUsername?.message}
                   hint="Only lowercase letters, numbers, and hyphens"
@@ -147,7 +151,7 @@ export default function StoreSetupScreen() {
             <Animated.View style={[styles.preview, { backgroundColor: Colors.glow.primarySoft, borderRadius: Radius.lg }, previewStyle]}>
               <Text style={[styles.previewLabel, { color: Colors.primaryLight }]}>Your store URL</Text>
               <Text style={[styles.previewUrl, { color: Colors.primaryLight }]}>
-                frontstore.ng/<Text style={{ fontFamily: FontFamily.headingBold }}>{watchedUsername || 'your-store'}</Text>
+                <Text style={{ fontFamily: FontFamily.headingBold }}>{watchedUsername || 'your-store'}</Text>.frontstore.ng
               </Text>
             </Animated.View>
 

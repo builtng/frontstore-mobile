@@ -60,11 +60,14 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.flex}>
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
-            <Stack.Screen name="index" />
+          <StatusBar style="dark" />
+          <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+            <Stack.Screen name="index" options={{ animation: 'none' }} />
             <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(merchant)" />
+            <Stack.Screen name="(merchant)" options={{ animation: 'none' }} />
+            <Stack.Screen name="(public)" />
+            <Stack.Screen name="(buyer)" />
+            <Stack.Screen name="(buyer-auth)" />
           </Stack>
           {showVideoSplash && <VideoSplash onFinish={() => setShowVideoSplash(false)} />}
         </ToastProvider>

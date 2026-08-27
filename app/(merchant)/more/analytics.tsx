@@ -3,8 +3,9 @@ import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
   TouchableOpacity, RefreshControl,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, ShoppingBag, Users, Eye, RefreshCw, BarChart2 } from 'lucide-react-native';
+import { TrendingUp, ShoppingBag, Users, Eye, RefreshCw, BarChart2, ArrowLeft } from 'lucide-react-native';
 import { StatCard } from '@/components/ui/StatCard';
 import { SkeletonStatCard, Skeleton } from '@/components/ui/SkeletonLoader';
 import { RevenueChart } from '@/components/merchant/RevenueChart';
@@ -28,6 +29,7 @@ const pct = (value: number, total: number) =>
   total === 0 ? '0%' : `${((value / total) * 100).toFixed(1)}%`;
 
 export default function AnalyticsScreen() {
+  const router = useRouter();
   const { theme } = useTheme();
   const [period, setPeriod] = useState('30d');
   const [refreshing, setRefreshing] = useState(false);
@@ -65,7 +67,10 @@ export default function AnalyticsScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <ArrowLeft size={22} color={theme.text} />
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.text }]}>Analytics</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Your store performance</Text>
         </View>
@@ -238,8 +243,9 @@ export default function AnalyticsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: Spacing[6], paddingTop: Spacing[5], paddingBottom: Spacing[3] },
-  title: { fontFamily: FontFamily.headingBold, fontSize: FontSize['3xl'], letterSpacing: -0.5 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing[6], paddingTop: Spacing[4], paddingBottom: Spacing[3], gap: 12 },
+  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  title: { fontFamily: FontFamily.headingBold, fontSize: FontSize['2xl'], letterSpacing: -0.5 },
   subtitle: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.sm, marginTop: 2 },
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: 120 },
 

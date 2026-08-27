@@ -159,7 +159,7 @@ export default function StoreScreen() {
   const faqs: StoreFaq[] = storeData?.faqs ?? [];
 
   const handleShare = async () => {
-    await Share.share({ message: `Shop at ${store?.name} on FrontStore!\nhttps://frontstore.ng/${username}` });
+    await Share.share({ message: `Shop at ${store?.name} on FrontStore!\nhttps://${username}.frontstore.ng` });
   };
 
   const handleWhatsApp = () => {
@@ -448,7 +448,7 @@ export default function StoreScreen() {
               )}
 
               <AboutCard label="Store URL" theme={theme}>
-                <Text style={[styles.aboutText, { color: Colors.primaryLight }]}>frontstore.ng/{store.username}</Text>
+                <Text style={[styles.aboutText, { color: Colors.primaryLight }]}>{store.username}.frontstore.ng</Text>
               </AboutCard>
 
               {/* FAQs */}

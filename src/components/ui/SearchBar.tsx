@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { Search, X } from 'lucide-react-native';
-import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Radius, Spacing } from '@/constants/spacing';
 import { useTheme } from '@/hooks/useTheme';
@@ -30,28 +29,28 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   const animatedBorder = useAnimatedStyle(() => ({
     borderColor: withTiming(
-      borderAnim.value === 1 ? Colors.primaryLight : theme.border,
+      borderAnim.value === 1 ? '#128C7E' : '#E2E8F0',
       { duration: 200 }
     ),
-    borderWidth: withTiming(borderAnim.value === 1 ? 2 : 1.5, { duration: 150 }),
+    borderWidth: withTiming(borderAnim.value === 1 ? 1.5 : 1, { duration: 150 }),
   }));
 
   return (
     <Animated.View
       style={[
         styles.container,
-        { backgroundColor: theme.surface },
+        { backgroundColor: '#FFFFFF' },
         animatedBorder,
         style,
       ]}
     >
-      <Search size={18} color={focused ? Colors.primaryLight : theme.textTertiary} strokeWidth={2} />
+      <Search size={18} color={focused ? '#128C7E' : '#94A3B8'} strokeWidth={2} />
       <TextInput
-        style={[styles.input, { color: theme.text, fontFamily: FontFamily.bodyRegular }]}
+        style={[styles.input, { color: '#0F172A', fontFamily: FontFamily.bodyRegular }]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={theme.textTertiary}
+        placeholderTextColor="#94A3B8"
         autoFocus={autoFocus}
         onFocus={() => { setFocused(true); borderAnim.value = 1; }}
         onBlur={() => { setFocused(false); borderAnim.value = 0; }}
@@ -65,7 +64,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <View style={styles.clearBtn}>
-            <X size={12} color={Colors.white} strokeWidth={2.5} />
+            <X size={12} color="#64748B" strokeWidth={2.5} />
           </View>
         </TouchableOpacity>
       )}
@@ -79,9 +78,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: Radius.full,
     paddingHorizontal: Spacing[4],
-    paddingVertical: Spacing[3],
+    paddingVertical: Spacing[2],
     gap: Spacing[3],
-    minHeight: 48,
+    height: 48,
   },
   input: {
     flex: 1,
@@ -92,7 +91,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
   },

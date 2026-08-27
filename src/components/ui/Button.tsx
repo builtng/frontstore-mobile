@@ -99,7 +99,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {isLoading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? Colors.navy : variant === 'danger' ? Colors.white : Colors.primaryLight}
+          color={variant === 'primary' || variant === 'danger' ? Colors.white : Colors.primary}
           size="small"
         />
       ) : (
@@ -115,7 +115,7 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: Radius.lg,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -133,12 +133,12 @@ const styles = StyleSheet.create({
 
   // Variants
   primary: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: '#128C7E',
   },
   secondary: {
-    backgroundColor: Colors.glow.primarySoft,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(37, 211, 102, 0.32)',
+    borderColor: '#E2E8F0',
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -149,30 +149,33 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: Colors.primaryLight,
+    borderColor: '#128C7E',
   },
 
   // Sizes
   size_sm: {
     paddingVertical: Spacing[2],
     paddingHorizontal: Spacing[4],
-    borderRadius: Radius.sm,
-    minHeight: 36,
+    borderRadius: Radius.full,
+    minHeight: 38,
   },
   size_md: {
     paddingVertical: Spacing[3],
     paddingHorizontal: Spacing[5],
+    borderRadius: Radius.full,
     minHeight: 44,
   },
   size_lg: {
     paddingVertical: Spacing[4],
     paddingHorizontal: Spacing[6],
-    minHeight: 54,
+    borderRadius: Radius.full,
+    minHeight: 52,
   },
   size_xl: {
     paddingVertical: Spacing[5],
     paddingHorizontal: Spacing[7],
-    minHeight: 60,
+    borderRadius: Radius.full,
+    minHeight: 58,
   },
 
   // States
@@ -182,14 +185,14 @@ const styles = StyleSheet.create({
 
   // Labels
   label: {
-    fontFamily: FontFamily.bodySemiBold,
+    fontFamily: FontFamily.headingBold,
     textAlign: 'center',
   },
-  label_primary: { color: Colors.navy },
-  label_secondary: { color: Colors.primaryLight },
-  label_ghost: { color: Colors.primaryLight },
+  label_primary: { color: Colors.white },
+  label_secondary: { color: '#0F172A' },
+  label_ghost: { color: '#128C7E' },
   label_danger: { color: Colors.white },
-  label_outline: { color: Colors.primaryLight },
+  label_outline: { color: '#128C7E' },
 
   label_sm: { fontSize: FontSize.sm },
   label_md: { fontSize: FontSize.base },

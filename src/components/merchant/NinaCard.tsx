@@ -30,7 +30,7 @@ export function NinaCard({ merchantName, hint }: NinaCardProps) {
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/(merchant)/nina');
+    router.push('/(merchant)/more/nina' as any);
   };
 
   return (

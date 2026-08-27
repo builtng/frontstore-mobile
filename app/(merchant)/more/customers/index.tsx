@@ -6,7 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { FlashList } from '@shopify/flash-list';
-import { Phone, MessageCircle, Users, TrendingUp } from 'lucide-react-native';
+import { Phone, MessageCircle, Users, TrendingUp, ArrowLeft } from 'lucide-react-native';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Avatar } from '@/components/ui/Avatar';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -53,7 +53,10 @@ export default function CustomersScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <View>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <ArrowLeft size={22} color={theme.text} />
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.text }]}>Customers</Text>
           <Text style={[styles.count, { color: theme.textSecondary }]}>
             {data?.length ?? 0} total customers
@@ -85,7 +88,7 @@ export default function CustomersScreen() {
           renderItem={({ item: customer }) => (
             <TouchableOpacity
               style={[styles.card, { backgroundColor: theme.card }, Shadow.sm as any]}
-              onPress={() => router.push(`/(merchant)/customers/${customer.id ?? customer.phone}` as any)}
+              onPress={() => router.push(`/(merchant)/more/customers/${customer.id ?? customer.phone}` as any)}
               activeOpacity={0.82}
             >
               <Avatar name={customer.name ?? 'Unknown'} size={48} />
@@ -145,10 +148,11 @@ export default function CustomersScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    paddingHorizontal: Spacing[6], paddingTop: Spacing[5], paddingBottom: Spacing[3],
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: Spacing[6], paddingTop: Spacing[4], paddingBottom: Spacing[3], gap: 12,
   },
-  title: { fontFamily: FontFamily.headingBold, fontSize: FontSize['3xl'], letterSpacing: -0.5 },
+  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  title: { fontFamily: FontFamily.headingBold, fontSize: FontSize['2xl'], letterSpacing: -0.5 },
   count: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.sm, marginTop: 2 },
   statChip: { flexDirection: 'row', alignItems: 'center', gap: Spacing[1], paddingHorizontal: Spacing[3], paddingVertical: Spacing[2], borderRadius: Radius.full },
   statChipText: { fontFamily: FontFamily.headingBold, fontSize: FontSize.sm },

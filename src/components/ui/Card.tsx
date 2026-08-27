@@ -6,8 +6,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { BlurView } from 'expo-blur';
-import { Colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 import { Radius, Shadow, Spacing } from '@/constants/spacing';
 
 interface CardProps {
@@ -26,11 +25,12 @@ export const Card: React.FC<CardProps> = ({
   onPress,
   style,
   padding = Spacing[5],
-  shadow = 'md',
-  radius = Radius.lg,
+  shadow = 'sm',
+  radius = Radius.card,
   bordered = true,
-  variant = 'glass',
+  variant = 'solid',
 }) => {
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -39,21 +39,18 @@ export const Card: React.FC<CardProps> = ({
 
   const containerStyle: ViewStyle[] = [
     styles.card,
-    { borderRadius: radius, padding },
-    variant === 'solid' && { backgroundColor: Colors.dark.card },
+    {
+      borderRadius: radius,
+      padding,
+      backgroundColor: theme.card,
+    },
     shadow !== 'none' && (Shadow[shadow] as ViewStyle),
-    bordered && { borderWidth: 1, borderColor: Colors.glass.border },
+    bordered && { borderWidth: 1, borderColor: theme.border },
     style as ViewStyle,
   ].filter(Boolean) as ViewStyle[];
 
   const content = (
     <Animated.View style={[animatedStyle, containerStyle]}>
-      {variant === 'glass' && (
-        <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
-      )}
-      {variant === 'glass' && (
-        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass.bg }]} />
-      )}
       {children}
     </Animated.View>
   );

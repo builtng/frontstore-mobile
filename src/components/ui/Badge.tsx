@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
-import { Radius, Spacing } from '@/constants/spacing';
+import { Radius } from '@/constants/spacing';
 
 type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'neutral' | 'teal';
 type BadgeSize = 'sm' | 'md';
@@ -15,16 +15,14 @@ interface BadgeProps {
   style?: ViewStyle;
 }
 
-// Tinted-glass pills: a low-opacity wash of the accent color over the dark
-// surface, with the accent itself carrying the text so it still reads bright.
 const variantConfig: Record<BadgeVariant, { bg: string; border: string; text: string; dot: string }> = {
-  success: { bg: 'rgba(46, 204, 113, 0.16)', border: 'rgba(46, 204, 113, 0.3)', text: '#4ADE80', dot: Colors.success },
-  warning: { bg: 'rgba(241, 196, 15, 0.16)', border: 'rgba(241, 196, 15, 0.3)', text: '#FBBF24', dot: Colors.warning },
-  danger: { bg: 'rgba(231, 76, 60, 0.16)', border: 'rgba(231, 76, 60, 0.3)', text: '#F87171', dot: Colors.danger },
-  info: { bg: 'rgba(59, 130, 246, 0.16)', border: 'rgba(59, 130, 246, 0.3)', text: '#60A5FA', dot: Colors.info },
-  primary: { bg: Colors.glow.primarySoft, border: 'rgba(37, 211, 102, 0.32)', text: Colors.primaryLight, dot: Colors.primaryLight },
-  neutral: { bg: Colors.glass.bg, border: Colors.glass.border, text: Colors.dark.textSecondary, dot: Colors.dark.textTertiary },
-  teal: { bg: 'rgba(100, 255, 218, 0.14)', border: 'rgba(100, 255, 218, 0.3)', text: Colors.teal, dot: Colors.teal },
+  success: { bg: 'rgba(16, 185, 129, 0.12)', border: 'transparent', text: '#059669', dot: '#10B981' },
+  warning: { bg: 'rgba(245, 158, 11, 0.12)', border: 'transparent', text: '#D97706', dot: '#F59E0B' },
+  danger: { bg: 'rgba(239, 68, 68, 0.12)', border: 'transparent', text: '#DC2626', dot: '#EF4444' },
+  info: { bg: 'rgba(59, 130, 246, 0.12)', border: 'transparent', text: '#2563EB', dot: '#3B82F6' },
+  primary: { bg: 'rgba(18, 140, 126, 0.12)', border: 'transparent', text: '#128C7E', dot: '#128C7E' },
+  neutral: { bg: '#F1F5F9', border: 'transparent', text: '#475569', dot: '#94A3B8' },
+  teal: { bg: 'rgba(20, 184, 166, 0.12)', border: 'transparent', text: '#0D9488', dot: '#14B8A6' },
 };
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -34,7 +32,7 @@ export const Badge: React.FC<BadgeProps> = ({
   dot = false,
   style,
 }) => {
-  const config = variantConfig[variant];
+  const config = variantConfig[variant] || variantConfig.neutral;
 
   return (
     <View
@@ -82,26 +80,25 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing[3],
-    paddingVertical: Spacing[1],
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: Radius.full,
-    borderWidth: 1,
     alignSelf: 'flex-start',
   },
   sm: {
-    paddingHorizontal: Spacing[2],
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginRight: Spacing[1],
+    marginRight: 6,
   },
   label: {
-    fontFamily: FontFamily.bodySemiBold,
+    fontFamily: FontFamily.headingBold,
     fontSize: FontSize.xs,
-    textTransform: 'capitalize',
+    letterSpacing: 0.1,
   },
   labelSm: {
     fontSize: 10,

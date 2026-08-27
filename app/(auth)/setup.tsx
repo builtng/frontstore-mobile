@@ -203,11 +203,14 @@ export default function SetupScreen() {
                 label="Store Username"
                 placeholder="your-store-name"
                 autoCapitalize="none"
-                value={value}
-                onChangeText={(t) => onChange(t.toLowerCase().replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''))}
+                onChangeText={(t) => {
+                  const raw = t.toLowerCase();
+                  const cleaned = raw.includes('@') ? raw.split('@')[0] : raw;
+                  onChange(cleaned.replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''));
+                }}
                 onBlur={onBlur}
                 error={errors.username?.message}
-                hint="frontstore.ng/your-username"
+                hint="your-username.frontstore.ng"
                 leftIcon={<AtSign size={18} color={theme.textTertiary} />}
               />
             )}

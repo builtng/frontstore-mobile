@@ -24,7 +24,7 @@ export default function QRCodeScreen() {
   const moduleStatus = useModuleStatus('qr_code');
   const isPro = user?.plan === 'pro_monthly' || user?.plan === 'pro_yearly';
 
-  const storeUrl = user?.store?.username ? `https://frontstore.ng/${user.store.username}` : 'https://frontstore.ng';
+  const storeUrl = user?.store?.username ? `https://${user.store.username}.frontstore.ng` : 'https://frontstore.ng';
 
   const shareStoreLink = async () => {
     await Share.share({ message: `Shop at ${user?.store?.name ?? 'my store'} on FrontStore!\n${storeUrl}` });
@@ -112,7 +112,7 @@ export default function QRCodeScreen() {
               color="#128C7E"
               backgroundColor={Colors.white}
               getRef={(ref) => { qrRef.current = ref; }}
-              logo={require('../../assets/icon.png')}
+              logo={require('../../../assets/icon.png')}
               logoSize={48}
               logoBackgroundColor={Colors.white}
               logoBorderRadius={10}

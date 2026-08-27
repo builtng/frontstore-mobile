@@ -176,7 +176,7 @@ export default function SettingsScreen() {
               {storeUsername && (
                 <View style={styles.urlRow}>
                   <Globe size={12} color={Colors.primaryLight} />
-                  <Text style={[styles.logoUrl, { color: Colors.primaryLight }]}>frontstore.ng/{storeUsername}</Text>
+                  <Text style={[styles.logoUrl, { color: Colors.primaryLight }]}>{storeUsername}.frontstore.ng</Text>
                 </View>
               )}
               {store?.is_verified && (
@@ -270,9 +270,14 @@ export default function SettingsScreen() {
                       label="Store URL Username"
                       placeholder="my-store"
                       value={value}
-                      onChangeText={(text) => onChange(text.toLowerCase().replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''))}
+                      onChangeText={(text) => {
+                        const raw = text.toLowerCase();
+                        const cleaned = raw.includes('@') ? raw.split('@')[0] : raw;
+                        onChange(cleaned.replace(/_/g, '-').replace(/[^a-z0-9-]/g, ''));
+                      }}
                       onBlur={onBlur}
                       error={errors.username?.message}
+                      hint="your-username.frontstore.ng"
                       autoCapitalize="none"
                     />
                   )}
@@ -284,7 +289,7 @@ export default function SettingsScreen() {
                     <Badge label="Pro" variant="primary" size="sm" />
                   </View>
                   <Text style={[styles.urlValue, { color: Colors.primaryLight }]}>
-                    frontstore.ng/{storeUsername ?? '—'}
+                    {storeUsername ?? '—'}.frontstore.ng
                   </Text>
                   <Text style={[styles.urlNote, { color: theme.textTertiary }]}>
                     Free plan usernames are locked. Upgrade to Pro to change it.
