@@ -12,12 +12,13 @@ import Animated, {
   useAnimatedStyle,
   withSequence,
   withTiming,
-  withSpring,
+  withRepeat,
 } from 'react-native-reanimated';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Radius, Spacing } from '@/constants/spacing';
 import { useTheme } from '@/hooks/useTheme';
+import { RefreshCw } from 'lucide-react-native';
 
 interface OTPInputProps {
   length?: number;
@@ -38,26 +39,37 @@ export const OTPInput: React.FC<OTPInputProps> = ({
   onComplete,
   error = false,
 }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const inputRef = useRef<TextInput>(null);
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const [canResend, setCanResend] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(0);
   const shakeAnim = useSharedValue(0);
+  const cursorOpacity = useSharedValue(1);
 
   const digits = Array.from({ length }).map((_, i) => value[i] || '');
 
   useEffect(() => {
     inputRef.current?.focus();
+    cursorOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0.2, { duration: 500 }),
+        withTiming(1, { duration: 500 })
+      ),
+      -1,
+      true
+    );
   }, []);
 
   useEffect(() => {
     if (error) {
       shakeAnim.value = withSequence(
-        withTiming(-8, { duration: 60 }),
-        withTiming(8, { duration: 60 }),
-        withTiming(-8, { duration: 60 }),
-        withTiming(8, { duration: 60 }),
-        withTiming(0, { duration: 60 })
+        withTiming(-10, { duration: 50 }),
+        withTiming(10, { duration: 50 }),
+        withTiming(-8, { duration: 50 }),
+        withTiming(8, { duration: 50 }),
+        withTiming(-4, { duration: 50 }),
+        withTiming(0, { duration: 50 })
       );
     }
   }, [error]);
@@ -96,34 +108,60 @@ export const OTPInput: React.FC<OTPInputProps> = ({
     transform: [{ translateX: shakeAnim.value }],
   }));
 
+  const animatedCursor = useAnimatedStyle(() => ({
+    opacity: cursorOpacity.value,
+  }));
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity activeOpacity={1} onPress={() => inputRef.current?.focus()}>
+      <TouchableOpacity activeOpacity={0.95} onPress={() => inputRef.current?.focus()}>
         <Animated.View style={[styles.row, animatedRow]}>
           {digits.map((digit, i) => {
-            const isFocused = value.length === i && !error;
+            const isFocused = (value.length === i || (value.length === length && i === length - 1)) && focusedIndex !== null && !error;
+            const isCurrentBlankFocus = value.length === i && focusedIndex !== null && !error;
             const filled = i < value.length;
+
             return (
               <View
                 key={i}
                 style={[
                   styles.cell,
                   {
-                    backgroundColor: theme.surface,
+                    backgroundColor: isDark
+                      ? isFocused
+                        ? 'rgba(18, 140, 126, 0.12)'
+                        : 'rgba(15, 23, 42, 0.8)'
+                      : isFocused
+                      ? 'rgba(18, 140, 126, 0.04)'
+                      : '#FFFFFF',
                     borderColor: error
                       ? Colors.danger
                       : isFocused
-                      ? Colors.primaryLight
+                      ? Colors.primary
                       : filled
-                      ? 'rgba(37, 211, 102, 0.45)'
-                      : theme.border,
-                    borderWidth: isFocused || error ? 2 : 1.5,
+                      ? isDark
+                        ? Colors.primaryDark
+                        : 'rgba(18, 140, 126, 0.35)'
+                      : isDark
+                      ? Colors.dark.border
+                      : Colors.light.border,
+                    borderWidth: isFocused || error ? 1.5 : 1,
                   },
                 ]}
               >
-                <Text style={[styles.digit, { color: theme.text }]}>
-                  {digit || (isFocused ? '|' : '')}
-                </Text>
+                {digit ? (
+                  <Text style={[styles.digit, { color: theme.text }]}>
+                    {digit}
+                  </Text>
+                ) : isCurrentBlankFocus ? (
+                  <Animated.View
+                    style={[
+                      styles.cursor,
+                      { backgroundColor: Colors.primary },
+                      animatedCursor,
+                    ]}
+                  />
+                ) : null}
               </View>
             );
           })}
@@ -137,18 +175,42 @@ export const OTPInput: React.FC<OTPInputProps> = ({
         keyboardType="number-pad"
         maxLength={length}
         style={styles.hiddenInput}
+        onFocus={() => setFocusedIndex(value.length)}
+        onBlur={() => setFocusedIndex(null)}
         caretHidden
       />
 
       <View style={styles.resendRow}>
         {canResend ? (
-          <TouchableOpacity onPress={handleResend}>
-            <Text style={styles.resendActive}>Resend Code</Text>
+          <TouchableOpacity
+            style={[
+              styles.resendBtn,
+              {
+                backgroundColor: isDark
+                  ? 'rgba(18, 140, 126, 0.15)'
+                  : 'rgba(18, 140, 126, 0.08)',
+                borderColor: Colors.primaryDim,
+              },
+            ]}
+            onPress={handleResend}
+            activeOpacity={0.7}
+          >
+            <RefreshCw size={14} color={Colors.primary} style={{ marginRight: 6 }} />
+            <Text style={styles.resendActiveText}>Resend Code</Text>
           </TouchableOpacity>
         ) : (
-          <Text style={[styles.resendTimer, { color: theme.textTertiary }]}>
-            Resend in <Text style={{ color: Colors.primaryLight }}>{countdown}s</Text>
-          </Text>
+          <View
+            style={[
+              styles.timerBadge,
+              {
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)',
+              },
+            ]}
+          >
+            <Text style={[styles.resendTimer, { color: theme.textSecondary }]}>
+              Resend code in <Text style={{ color: Colors.primary, fontFamily: FontFamily.bodySemiBold }}>{countdown}s</Text>
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -158,40 +220,67 @@ export const OTPInput: React.FC<OTPInputProps> = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
+    width: '100%',
   },
   row: {
     flexDirection: 'row',
-    gap: Spacing[3],
+    gap: Spacing[2],
+    justifyContent: 'center',
   },
   cell: {
-    width: 52,
-    height: 60,
-    borderRadius: Radius.md,
+    width: 48,
+    height: 56,
+    borderRadius: Radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
   },
   digit: {
     fontFamily: FontFamily.headingBold,
-    fontSize: FontSize['2xl'],
+    fontSize: FontSize.xl,
     textAlign: 'center',
+  },
+  cursor: {
+    width: 2,
+    height: 22,
+    borderRadius: 1,
   },
   hiddenInput: {
     position: 'absolute',
     opacity: 0,
-    width: 0,
-    height: 0,
+    width: 1,
+    height: 1,
   },
   resendRow: {
     marginTop: Spacing[6],
+    alignItems: 'center',
+  },
+  timerBadge: {
+    paddingHorizontal: Spacing[4],
+    paddingVertical: Spacing[2],
+    borderRadius: Radius.full,
   },
   resendTimer: {
     fontFamily: FontFamily.bodyRegular,
-    fontSize: FontSize.sm,
+    fontSize: FontSize.xs,
+    letterSpacing: 0.1,
   },
-  resendActive: {
+  resendBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing[4],
+    paddingVertical: Spacing[2],
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  resendActiveText: {
     fontFamily: FontFamily.bodySemiBold,
-    fontSize: FontSize.sm,
-    color: Colors.primaryLight,
-    textDecorationLine: 'underline',
+    fontSize: FontSize.xs,
+    color: Colors.primary,
   },
 });
+

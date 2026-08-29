@@ -188,7 +188,7 @@ export default function CheckoutScreen() {
           title={`Place Order — ${formatCurrency(subtotal)}`}
           onPress={handleSubmit((data) => placeOrder(data))}
           isLoading={isPending}
-          size="xl"
+          size="lg"
         />
         <Text style={[styles.footerNote, { color: theme.textTertiary }]}>
           Payment is handled separately by the store.

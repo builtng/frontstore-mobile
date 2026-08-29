@@ -154,28 +154,28 @@ const styles = StyleSheet.create({
 
   // Sizes
   size_sm: {
-    paddingVertical: Spacing[2],
-    paddingHorizontal: Spacing[4],
+    paddingVertical: 6,
+    paddingHorizontal: Spacing[3],
     borderRadius: Radius.full,
-    minHeight: 38,
+    minHeight: 34,
   },
   size_md: {
-    paddingVertical: Spacing[3],
-    paddingHorizontal: Spacing[5],
+    paddingVertical: 9,
+    paddingHorizontal: Spacing[4],
     borderRadius: Radius.full,
-    minHeight: 44,
+    minHeight: 40,
   },
   size_lg: {
-    paddingVertical: Spacing[4],
-    paddingHorizontal: Spacing[6],
+    paddingVertical: 11,
+    paddingHorizontal: Spacing[5],
     borderRadius: Radius.full,
-    minHeight: 52,
+    minHeight: 46,
   },
   size_xl: {
-    paddingVertical: Spacing[5],
-    paddingHorizontal: Spacing[7],
+    paddingVertical: 13,
+    paddingHorizontal: Spacing[6],
     borderRadius: Radius.full,
-    minHeight: 58,
+    minHeight: 50,
   },
 
   // States
