@@ -234,7 +234,18 @@ export default function SettingsScreen() {
                 control={control}
                 name="description"
                 render={({ field: { onChange, value, onBlur } }) => (
-                  <Input label="Store Description" placeholder="Describe your store…" multiline numberOfLines={3} value={value} onChangeText={onChange} onBlur={onBlur} style={{ minHeight: 80, textAlignVertical: 'top' }} optional />
+                  <Input
+                    label={`Store Description (${(value || '').length}/306)`}
+                    placeholder="Describe your store (max 306 characters)…"
+                    multiline
+                    numberOfLines={3}
+                    maxLength={306}
+                    value={value}
+                    onChangeText={(text) => onChange(text.slice(0, 306))}
+                    onBlur={onBlur}
+                    style={{ minHeight: 80, textAlignVertical: 'top' }}
+                    optional
+                  />
                 )}
               />
 

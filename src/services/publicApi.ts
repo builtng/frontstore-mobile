@@ -6,7 +6,7 @@ const mapStoreToFrontend = (s: any) => {
   return {
     ...s,
     name: s.store_name ?? s.name,
-    description: s.store_bio ?? s.description,
+    description: (s.store_bio ?? s.description) ? (s.store_bio ?? s.description).slice(0, 306) : (s.store_bio ?? s.description),
     whatsapp_number: s.whatsapp_phone ?? s.whatsapp_number,
     currency: s.currency_code ?? s.currency,
     location: s.location,
