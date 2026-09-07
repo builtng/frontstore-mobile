@@ -3,8 +3,11 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  phone_number?: string;
   role: 'merchant' | 'admin';
-  plan: 'free' | 'pro_monthly' | 'pro_yearly';
+  plan: 'free' | 'pro_monthly' | 'pro_yearly' | 'legend_monthly' | 'legend_yearly' | string;
+  is_pro?: boolean;
+  is_legend?: boolean;
   store?: Store;
   created_at: string;
 }

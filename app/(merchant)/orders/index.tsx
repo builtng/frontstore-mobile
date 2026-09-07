@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, RefreshControl, ScrollView, TouchableOpacity,
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  RefreshControl,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { FlashList } from '@shopify/flash-list';
+import * as Clipboard from 'expo-clipboard';
+import { Share2 } from 'lucide-react-native';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { OrderCard } from '@/components/merchant/OrderCard';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { OrdersEmptyState } from '@/components/merchant/OrdersEmptyState';
 import { SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { merchantApi } from '@/services/merchantApi';
 import { Order, OrderStatus } from '@/types/merchant';
 import { FontFamily, FontSize } from '@/constants/typography';
-import { Spacing } from '@/constants/spacing';
+import { Radius, Spacing } from '@/constants/spacing';
 import { useTheme } from '@/hooks/useTheme';
+import { useHaptics } from '@/hooks/useHaptics';
+import { useAuthStore } from '@/stores/authStore';
+import { useToast } from '@/components/ui/Toast';
 
 const STATUS_FILTERS: { label: string; value: OrderStatus | 'all' }[] = [
   { label: 'All', value: 'all' },
@@ -27,7 +38,10 @@ const STATUS_FILTERS: { label: string; value: OrderStatus | 'all' }[] = [
 
 export default function OrdersScreen() {
   const router = useRouter();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
+  const haptics = useHaptics();
+  const toast = useToast();
+  const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const [activeStatus, setActiveStatus] = useState<OrderStatus | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
@@ -49,19 +63,45 @@ export default function OrdersScreen() {
     setRefreshing(false);
   };
 
+  const handleShareStore = async () => {
+    haptics.success();
+    const username = user?.store?.username || 'store';
+    const url = `https://${username}.frontstore.ng`;
+    await Clipboard.setStringAsync(url);
+    toast.success('Store link copied to clipboard!');
+  };
+
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: '#FFFFFF' }]}>
-      {/* Header */}
+    <SafeAreaView style={[styles.safe, { backgroundColor: isDark ? '#0B0F17' : '#F8FAFC' }]}>
+      {/* Executive Header */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: '#0F172A' }]}>Orders</Text>
-        {data?.meta?.total !== undefined && (
-          <View style={styles.countBadge}>
-            <Text style={styles.countText}>{data.meta.total}</Text>
+        <View style={styles.headerLeft}>
+          <Text style={[styles.title, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>Orders</Text>
+          <View style={[styles.countBadge, { backgroundColor: isDark ? 'rgba(15, 118, 110, 0.2)' : '#ECFDF5' }]}>
+            <View style={styles.statusDot} />
+            <Text style={styles.countText}>
+              {data?.meta?.total ?? 0} {data?.meta?.total === 1 ? 'order' : 'orders'}
+            </Text>
           </View>
-        )}
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.shareHeaderBtn,
+            {
+              backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+            },
+          ]}
+          onPress={handleShareStore}
+          activeOpacity={0.75}
+        >
+          <Share2 size={13} color="#0F766E" strokeWidth={2.2} />
+          <Text style={styles.shareHeaderText}>Share Store</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Search */}
+      {/* Search Bar */}
       <View style={styles.searchWrap}>
         <SearchBar
           value={search}
@@ -70,7 +110,7 @@ export default function OrdersScreen() {
         />
       </View>
 
-      {/* Status filters */}
+      {/* Status Filter Chips */}
       <View style={styles.filterScrollContainer}>
         <ScrollView
           horizontal
@@ -82,17 +122,30 @@ export default function OrdersScreen() {
             return (
               <TouchableOpacity
                 key={f.value}
-                onPress={() => setActiveStatus(f.value)}
+                onPress={() => {
+                  haptics.selection();
+                  setActiveStatus(f.value);
+                }}
                 activeOpacity={0.8}
                 style={[
                   styles.filterChip,
-                  isActive ? styles.filterChipActive : styles.filterChipInactive,
+                  isActive
+                    ? styles.filterChipActive
+                    : [
+                        styles.filterChipInactive,
+                        {
+                          backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+                          borderColor: isDark ? '#334155' : '#E2E8F0',
+                        },
+                      ],
                 ]}
               >
                 <Text
                   style={[
                     styles.filterLabel,
-                    isActive ? styles.filterLabelActive : styles.filterLabelInactive,
+                    isActive
+                      ? styles.filterLabelActive
+                      : [styles.filterLabelInactive, { color: isDark ? '#94A3B8' : '#64748B' }],
                   ]}
                 >
                   {f.label}
@@ -103,28 +156,41 @@ export default function OrdersScreen() {
         </ScrollView>
       </View>
 
-      {/* Orders list */}
+      {/* Orders List / Rich Empty State */}
       {isLoading ? (
         <View style={styles.listPad}>
-          {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} style={{ marginBottom: Spacing[3] }} />)}
+          {[1, 2, 3, 4].map((i) => (
+            <SkeletonCard key={i} style={{ marginBottom: Spacing[3] }} />
+          ))}
         </View>
       ) : (
         <FlashList
           data={orders}
           keyExtractor={(item) => String(item.id)}
-          estimatedItemSize={100}
+          estimatedItemSize={120}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#128C7E" />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0F766E" />
+          }
           renderItem={({ item }) => (
-            <OrderCard order={item} onPress={() => router.push(`/(merchant)/orders/${item.id}` as any)} />
+            <OrderCard
+              order={item}
+              onPress={() => {
+                haptics.light();
+                router.push(`/(merchant)/orders/${item.id}` as any);
+              }}
+            />
           )}
           ListEmptyComponent={
-            <EmptyState
-              type="orders"
-              title="No orders yet"
-              description="When customers place orders, they'll appear here. Share your store to start selling."
-              actionLabel="Share Store"
-              onAction={() => {}}
+            <OrdersEmptyState
+              storeUsername={user?.store?.username || 'store'}
+              storeName={user?.store?.name || 'Your Store'}
+              search={search}
+              activeStatus={activeStatus}
+              onClearFilters={() => {
+                setSearch('');
+                setActiveStatus('all');
+              }}
             />
           }
         />
@@ -138,65 +204,98 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing[5],
     paddingTop: Spacing[4],
     paddingBottom: Spacing[3],
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
   },
   title: {
     fontFamily: FontFamily.headingBold,
-    fontSize: FontSize['2xl'],
-    letterSpacing: -0.5,
+    fontSize: 24,
+    letterSpacing: -0.6,
   },
   countBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 9999,
-    backgroundColor: 'rgba(18, 140, 126, 0.12)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 3.5,
+    borderRadius: Radius.full,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
   },
   countText: {
     fontFamily: FontFamily.headingBold,
-    fontSize: FontSize.xs,
-    color: '#128C7E',
+    fontSize: 11,
+    color: '#0F766E',
+  },
+  shareHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6.5,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  shareHeaderText: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 12,
+    color: '#0F766E',
   },
   searchWrap: {
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing[5],
     marginBottom: Spacing[2],
   },
   filterScrollContainer: {
-    height: 48,
+    height: 46,
     marginVertical: 4,
   },
   filters: {
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing[5],
     alignItems: 'center',
     gap: 8,
   },
   filterChip: {
-    paddingHorizontal: 18,
-    height: 36,
-    borderRadius: 9999,
+    paddingHorizontal: 15,
+    height: 34,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterChipActive: {
     backgroundColor: '#0F172A',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
   },
   filterChipInactive: {
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   filterLabel: {
     fontFamily: FontFamily.headingSemiBold,
-    fontSize: FontSize.xs,
+    fontSize: 12,
   },
   filterLabelActive: {
     color: '#FFFFFF',
   },
-  filterLabelInactive: {
-    color: '#64748B',
-  },
-  listPad: { paddingHorizontal: 20 },
-  list: { paddingHorizontal: 20, paddingBottom: 100 },
+  filterLabelInactive: {},
+  listPad: { paddingHorizontal: Spacing[5] },
+  list: { paddingHorizontal: Spacing[5], paddingBottom: 120 },
 });

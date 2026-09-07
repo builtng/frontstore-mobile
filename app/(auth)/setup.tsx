@@ -125,7 +125,11 @@ export default function SetupScreen() {
             }
           : {}),
       });
-      await setAuth(response.data!.user, response.token!);
+      const userWithStore = {
+        ...response.data!.user,
+        store: response.data?.store ?? response.data!.user.store,
+      };
+      await setAuth(userWithStore, response.token!);
       haptics.success();
       router.replace('/(merchant)');
     } catch (err: any) {

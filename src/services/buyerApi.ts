@@ -38,35 +38,35 @@ export const buyerApi = {
     password: string;
     password_confirmation: string;
   }): Promise<BuyerAuthResponse> => {
-    const { data } = await api.post('/buyer/register', payload);
+    const { data } = await api.post('/buyer/auth/signup', payload);
     return data;
   },
 
   login: async (payload: { email: string; password: string }): Promise<BuyerAuthResponse> => {
-    const { data } = await api.post('/buyer/login', payload);
+    const { data } = await api.post('/buyer/auth/login', payload);
     return data;
   },
 
   logout: async () => {
     const cfg = await withBuyerToken({});
-    await api.post('/buyer/logout', {}, cfg);
+    await api.post('/buyer/auth/logout', {}, cfg);
   },
 
   getProfile: async () => {
     const cfg = await withBuyerToken({});
-    const { data } = await api.get('/buyer/me', cfg);
+    const { data } = await api.get('/buyer/auth/me', cfg);
     return data;
   },
 
   getOrders: async () => {
     const cfg = await withBuyerToken({});
-    const { data } = await api.get('/buyer/orders', cfg);
+    const { data } = await api.get('/buyer/auth/orders', cfg);
     return data;
   },
 
-  getOrder: async (id: number) => {
+  getOrder: async (id: string | number) => {
     const cfg = await withBuyerToken({});
-    const { data } = await api.get(`/buyer/orders/${id}`, cfg);
+    const { data } = await api.get(`/buyer/auth/orders/${id}`, cfg);
     return data;
   },
 };

@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
-import { ArrowLeft, Camera, Globe, CheckCircle, ImagePlus } from 'lucide-react-native';
+import { ArrowLeft, Camera, Globe, CheckCircle } from 'lucide-react-native';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -30,7 +30,6 @@ export default function SettingsScreen() {
   const queryClient = useQueryClient();
   const { user, updateStore } = useAuthStore();
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   const { data: store, isLoading } = useQuery({
     queryKey: ['store'],
@@ -107,36 +106,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const pickAndUploadBanner = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [3, 1],
-      quality: 0.9,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setUploadingBanner(true);
-      try {
-        const formData = new FormData();
-        formData.append('banner', { uri: result.assets[0].uri, name: 'banner.jpg', type: 'image/jpeg' } as any);
-        const res = await merchantApi.uploadBanner(formData);
-        const bannerUrl = res.url ?? res.data?.banner_url;
-        if (bannerUrl) {
-          updateStore({ banner_url: bannerUrl });
-          queryClient.invalidateQueries({ queryKey: ['store'] });
-        }
-        toast.success('Banner updated!');
-        haptics.success();
-      } catch {
-        toast.error('Failed to upload banner');
-      } finally {
-        setUploadingBanner(false);
-      }
-    }
-  };
-
   const logoUrl = store?.logo_url ?? user?.store?.logo_url;
-  const bannerUrl = store?.banner_url ?? (user?.store as any)?.banner_url;
   const storeUsername = store?.username ?? user?.store?.username;
 
   return (
@@ -186,31 +156,6 @@ export default function SettingsScreen() {
                 </View>
               )}
             </View>
-          </View>
-
-          {/* Banner section */}
-          <View style={styles.bannerSection}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Store Banner</Text>
-            <TouchableOpacity
-              style={[styles.bannerWrapper, { backgroundColor: Colors.glow.primarySoft, borderColor: theme.border }]}
-              onPress={pickAndUploadBanner}
-              activeOpacity={0.85}
-              disabled={uploadingBanner}
-            >
-              {bannerUrl ? (
-                <Image source={{ uri: bannerUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
-              ) : (
-                <View style={styles.bannerPlaceholder}>
-                  <ImagePlus size={28} color={Colors.primaryLight} strokeWidth={1.5} />
-                  <Text style={[styles.bannerPlaceholderText, { color: Colors.primaryLight }]}>Tap to upload banner</Text>
-                  <Text style={[styles.bannerPlaceholderSub, { color: theme.textTertiary }]}>Recommended: 1200 × 400px</Text>
-                </View>
-              )}
-              <View style={[styles.bannerEditBtn, { backgroundColor: Colors.primaryLight }]}>
-                <Camera size={13} color={Colors.white} />
-                <Text style={styles.bannerEditText}>{uploadingBanner ? 'Uploading…' : bannerUrl ? 'Change' : 'Upload'}</Text>
-              </View>
-            </TouchableOpacity>
           </View>
 
           {isLoading ? (
@@ -342,14 +287,6 @@ const styles = StyleSheet.create({
   logoUrl: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.xs },
   verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[1] },
   verified: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.xs },
-
-  bannerSection: { marginBottom: Spacing[6] },
-  bannerWrapper: { height: 130, borderRadius: Radius.lg, borderWidth: 1.5, overflow: 'hidden', position: 'relative', alignItems: 'center', justifyContent: 'center' },
-  bannerPlaceholder: { alignItems: 'center', gap: Spacing[2] },
-  bannerPlaceholderText: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm },
-  bannerPlaceholderSub: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs },
-  bannerEditBtn: { position: 'absolute', bottom: Spacing[3], right: Spacing[3], flexDirection: 'row', alignItems: 'center', gap: Spacing[1], paddingHorizontal: Spacing[3], paddingVertical: Spacing[2], borderRadius: Radius.full },
-  bannerEditText: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.xs, color: Colors.white },
 
   sectionTitle: { fontFamily: FontFamily.headingSemiBold, fontSize: FontSize.lg, marginBottom: Spacing[5] },
   currencyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing[4], borderRadius: Radius.md, borderWidth: 1.5, marginBottom: Spacing[5] },

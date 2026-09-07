@@ -81,57 +81,65 @@ export default function CustomersScreen() {
       ) : (
         <FlashList
           data={customers}
-          keyExtractor={(c) => String(c.id ?? c.phone)}
+          keyExtractor={(c) => String(c.id ?? c.phone_number ?? c.phone)}
           estimatedItemSize={80}
           contentContainerStyle={styles.list}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primaryLight} />}
-          renderItem={({ item: customer }) => (
-            <TouchableOpacity
-              style={[styles.card, { backgroundColor: theme.card }, Shadow.sm as any]}
-              onPress={() => router.push(`/(merchant)/more/customers/${customer.id ?? customer.phone}` as any)}
-              activeOpacity={0.82}
-            >
-              <Avatar name={customer.name ?? 'Unknown'} size={48} />
+          renderItem={({ item: customer }) => {
+            const phone = customer.phone_number || customer.phone || '';
+            const orderCount = customer.purchase_count ?? customer.order_count ?? customer.store_order_count ?? 0;
+            const totalSpent = Number(customer.lifetime_value ?? customer.total_spent ?? 0);
 
-              <View style={styles.info}>
-                <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-                  {customer.name ?? 'Unknown Customer'}
-                </Text>
-                <Text style={[styles.phone, { color: theme.textSecondary }]}>{customer.phone}</Text>
-                <View style={styles.metaRow}>
-                  <Text style={[styles.meta, { color: theme.textTertiary }]}>
-                    {customer.order_count ?? 0} orders
+            return (
+              <TouchableOpacity
+                style={[styles.card, { backgroundColor: theme.card }, Shadow.sm as any]}
+                onPress={() => router.push(`/(merchant)/more/customers/${customer.id ?? phone}` as any)}
+                activeOpacity={0.82}
+              >
+                <Avatar name={customer.name ?? 'Customer'} size={48} />
+
+                <View style={styles.info}>
+                  <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+                    {customer.name ?? 'Customer'}
                   </Text>
-                  {customer.total_spent > 0 && (
-                    <Text style={[styles.meta, { color: Colors.primaryLight }]}>
-                      · {formatCurrency(customer.total_spent)}
+                  {phone ? (
+                    <Text style={[styles.phone, { color: theme.textSecondary }]}>{phone}</Text>
+                  ) : null}
+                  <View style={styles.metaRow}>
+                    <Text style={[styles.meta, { color: theme.textTertiary }]}>
+                      {orderCount} order{orderCount !== 1 ? 's' : ''}
                     </Text>
-                  )}
+                    {totalSpent > 0 && (
+                      <Text style={[styles.meta, { color: Colors.primaryLight }]}>
+                        · {formatCurrency(totalSpent)}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.actions}>
-                {customer.phone && (
-                  <>
-                    <TouchableOpacity
-                      style={[styles.actionBtn, { backgroundColor: Colors.successLight }]}
-                      onPress={() => whatsappCustomer(customer.phone, customer.name)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <MessageCircle size={16} color={Colors.success} strokeWidth={2} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.actionBtn, { backgroundColor: Colors.infoLight }]}
-                      onPress={() => callCustomer(customer.phone)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Phone size={16} color={Colors.info} strokeWidth={2} />
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
+                <View style={styles.actions}>
+                  {phone ? (
+                    <>
+                      <TouchableOpacity
+                        style={[styles.actionBtn, { backgroundColor: Colors.successLight }]}
+                        onPress={() => whatsappCustomer(phone, customer.name)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <MessageCircle size={16} color={Colors.success} strokeWidth={2} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.actionBtn, { backgroundColor: Colors.infoLight }]}
+                        onPress={() => callCustomer(phone)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Phone size={16} color={Colors.info} strokeWidth={2} />
+                      </TouchableOpacity>
+                    </>
+                  ) : null}
+                </View>
+              </TouchableOpacity>
+            );
+          }}
           ListEmptyComponent={
             <EmptyState
               type="customers"

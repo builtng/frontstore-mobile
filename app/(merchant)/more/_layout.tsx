@@ -14,6 +14,7 @@ export default function MoreLayout() {
       <Stack.Screen name="analytics" />
       <Stack.Screen name="customers" />
       <Stack.Screen name="whatsapp-inbox" />
+      <Stack.Screen name="referrals" />
 
       {/* Account & Settings */}
       <Stack.Screen name="settings" />

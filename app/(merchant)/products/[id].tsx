@@ -30,12 +30,13 @@ export default function ProductDetailScreen() {
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', id],
-    queryFn: () => merchantApi.getProduct(Number(id)),
+    queryFn: () => merchantApi.getProduct(id!),
     select: (r) => r.data,
+    enabled: !!id,
   });
 
   const { mutate: deleteProduct, isPending: isDeleting } = useMutation({
-    mutationFn: () => merchantApi.deleteProduct(Number(id)),
+    mutationFn: () => merchantApi.deleteProduct(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product deleted');
@@ -46,7 +47,7 @@ export default function ProductDetailScreen() {
   });
 
   const { mutate: toggleStatus, isPending: isToggling } = useMutation({
-    mutationFn: (status: 'active' | 'draft') => merchantApi.updateProduct(Number(id), { status }),
+    mutationFn: (status: 'active' | 'draft') => merchantApi.updateProduct(id!, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product', id] });
       queryClient.invalidateQueries({ queryKey: ['products'] });

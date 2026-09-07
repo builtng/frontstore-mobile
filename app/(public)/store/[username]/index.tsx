@@ -87,7 +87,7 @@ function ProductCard({ product, storeUsername, onPress }: { product: PublicProdu
 
   const handleAddToCart = (e: any) => {
     e.stopPropagation();
-    haptics.impactMedium();
+    haptics.medium();
     addItem({
       productId: product.id,
       storeUsername,
@@ -110,7 +110,7 @@ function ProductCard({ product, storeUsername, onPress }: { product: PublicProdu
     >
       <View style={styles.productImage}>
         {imgLoading && primaryImage && (
-          <Skeleton style={StyleSheet.absoluteFill} />
+          <Skeleton style={StyleSheet.absoluteFillObject} />
         )}
         {primaryImage ? (
           <Image 

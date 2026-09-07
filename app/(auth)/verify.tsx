@@ -71,7 +71,11 @@ export default function VerifyScreen() {
             params: { setup_token: result.setup_token!, email: result.email ?? params.email },
           });
         } else {
-          await setAuth(result.data!.user, result.token!);
+          const userWithStore = {
+            ...result.data!.user,
+            store: result.data?.store ?? result.data!.user.store,
+          };
+          await setAuth(userWithStore, result.token!);
           router.replace('/(merchant)');
         }
       } else {
@@ -92,7 +96,11 @@ export default function VerifyScreen() {
             params: { setup_token: result.setup_token!, phone: result.phone_number! },
           });
         } else {
-          await setAuth(result.data!.user, result.token!);
+          const userWithStore = {
+            ...result.data!.user,
+            store: result.data?.store ?? result.data!.user.store,
+          };
+          await setAuth(userWithStore, result.token!);
           router.replace('/(merchant)');
         }
       }

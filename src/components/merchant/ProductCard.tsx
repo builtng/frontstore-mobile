@@ -33,9 +33,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   if (viewMode === 'grid') {
     return (
       <TouchableOpacity
-        style={[styles.gridCard, { backgroundColor: theme.card }, Shadow.sm]}
+        style={[styles.gridCard, { backgroundColor: theme.card, borderColor: theme.border }, Shadow.sm]}
         onPress={onPress}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
       >
         <View style={styles.gridImage}>
           {primaryImage ? (
@@ -45,7 +45,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               contentFit="cover"
             />
           ) : (
-            <View style={[StyleSheet.absoluteFill, styles.imagePlaceholder, { backgroundColor: Colors.dark.surface }]} />
+            <View style={[StyleSheet.absoluteFill, styles.imagePlaceholder, { backgroundColor: Colors.glow.primarySoft, alignItems: 'center', justifyContent: 'center' }]}>
+              <Text style={{ fontSize: 24 }}>📦</Text>
+            </View>
           )}
           <View style={styles.gridBadgeRow}>
             <Badge
@@ -63,14 +65,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             {formatCurrency(product.price)}
           </Text>
           {product.track_stock && (
-            <Text
-              style={[
-                styles.stock,
-                { color: isOutOfStock ? Colors.danger : isLowStock ? '#D97706' : theme.textTertiary },
-              ]}
-            >
-              {isOutOfStock ? 'Out of stock' : `${product.stock} in stock`}
-            </Text>
+            <View style={styles.stockRow}>
+              <View
+                style={[
+                  styles.stockDot,
+                  { backgroundColor: isOutOfStock ? Colors.danger : isLowStock ? Colors.warning : Colors.success },
+                ]}
+              />
+              <Text
+                style={[
+                  styles.stock,
+                  { color: isOutOfStock ? Colors.danger : isLowStock ? '#D97706' : theme.textTertiary },
+                ]}
+              >
+                {isOutOfStock ? 'Out of stock' : `${product.stock} in stock`}
+              </Text>
+            </View>
           )}
         </View>
       </TouchableOpacity>
@@ -79,9 +89,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <TouchableOpacity
-      style={[styles.listCard, { backgroundColor: theme.card }, Shadow.sm]}
+      style={[styles.listCard, { backgroundColor: theme.card, borderColor: theme.border }, Shadow.sm]}
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
     >
       <View style={styles.listImage}>
         {primaryImage ? (
@@ -91,7 +101,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             contentFit="cover"
           />
         ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.dark.surface }]} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glow.primarySoft, alignItems: 'center', justifyContent: 'center' }]}>
+            <Text style={{ fontSize: 22 }}>📦</Text>
+          </View>
         )}
       </View>
 
@@ -108,11 +120,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Text style={[styles.price, { color: Colors.primaryLight }]}>
             {formatCurrency(product.price)}
           </Text>
-          <Badge
-            label={product.status}
-            variant={product.status === 'active' ? 'success' : 'neutral'}
-            size="sm"
-          />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing[2] }}>
+            {product.track_stock && (
+              <View style={styles.stockRow}>
+                <View
+                  style={[
+                    styles.stockDot,
+                    { backgroundColor: isOutOfStock ? Colors.danger : isLowStock ? Colors.warning : Colors.success },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.stock,
+                    { color: isOutOfStock ? Colors.danger : isLowStock ? '#D97706' : theme.textTertiary },
+                  ]}
+                >
+                  {isOutOfStock ? 'Out' : `${product.stock}`}
+                </Text>
+              </View>
+            )}
+            <Badge
+              label={product.status}
+              variant={product.status === 'active' ? 'success' : 'neutral'}
+              size="sm"
+            />
+          </View>
         </View>
       </View>
 
@@ -121,7 +153,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           onPress={onMorePress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <MoreHorizontal size={20} color={theme.textTertiary} />
+          <MoreHorizontal size={18} color={theme.textTertiary} />
         </TouchableOpacity>
       )}
     </TouchableOpacity>
@@ -136,6 +168,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: Spacing[2],
     marginBottom: Spacing[4],
+    borderWidth: 1,
   },
   gridImage: {
     height: 140,
@@ -159,6 +192,7 @@ const styles = StyleSheet.create({
     padding: Spacing[3],
     gap: Spacing[3],
     marginBottom: Spacing[3],
+    borderWidth: 1,
   },
   listImage: {
     width: 64,
@@ -191,9 +225,19 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.headingBold,
     fontSize: FontSize.md,
   },
-  stock: {
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: FontSize.xs,
+  stockRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     marginTop: 2,
+  },
+  stockDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  stock: {
+    fontFamily: FontFamily.bodyMedium,
+    fontSize: FontSize.xs,
   },
 });

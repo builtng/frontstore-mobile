@@ -1,5 +1,5 @@
 export interface Product {
-  id: number;
+  id: string | number;
   name: string;
   slug: string;
   description?: string;
@@ -22,7 +22,7 @@ export interface ProductImage {
 }
 
 export interface Category {
-  id: number;
+  id: number | string;
   name: string;
   slug: string;
   icon?: string;
@@ -30,7 +30,7 @@ export interface Category {
 }
 
 export interface Order {
-  id: number;
+  id: string | number;
   reference: string;
   customer_name: string;
   customer_email?: string;
@@ -49,7 +49,7 @@ export interface Order {
 }
 
 export interface OrderItem {
-  id: number;
+  id: number | string;
   product: Product;
   quantity: number;
   price: number;
@@ -78,6 +78,7 @@ export interface DashboardStats {
   revenue_chart: ChartDataPoint[];
   top_products: TopProduct[];
   recent_orders: Order[];
+  total_visitors?: number;
 }
 
 export interface ChartDataPoint {
@@ -172,3 +173,82 @@ export interface CreateProductPayload {
   sku?: string;
   variants?: any;
 }
+
+export interface ReferralCriteriaItem {
+  title: string;
+  description: string;
+  fulfilled: boolean;
+  current?: number;
+  required?: number;
+  days?: number;
+  handles?: Record<string, string>;
+  status?: string;
+}
+
+export interface ReferralCriteriaStatus {
+  is_approved: boolean;
+  is_pending: boolean;
+  is_rejected: boolean;
+  can_apply: boolean;
+  criteria: {
+    min_products: ReferralCriteriaItem;
+    social_media: ReferralCriteriaItem;
+    platform_age: ReferralCriteriaItem;
+    background_check: ReferralCriteriaItem;
+  };
+  all_criteria_met: boolean;
+  latest_application?: any;
+}
+
+export interface ReferredMerchantItem {
+  id: number;
+  status: string;
+  referee_name: string;
+  referee_email?: string;
+  store_name: string;
+  store_username: string;
+  store_logo?: string;
+  joined_at?: string;
+  plan: string;
+  subscription_status: string;
+  first_product_status: 'none' | 'pending_verification' | 'verified' | 'rejected';
+  first_product_name?: string;
+  first_product_price?: number;
+  first_product_image?: string;
+  first_product_reward_paid: boolean;
+  first_product_verified_at?: string;
+  pro_reward_paid: boolean;
+  pro_reward_paid_at?: string;
+  legend_reward_paid: boolean;
+  legend_reward_paid_at?: string;
+  total_earned: number;
+  lifetime_cap: number;
+}
+
+export interface ReferralEarningsLog {
+  id: number;
+  event_type: string;
+  amount: number;
+  referee: string;
+  date: string;
+}
+
+export interface ReferralStatusData {
+  criteria_status: ReferralCriteriaStatus;
+  is_approved: boolean;
+  referral_code: string;
+  referral_link: string;
+  stats: {
+    total_earned: number;
+    referrals_count: number;
+    active_subscriptions_count: number;
+    pending_verifications_count: number;
+    is_withdrawal_unlocked?: boolean;
+    minimum_withdrawal_threshold?: number;
+    needed_for_withdrawal?: number;
+    withdrawable_wallet_balance?: number;
+  };
+  referrals: ReferredMerchantItem[];
+  earnings_history: ReferralEarningsLog[];
+}
+

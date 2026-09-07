@@ -76,12 +76,26 @@ export const authApi = {
   // ── Legacy email/password (kept for admin access) ───────────────────────
   login: async (payload: { email: string; password: string }): Promise<AuthResponse> => {
     const { data } = await api.post('/auth/login', payload);
-    return data;
+    const user = data?.data?.user ?? data?.user;
+    const token = data?.data?.token ?? data?.token;
+    return {
+      user,
+      token,
+      message: data?.message ?? '',
+      data: data?.data ?? { user, token, store: data?.data?.store ?? data?.store },
+    };
   },
 
   register: async (payload: any): Promise<AuthResponse> => {
     const { data } = await api.post('/auth/signup', payload);
-    return data;
+    const user = data?.data?.user ?? data?.user;
+    const token = data?.data?.token ?? data?.token;
+    return {
+      user,
+      token,
+      message: data?.message ?? '',
+      data: data?.data ?? { user, token, store: data?.data?.store ?? data?.store },
+    };
   },
 
   logout: async (): Promise<void> => {

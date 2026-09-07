@@ -61,9 +61,32 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         SecureStore.getItemAsync(USER_KEY),
       ]);
 
-      if (token && userJson) {
-        const user: User = JSON.parse(userJson);
-        set({ user, token, isAuthenticated: true, isLoading: false });
+      if (token) {
+        if (userJson) {
+          try {
+            const user: User = JSON.parse(userJson);
+            set({ user, token, isAuthenticated: true, isLoading: false });
+          } catch {}
+        } else {
+          set({ token, isAuthenticated: true, isLoading: false });
+        }
+
+        // Asynchronously refresh fresh user and store profile
+        try {
+          const { authApi } = await import('@/services/authApi');
+          const meRes = await authApi.me();
+          if (meRes?.data?.user) {
+            const freshUser: User = {
+              ...meRes.data.user,
+              store: meRes.data.store ?? meRes.data.user.store,
+            };
+            set({ user: freshUser, isAuthenticated: true });
+            await SecureStore.setItemAsync(USER_KEY, JSON.stringify(freshUser));
+          }
+        } catch {
+          // Token may be invalid or offline
+        }
+
         return true;
       }
     } catch {

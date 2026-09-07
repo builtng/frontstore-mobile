@@ -46,8 +46,17 @@ export default function SignInScreen() {
     setIsLoading(true);
     try {
       const response = await authApi.login(data);
-      await setAuth(response.user, response.token);
-      router.replace('/(merchant)');
+      const res = response as any;
+      const rawUser = res.data?.user ?? res.user;
+      const token = res.data?.token ?? res.token;
+      const rawStore = res.data?.store ?? res.store ?? rawUser?.store;
+      if (rawUser && token) {
+        const user = { ...rawUser, store: rawStore ?? rawUser.store };
+        await setAuth(user, token);
+        router.replace('/(merchant)');
+      } else {
+        throw new Error('Authentication succeeded but user session could not be established');
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Invalid credentials. Please try again.';
       toast.error(msg);

@@ -1,23 +1,27 @@
 export const Colors = {
-  // Brand
+  // Brand - Executive Emerald & Titanium Slate
   primary: '#128C7E',
-  primaryLight: '#25D366',
-  primaryDark: '#075E54',
-  primaryDim: 'rgba(18, 140, 126, 0.1)',
+  primaryLight: '#10B981',
+  primaryDark: '#0B6358',
+  primaryDim: 'rgba(18, 140, 126, 0.08)',
+  emerald: '#10B981',
+  emeraldDark: '#047857',
+  whatsapp: '#25D366',
   navy: '#0F172A',
   navyLight: '#1E293B',
+  titanium: '#090D16',
   teal: '#14B8A6',
   amber: '#F59E0B',
 
   // Semantic
   success: '#10B981',
-  successLight: '#D1FAE5',
+  successLight: '#ECFDF5',
   warning: '#F59E0B',
-  warningLight: '#FEF3C7',
+  warningLight: '#FFFBEB',
   danger: '#EF4444',
-  dangerLight: '#FEE2E2',
+  dangerLight: '#FEF2F2',
   info: '#3B82F6',
-  infoLight: '#DBEAFE',
+  infoLight: '#EFF6FF',
 
   // Grays / Neutrals
   gray50: '#F8FAFC',
@@ -36,7 +40,7 @@ export const Colors = {
     background: '#F8FAFC',
     surface: '#FFFFFF',
     card: '#FFFFFF',
-    border: '#E2E8F0',
+    border: '#EAEFF5',
     borderStrong: '#CBD5E1',
     text: '#0F172A',
     textSecondary: '#64748B',
@@ -75,8 +79,8 @@ export const Colors = {
   // Glow
   glow: {
     primary: 'rgba(18, 140, 126, 0.28)',
-    primarySoft: 'rgba(18, 140, 126, 0.1)',
-    teal: 'rgba(37, 211, 102, 0.25)',
+    primarySoft: 'rgba(18, 140, 126, 0.08)',
+    teal: 'rgba(20, 184, 166, 0.2)',
   },
 
   // Static

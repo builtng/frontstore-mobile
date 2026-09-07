@@ -36,13 +36,14 @@ export default function OrderDetailScreen() {
   const { data: order, isLoading } = useQuery<Order>({
     queryKey: ['order', id],
     queryFn: async () => {
-      const res = await merchantApi.getOrder(Number(id));
+      const res = await merchantApi.getOrder(id!);
       return res.data;
     },
+    enabled: !!id,
   });
 
   const { mutate: updateStatus, isPending } = useMutation({
-    mutationFn: (status: OrderStatus) => merchantApi.updateOrderStatus(Number(id), status),
+    mutationFn: (status: OrderStatus) => merchantApi.updateOrderStatus(id!, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['order', id] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -53,7 +54,7 @@ export default function OrderDetailScreen() {
   });
 
   const { mutate: sendReceipt, isPending: isSending } = useMutation({
-    mutationFn: () => merchantApi.sendReceipt(Number(id)),
+    mutationFn: () => merchantApi.sendReceipt(id!),
     onSuccess: () => { toast.success('Receipt sent!'); haptics.success(); },
     onError: () => toast.error('Failed to send receipt'),
   });

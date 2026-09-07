@@ -29,36 +29,60 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <Card
       style={StyleSheet.flatten([styles.card, compact && styles.compact])}
-      padding={compact ? Spacing[4] : Spacing[5]}
+      padding={compact ? 14 : 16}
       shadow="sm"
+      bordered
+      radius={18}
     >
-      <View style={[styles.iconWrapper, { backgroundColor: 'rgba(18, 140, 126, 0.08)' }]}>
-        {icon}
+      <View style={styles.topRow}>
+        <View
+          style={[
+            styles.iconWrapper,
+            {
+              backgroundColor: accentColor + '12',
+              borderColor: accentColor + '20',
+            },
+          ]}
+        >
+          {icon}
+        </View>
+
+        {change !== undefined && (
+          <View
+            style={[
+              styles.changeBadge,
+              { backgroundColor: isPositive ? '#ECFDF5' : '#FEF2F2' },
+            ]}
+          >
+            {isPositive ? (
+              <TrendingUp size={10} color="#059669" strokeWidth={2.5} />
+            ) : (
+              <TrendingDown size={10} color="#DC2626" strokeWidth={2.5} />
+            )}
+            <Text
+              style={[
+                styles.changeText,
+                { color: isPositive ? '#059669' : '#DC2626' },
+              ]}
+            >
+              {Math.abs(change)}%
+            </Text>
+          </View>
+        )}
       </View>
 
-      <Text style={[styles.value, { color: theme.text }, compact && styles.valueCompact]}>
+      <Text
+        style={[
+          styles.value,
+          { color: theme.text },
+          compact && styles.valueCompact,
+        ]}
+        numberOfLines={1}
+      >
         {value}
       </Text>
 
       <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
-
-      {change !== undefined && (
-        <View style={styles.changeRow}>
-          {isPositive ? (
-            <TrendingUp size={12} color="#10B981" strokeWidth={2.5} />
-          ) : (
-            <TrendingDown size={12} color="#EF4444" strokeWidth={2.5} />
-          )}
-          <Text
-            style={[
-              styles.changeText,
-              { color: isPositive ? '#10B981' : '#EF4444' },
-            ]}
-          >
-            {Math.abs(change)}%
-          </Text>
-        </View>
-      )}
     </Card>
   );
 };
@@ -66,40 +90,50 @@ export const StatCard: React.FC<StatCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    minHeight: 120,
-    borderRadius: Radius.card,
+    minHeight: 114,
+    justifyContent: 'space-between',
   },
   compact: {
-    minHeight: 100,
+    minHeight: 96,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing[2],
   },
   iconWrapper: {
-    width: 42,
-    height: 42,
-    borderRadius: Radius.md,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing[3],
+  },
+  changeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 9999,
+  },
+  changeText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 10,
   },
   value: {
     fontFamily: FontFamily.headingBold,
-    fontSize: FontSize['2xl'],
+    fontSize: 22,
+    letterSpacing: -0.5,
     marginBottom: 2,
   },
   valueCompact: {
-    fontSize: FontSize.xl,
+    fontSize: 18,
   },
   label: {
     fontFamily: FontFamily.bodyRegular,
-    fontSize: FontSize.xs,
-  },
-  changeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: Spacing[2],
-  },
-  changeText: {
-    fontFamily: FontFamily.headingSemiBold,
-    fontSize: FontSize.xs,
+    fontSize: 12,
+    letterSpacing: -0.1,
   },
 });

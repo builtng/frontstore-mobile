@@ -342,10 +342,14 @@ export default function WalletScreen() {
             <View style={styles.bankBox}>
               <Building2 size={20} color="#128C7E" />
               <View style={{ flex: 1 }}>
-                <Text style={styles.bankTitle}>Verified Payout Account</Text>
-                <Text style={styles.bankSub}>Paystack Direct Transfer · Level {wallet?.seller_level ?? 1}</Text>
+                <Text style={styles.bankTitle}>
+                  {wallet?.bank_name ? wallet.bank_name : 'Verified Payout Account'}
+                </Text>
+                <Text style={styles.bankSub}>
+                  {wallet?.bank_account_number ? `Acct: ${wallet.bank_account_number} · ${wallet.bank_account_name || ''}` : `Paystack Direct Transfer · Level ${wallet?.seller_level ?? 1}`}
+                </Text>
               </View>
-              <CheckCircle2 size={18} color="#128C7E" />
+              {(wallet?.bank_account_verified || wallet?.bank_name) && <CheckCircle2 size={18} color="#128C7E" />}
             </View>
 
             {/* CTA */}

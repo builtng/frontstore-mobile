@@ -35,12 +35,26 @@ export const Radius = {
 } as const;
 
 export const Shadow = {
+  subtle: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 1,
+  },
   sm: {
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
     elevation: 2,
+  },
+  card: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
+    elevation: 3,
   },
   md: {
     shadowColor: '#0F172A',
@@ -56,24 +70,31 @@ export const Shadow = {
     shadowRadius: 24,
     elevation: 6,
   },
+  floating: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.09,
+    shadowRadius: 28,
+    elevation: 8,
+  },
   xl: {
     shadowColor: '#128C7E',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.18,
     shadowRadius: 24,
     elevation: 8,
   },
   glow: {
     shadowColor: '#128C7E',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 4,
   },
   glowTeal: {
-    shadowColor: '#25D366',
+    shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.22,
     shadowRadius: 10,
     elevation: 3,
   },
