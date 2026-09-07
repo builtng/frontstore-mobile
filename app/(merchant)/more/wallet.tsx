@@ -11,88 +11,59 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   ArrowUpRight,
-  TrendingUp,
-  Wallet as WalletIcon,
-  Clock,
-  ShieldCheck,
-  BadgeCheck,
-  Zap,
-  XCircle,
-  X,
+  Receipt,
   Building2,
   CheckCircle2,
+  AlertCircle,
+  Clock,
+  ExternalLink,
+  HelpCircle,
+  X,
+  Wallet as WalletIcon,
+  ShieldCheck,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/SkeletonLoader';
+import { useToast } from '@/components/ui/Toast';
 import { merchantApi } from '@/services/merchantApi';
-import { WalletTransaction } from '@/types/merchant';
 import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
 import { Radius, Spacing } from '@/constants/spacing';
 import { useTheme } from '@/hooks/useTheme';
+import { useHaptics } from '@/hooks/useHaptics';
 import { format } from 'date-fns';
 
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(n);
 
-const PAYOUT_TIERS = [
-  { level: 1, name: 'New Seller', range: '0–40 pts', payout: '5-day hold', icon: Clock },
-  { level: 2, name: 'Verified Seller', range: '41–70 pts', payout: 'Next-day payout', icon: ShieldCheck },
-  { level: 3, name: 'Trusted Seller', range: '71–90 pts', payout: 'Same-day payout', icon: BadgeCheck },
-  { level: 4, name: 'Elite Seller', range: '91–100 pts', payout: 'Instant payout', icon: Zap },
-] as const;
-
 export default function WalletScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
+  const toast = useToast();
+  const haptics = useHaptics();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Modal State
+  // Modal & OTP State
   const [modalVisible, setModalVisible] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [bankAccount, setBankAccount] = useState('');
-  const [bankName, setBankName] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
 
   const { data: wallet, isLoading, refetch } = useQuery({
     queryKey: ['wallet'],
     queryFn: merchantApi.getWallet,
     select: (r) => r.data,
-  });
-
-  // Withdrawal mutation
-  const withdrawMutation = useMutation({
-    mutationFn: (amountNum: number) =>
-      merchantApi.withdraw({
-        amount: amountNum,
-        account_number: bankAccount || '0000000000',
-        bank_code: '058',
-        otp: '123456',
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallet'] });
-      setModalVisible(false);
-      setWithdrawAmount('');
-      Alert.alert(
-        'Payout Requested! 🎉',
-        'Your withdrawal request has been submitted. Funds will be processed according to your payout level tier.'
-      );
-    },
-    onError: (err: any) => {
-      Alert.alert(
-        'Withdrawal Request Submitted',
-        err?.response?.data?.message || 'Your withdrawal request has been logged and queued for bank processing.'
-      );
-      setModalVisible(false);
-    },
   });
 
   const onRefresh = async () => {
@@ -101,204 +72,437 @@ export default function WalletScreen() {
     setRefreshing(false);
   };
 
-  const handleWithdrawPress = () => {
-    const available = wallet?.balance ?? 0;
-    if (available <= 0) {
+  // Step 1: Send OTP to merchant email / whatsapp
+  const handleSendOtp = async () => {
+    const amt = parseFloat(withdrawAmount);
+    const available = wallet?.withdrawable_balance ?? wallet?.balance ?? 0;
+
+    if (!amt || isNaN(amt) || amt <= 0) {
+      toast.warning('Please enter a valid amount.');
+      return;
+    }
+    if (amt > available) {
+      toast.error('Amount exceeds your withdrawable balance.');
+      return;
+    }
+
+    try {
+      setOtpLoading(true);
+      const res = await merchantApi.sendWithdrawalOtp();
+      setOtpSent(true);
+      haptics.success();
+      toast.success(res?.message || 'Verification code sent to your registered email.');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to send verification code.';
+      toast.error(msg);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Step 2: Confirm Withdrawal with OTP
+  const withdrawMutation = useMutation({
+    mutationFn: (payload: { amount: number; otp_code: string }) =>
+      merchantApi.withdraw(payload),
+    onSuccess: (data: any) => {
+      haptics.success();
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      setModalVisible(false);
+      setWithdrawAmount('');
+      setOtpCode('');
+      setOtpSent(false);
       Alert.alert(
-        'Insufficient Balance',
-        'Your available balance is ₦0. As customer orders are completed and cleared through your payout tier, funds will become available for instant withdrawal.',
-        [{ text: 'Got it' }]
+        'Payout Requested! 🎉',
+        data?.message || 'Your withdrawal request has been submitted successfully to your settlement bank account.'
+      );
+    },
+    onError: (err: any) => {
+      haptics.error();
+      const msg = err?.response?.data?.message || err?.message || 'Failed to process withdrawal request.';
+      Alert.alert('Withdrawal Failed', msg);
+    },
+  });
+
+  const handleConfirmWithdraw = () => {
+    const amt = parseFloat(withdrawAmount);
+    if (!amt || isNaN(amt) || amt <= 0) {
+      toast.warning('Please enter a valid amount.');
+      return;
+    }
+    if (!otpCode || otpCode.trim().length !== 6) {
+      toast.warning('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    withdrawMutation.mutate({
+      amount: amt,
+      otp_code: otpCode.trim(),
+    });
+  };
+
+  const handleOpenWithdrawModal = () => {
+    const isVerified = wallet?.bank_account_verified;
+    if (!isVerified) {
+      Alert.alert(
+        'Bank Account Required',
+        'Please link and verify your settlement bank account before requesting a withdrawal.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Go to Settings', onPress: () => router.push('/(merchant)/more/settings') },
+        ]
       );
       return;
     }
+
+    const available = wallet?.withdrawable_balance ?? wallet?.balance ?? 0;
+    if (available <= 0) {
+      Alert.alert(
+        'No Withdrawable Balance',
+        'You do not have any withdrawable balance yet. Customer order payments held in escrow will become available once deliveries are confirmed.'
+      );
+      return;
+    }
+
     setWithdrawAmount(String(available));
+    setOtpSent(false);
+    setOtpCode('');
     setModalVisible(true);
   };
 
-  const handleConfirmWithdraw = () => {
-    const amountNum = parseFloat(withdrawAmount);
-    const available = wallet?.balance ?? 0;
-
-    if (!amountNum || isNaN(amountNum) || amountNum <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid amount to withdraw.');
-      return;
+  // Payout Alert details (matching web)
+  const payoutState = wallet?.payout_status?.state;
+  const getPayoutAlert = () => {
+    if (payoutState === 'processing') {
+      return {
+        title: 'Payout Processing',
+        desc: "We're currently transferring your funds to your settlement bank account.",
+        color: '#2563EB',
+        bg: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF',
+        border: 'rgba(37, 99, 235, 0.3)',
+      };
     }
-
-    if (amountNum > available) {
-      Alert.alert('Amount Exceeds Balance', `Maximum available for withdrawal is ${formatCurrency(available)}.`);
-      return;
+    if (payoutState === 'scheduled') {
+      const nextAt = wallet?.payout_status?.next_payout_at;
+      return {
+        title: 'Payout Scheduled',
+        desc: nextAt
+          ? `Your payout is scheduled for ${format(new Date(nextAt), 'MMM d, yyyy · h:mm a')}.`
+          : 'Your payout has been scheduled and will be credited soon.',
+        color: '#D97706',
+        bg: isDark ? 'rgba(217, 119, 6, 0.15)' : '#FFFBEB',
+        border: 'rgba(217, 119, 6, 0.3)',
+      };
     }
-
-    withdrawMutation.mutate(amountNum);
+    if (payoutState === 'under_review') {
+      return {
+        title: 'Payout Under Security Review',
+        desc: 'A recent order is undergoing standard security review before payout release.',
+        color: '#DC2626',
+        bg: isDark ? 'rgba(220, 38, 38, 0.15)' : '#FEF2F2',
+        border: 'rgba(220, 38, 38, 0.3)',
+      };
+    }
+    return null;
   };
 
-  const getTransactionIcon = (type: string, status: string) => {
-    if (status === 'failed') return { Icon: XCircle, color: Colors.danger };
-    if (status === 'pending') return { Icon: Clock, color: Colors.warning };
-    if (type === 'credit') return { Icon: ArrowUpRight, color: Colors.success };
-    return { Icon: ArrowUpRight, color: Colors.danger };
-  };
+  const activePayoutAlert = getPayoutAlert();
+  const withdrawable = wallet?.withdrawable_balance ?? wallet?.balance ?? 0;
+  const pending = wallet?.pending_balance ?? 0;
+  const withdrawals = wallet?.withdrawals || wallet?.transactions || [];
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: '#F8FAFC' }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC' }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <ArrowLeft size={22} color="#0F172A" />
+      <View style={[styles.header, { borderBottomColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+          <ArrowLeft size={22} color={isDark ? '#F8FAFC' : '#0F172A'} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: '#0F172A' }]}>Wallet & Payouts</Text>
-        <View style={{ width: 40 }} />
+        <Text style={[styles.headerTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>Wallet & Payouts</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/(merchant)/more/settings')}
+          style={styles.settingsHeaderBtn}
+          activeOpacity={0.7}
+        >
+          <Building2 size={20} color={isDark ? '#94A3B8' : '#64748B'} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#128C7E" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0F766E" />}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-        {/* Balance Card */}
-        <View style={styles.balanceCard}>
+        {/* Active Payout Alert (Processing / Scheduled / Under Review) */}
+        {activePayoutAlert && (
+          <View
+            style={[
+              styles.payoutAlert,
+              {
+                backgroundColor: activePayoutAlert.bg,
+                borderColor: activePayoutAlert.border,
+              },
+            ]}
+          >
+            <View style={[styles.alertDot, { backgroundColor: activePayoutAlert.color }]} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.alertTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                {activePayoutAlert.title}
+              </Text>
+              <Text style={[styles.alertDesc, { color: isDark ? '#94A3B8' : '#475569' }]}>
+                {activePayoutAlert.desc}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Available Balance Card */}
+        <View style={styles.balanceCardWrapper}>
           <LinearGradient
-            colors={['#128C7E', '#0B665C']}
+            colors={['#0F766E', '#064E3B']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.balanceGradient}
+            style={styles.balanceCard}
           >
-            <View style={styles.balanceTop}>
+            <View style={styles.balanceTopRow}>
               <View>
-                <Text style={styles.balanceLabel}>Available Balance</Text>
+                <Text style={styles.balanceHeaderLabel}>Withdrawable Balance</Text>
                 {isLoading ? (
-                  <Skeleton width={160} height={40} radius={8} style={{ marginTop: 8 }} />
+                  <Skeleton width={160} height={38} radius={8} style={{ marginTop: 8 }} />
                 ) : (
-                  <Text style={styles.balanceAmount}>{formatCurrency(wallet?.balance ?? 0)}</Text>
+                  <Text style={styles.balancePrimaryAmount}>{formatCurrency(withdrawable)}</Text>
                 )}
               </View>
-              <View style={[styles.walletIcon, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
-                <WalletIcon size={24} color="#FFFFFF" />
+              <View style={styles.availableBadge}>
+                <Text style={styles.availableBadgeText}>AVAILABLE</Text>
               </View>
             </View>
 
-            <View style={styles.balanceStats}>
-              <View style={styles.balanceStat}>
-                <Text style={styles.balanceStatVal}>{formatCurrency(wallet?.total_earned ?? 0)}</Text>
-                <Text style={styles.balanceStatLabel}>Total Earned</Text>
-              </View>
-              <View style={[styles.balanceStatDivider, { backgroundColor: 'rgba(255,255,255,0.25)' }]} />
-              <View style={styles.balanceStat}>
-                <Text style={styles.balanceStatVal}>{formatCurrency(wallet?.pending_balance ?? 0)}</Text>
-                <Text style={styles.balanceStatLabel}>Pending</Text>
-              </View>
-              <View style={[styles.balanceStatDivider, { backgroundColor: 'rgba(255,255,255,0.25)' }]} />
-              <View style={styles.balanceStat}>
-                <Text style={styles.balanceStatVal}>{formatCurrency(wallet?.total_withdrawn ?? 0)}</Text>
-                <Text style={styles.balanceStatLabel}>Withdrawn</Text>
-              </View>
-            </View>
-
-            <Button
-              title="Withdraw Funds"
-              onPress={handleWithdrawPress}
-              size="lg"
-              style={styles.withdrawBtn}
-              textStyle={{ color: '#128C7E', fontFamily: FontFamily.headingBold }}
-            />
+            <TouchableOpacity
+              style={styles.withdrawMainBtn}
+              onPress={handleOpenWithdrawModal}
+              activeOpacity={0.85}
+            >
+              <ArrowUpRight size={18} color="#0F766E" strokeWidth={2.5} />
+              <Text style={styles.withdrawMainBtnText}>Withdraw Funds</Text>
+            </TouchableOpacity>
           </LinearGradient>
         </View>
 
-        {/* Payout Level */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Payout Level</Text>
-          <Text style={styles.sectionSubtitle}>Payout speed increases as your trust score grows</Text>
+        {/* Pending Escrow Balance Card */}
+        <View
+          style={[
+            styles.infoCard,
+            {
+              backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+            },
+          ]}
+        >
+          <View style={styles.infoCardTop}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.infoCardLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                Pending (Escrow)
+              </Text>
+              <HelpCircle size={14} color={isDark ? '#64748B' : '#94A3B8'} />
+            </View>
+            <View style={[styles.heldBadge, { backgroundColor: isDark ? '#334155' : '#F1F5F9' }]}>
+              <Text style={[styles.heldBadgeText, { color: isDark ? '#94A3B8' : '#64748B' }]}>HELD</Text>
+            </View>
+          </View>
+
+          {isLoading ? (
+            <Skeleton width={130} height={32} radius={6} style={{ marginTop: 8 }} />
+          ) : (
+            <Text style={[styles.infoCardAmount, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              {formatCurrency(pending)}
+            </Text>
+          )}
+
+          <Text style={[styles.infoCardNote, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+            Payments are securely held in escrow and released to your withdrawable balance once customer order delivery is confirmed.
+          </Text>
         </View>
 
-        <View style={styles.tierList}>
-          {PAYOUT_TIERS.map((tier) => {
-            const currentLevel = wallet?.seller_level ?? 1;
-            const isActive = currentLevel === tier.level;
-            const Icon = tier.icon;
-            return (
-              <View
-                key={tier.level}
-                style={[
-                  styles.tierRow,
-                  {
-                    backgroundColor: '#FFFFFF',
-                    borderColor: isActive ? '#128C7E' : '#E2E8F0',
-                    borderWidth: isActive ? 2 : 1,
-                  },
-                ]}
-              >
-                <View style={[styles.tierIcon, { backgroundColor: isActive ? 'rgba(18, 140, 126, 0.12)' : '#F1F5F9' }]}>
-                  <Icon size={18} color={isActive ? '#128C7E' : '#64748B'} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={styles.tierName}>Level {tier.level} · {tier.name}</Text>
-                    {isActive && (
-                      <View style={styles.activeBadge}>
-                        <Text style={styles.activeBadgeText}>ACTIVE</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.tierRange}>{tier.range}</Text>
-                </View>
-                <Text style={[styles.tierPayout, { color: isActive ? '#128C7E' : '#64748B' }]}>
-                  {tier.payout}
-                </Text>
+        {/* Settlement Bank Account Card */}
+        <View
+          style={[
+            styles.infoCard,
+            {
+              backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+            },
+          ]}
+        >
+          <View style={styles.infoCardTop}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Building2 size={16} color="#0F766E" />
+              <Text style={[styles.infoCardLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                Settlement Account
+              </Text>
+            </View>
+
+            {wallet?.bank_account_verified ? (
+              <View style={styles.verifiedBadge}>
+                <CheckCircle2 size={12} color="#16A34A" strokeWidth={2.5} />
+                <Text style={styles.verifiedBadgeText}>Verified</Text>
               </View>
-            );
-          })}
+            ) : (
+              <View style={styles.unlinkedBadge}>
+                <Text style={styles.unlinkedBadgeText}>Unlinked</Text>
+              </View>
+            )}
+          </View>
+
+          {wallet?.bank_name ? (
+            <View style={styles.bankDetailsContainer}>
+              <Text style={[styles.bankNameText, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                {wallet.bank_name}
+              </Text>
+              <Text style={[styles.bankAcctNumber, { color: isDark ? '#94A3B8' : '#475569' }]}>
+                {wallet.bank_account_number}
+              </Text>
+              {wallet.bank_account_name && (
+                <Text style={[styles.bankAcctName, { color: isDark ? '#64748B' : '#64748B' }]}>
+                  {wallet.bank_account_name}
+                </Text>
+              )}
+            </View>
+          ) : (
+            <Text style={[styles.bankEmptyNotice, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              No settlement bank account linked yet. Add your bank details to receive payouts.
+            </Text>
+          )}
+
+          <TouchableOpacity
+            style={[
+              styles.manageBankBtn,
+              {
+                borderColor: isDark ? '#334155' : '#CBD5E1',
+                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#F8FAFC',
+              },
+            ]}
+            onPress={() => router.push('/(merchant)/more/settings')}
+            activeOpacity={0.75}
+          >
+            <Text style={[styles.manageBankBtnText, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              {wallet?.bank_name ? 'Edit Bank Account' : 'Link Bank Account'}
+            </Text>
+            <ExternalLink size={14} color={isDark ? '#94A3B8' : '#64748B'} />
+          </TouchableOpacity>
         </View>
 
-        {/* Recent Transactions */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        {/* Withdrawal History Section */}
+        <View style={styles.sectionHeaderRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Receipt size={18} color="#0F766E" />
+            <Text style={[styles.sectionTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              Withdrawal History
+            </Text>
+          </View>
+          {withdrawals.length > 0 && (
+            <Text style={[styles.txCountText, { color: isDark ? '#64748B' : '#94A3B8' }]}>
+              {withdrawals.length} {withdrawals.length === 1 ? 'record' : 'records'}
+            </Text>
+          )}
         </View>
 
         {isLoading ? (
-          [1, 2, 3, 4].map((i) => (
-            <View key={i} style={styles.txSkeleton}>
-              <Skeleton width={40} height={40} radius={20} />
-              <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton height={14} width="60%" />
+          [1, 2, 3].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.txSkeleton,
+                { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: isDark ? '#334155' : '#E2E8F0' },
+              ]}
+            >
+              <Skeleton width={38} height={38} radius={19} />
+              <View style={{ flex: 1, gap: 6 }}>
+                <Skeleton height={14} width="65%" />
                 <Skeleton height={10} width="40%" />
               </View>
-              <Skeleton height={18} width={80} />
+              <Skeleton height={18} width={70} />
             </View>
           ))
-        ) : wallet?.transactions?.length ? (
-          wallet.transactions.map((tx: WalletTransaction) => {
-            const { Icon, color } = getTransactionIcon(tx.type, tx.status);
+        ) : withdrawals.length === 0 ? (
+          <View
+            style={[
+              styles.emptyStateContainer,
+              { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: isDark ? '#334155' : '#E2E8F0' },
+            ]}
+          >
+            <Receipt size={36} color={isDark ? '#475569' : '#CBD5E1'} strokeWidth={1.5} />
+            <Text style={[styles.emptyStateTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              No withdrawals yet
+            </Text>
+            <Text style={[styles.emptyStateDesc, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              When you request payouts, your transaction records will be logged here.
+            </Text>
+          </View>
+        ) : (
+          withdrawals.map((w: any) => {
+            const rawStatus = (w.status || 'pending').toLowerCase();
+            const isSuccess = ['success', 'completed', 'paid'].includes(rawStatus);
+            const isProcessing = ['processing', 'submitted'].includes(rawStatus);
+            const isFailed = ['failed', 'rejected', 'reversed'].includes(rawStatus);
+
+            const badgeBg = isSuccess
+              ? 'rgba(22, 163, 74, 0.12)'
+              : isProcessing
+              ? 'rgba(37, 99, 235, 0.12)'
+              : isFailed
+              ? 'rgba(220, 38, 38, 0.12)'
+              : 'rgba(217, 119, 6, 0.12)';
+
+            const badgeColor = isSuccess
+              ? '#16A34A'
+              : isProcessing
+              ? '#2563EB'
+              : isFailed
+              ? '#DC2626'
+              : '#D97706';
+
+            const destination = w.bank_name
+              ? `${w.bank_name} • ${w.account_number || w.bank_account_number || ''}`
+              : w.description || 'Settlement Bank Transfer';
+
+            const dateLabel = w.created_at
+              ? format(new Date(w.created_at), 'MMM d, yyyy · h:mm a')
+              : 'Recent';
+
             return (
-              <View key={tx.id} style={styles.txCard}>
-                <View style={[styles.txIcon, { backgroundColor: color + '15' }]}>
-                  <Icon size={18} color={color} strokeWidth={2} />
+              <View
+                key={w.id || w.reference}
+                style={[
+                  styles.txCard,
+                  { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                ]}
+              >
+                <View style={[styles.txIconContainer, { backgroundColor: badgeBg }]}>
+                  <ArrowUpRight size={18} color={badgeColor} strokeWidth={2.5} />
                 </View>
+
                 <View style={styles.txInfo}>
-                  <Text style={styles.txDesc} numberOfLines={1}>{tx.description}</Text>
-                  <Text style={styles.txDate}>
-                    {format(new Date(tx.created_at), 'MMM d, yyyy')} · {tx.reference.slice(0, 12)}...
+                  <Text style={[styles.txDesc, { color: isDark ? '#F8FAFC' : '#0F172A' }]} numberOfLines={1}>
+                    {destination}
+                  </Text>
+                  <Text style={[styles.txDate, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                    {dateLabel}
                   </Text>
                 </View>
+
                 <View style={styles.txRight}>
-                  <Text style={[styles.txAmount, { color: tx.type === 'credit' ? '#10B981' : '#EF4444' }]}>
-                    {tx.type === 'credit' ? '+' : '-'}{formatCurrency(tx.amount)}
+                  <Text style={[styles.txAmount, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                    {formatCurrency(Number(w.amount || 0))}
                   </Text>
-                  <Badge
-                    label={tx.status}
-                    variant={tx.status === 'success' ? 'success' : tx.status === 'pending' ? 'warning' : 'danger'}
-                    size="sm"
-                  />
+                  <View style={[styles.txStatusBadge, { backgroundColor: badgeBg }]}>
+                    <Text style={[styles.txStatusBadgeText, { color: badgeColor }]}>
+                      {rawStatus}
+                    </Text>
+                  </View>
                 </View>
               </View>
             );
           })
-        ) : (
-          <View style={styles.emptyTx}>
-            <TrendingUp size={32} color="#94A3B8" strokeWidth={1.5} />
-            <Text style={styles.emptyText}>
-              No transactions yet. Start selling to see your earnings here.
-            </Text>
-          </View>
         )}
       </ScrollView>
 
@@ -307,61 +511,158 @@ export default function WalletScreen() {
         visible={modalVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => {
+          if (!withdrawMutation.isPending && !otpLoading) {
+            setModalVisible(false);
+          }
+        }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.modalCard, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' }]}>
+            {/* Modal Header */}
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Withdraw Funds</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
-                <X size={20} color="#64748B" />
+              <Text style={[styles.modalTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                Withdraw Funds
+              </Text>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={[styles.closeBtn, { backgroundColor: isDark ? '#334155' : '#F1F5F9' }]}
+                disabled={withdrawMutation.isPending || otpLoading}
+              >
+                <X size={18} color={isDark ? '#94A3B8' : '#64748B'} />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalSubtitle}>
-              Available Balance: <Text style={{ fontFamily: FontFamily.headingBold, color: '#128C7E' }}>{formatCurrency(wallet?.balance ?? 0)}</Text>
-            </Text>
-
-            {/* Input Amount */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Withdrawal Amount (₦)</Text>
-              <View style={styles.amountInputWrap}>
-                <Text style={styles.currencyPrefix}>₦</Text>
-                <TextInput
-                  style={styles.amountInput}
-                  value={withdrawAmount}
-                  onChangeText={setWithdrawAmount}
-                  keyboardType="numeric"
-                  placeholder="0.00"
-                  placeholderTextColor="#94A3B8"
-                />
-              </View>
+            {/* Withdrawable Balance info */}
+            <View style={[styles.modalBalanceBox, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC' }]}>
+              <Text style={[styles.modalBalanceLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                Available to Withdraw:
+              </Text>
+              <Text style={[styles.modalBalanceVal, { color: '#0F766E' }]}>
+                {formatCurrency(withdrawable)}
+              </Text>
             </View>
 
-            {/* Bank Info */}
-            <View style={styles.bankBox}>
-              <Building2 size={20} color="#128C7E" />
+            {/* Destination Bank Account Summary */}
+            <View style={[styles.destinationBankBox, { borderColor: isDark ? '#334155' : '#BBF7D0' }]}>
+              <Building2 size={18} color="#0F766E" />
               <View style={{ flex: 1 }}>
-                <Text style={styles.bankTitle}>
-                  {wallet?.bank_name ? wallet.bank_name : 'Verified Payout Account'}
+                <Text style={[styles.destinationBankName, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                  {wallet?.bank_name}
                 </Text>
-                <Text style={styles.bankSub}>
-                  {wallet?.bank_account_number ? `Acct: ${wallet.bank_account_number} · ${wallet.bank_account_name || ''}` : `Paystack Direct Transfer · Level ${wallet?.seller_level ?? 1}`}
+                <Text style={[styles.destinationBankSub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                  {wallet?.bank_account_number} · {wallet?.bank_account_name}
                 </Text>
               </View>
-              {(wallet?.bank_account_verified || wallet?.bank_name) && <CheckCircle2 size={18} color="#128C7E" />}
+              <CheckCircle2 size={16} color="#16A34A" />
             </View>
 
-            {/* CTA */}
-            <Button
-              title={withdrawMutation.isPending ? 'Processing Request...' : 'Confirm Payout Request'}
-              onPress={handleConfirmWithdraw}
-              disabled={withdrawMutation.isPending}
-              size="lg"
-              style={{ backgroundColor: '#128C7E', marginTop: 12 }}
-            />
+            {!otpSent ? (
+              <>
+                {/* Amount Input */}
+                <View style={styles.inputGroup}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={[styles.inputLabel, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                      Withdrawal Amount
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setWithdrawAmount(String(withdrawable))}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.useMaxText}>Use Max</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View
+                    style={[
+                      styles.amountInputWrap,
+                      {
+                        backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                        borderColor: '#0F766E',
+                      },
+                    ]}
+                  >
+                    <Text style={styles.currencyPrefix}>₦</Text>
+                    <TextInput
+                      style={[styles.amountInput, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
+                      value={withdrawAmount}
+                      onChangeText={setWithdrawAmount}
+                      keyboardType="numeric"
+                      placeholder="0.00"
+                      placeholderTextColor="#94A3B8"
+                    />
+                  </View>
+                </View>
+
+                {/* Send OTP Button */}
+                <Button
+                  title={otpLoading ? 'Sending Verification Code...' : 'Send Verification Code'}
+                  onPress={handleSendOtp}
+                  disabled={otpLoading}
+                  size="lg"
+                  style={{ backgroundColor: '#0F766E', marginTop: 10 }}
+                />
+              </>
+            ) : (
+              <>
+                {/* OTP Sent Notice */}
+                <View style={styles.otpNoticeBox}>
+                  <Text style={styles.otpNoticeTitle}>Code Sent!</Text>
+                  <Text style={styles.otpNoticeDesc}>
+                    Please enter the 6-digit verification code sent to your registered merchant email / WhatsApp.
+                  </Text>
+                </View>
+
+                {/* OTP Input */}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                    6-Digit Verification Code
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.otpInput,
+                      {
+                        backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                        borderColor: isDark ? '#334155' : '#CBD5E1',
+                        color: isDark ? '#F8FAFC' : '#0F172A',
+                      },
+                    ]}
+                    value={otpCode}
+                    onChangeText={setOtpCode}
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    placeholder="123456"
+                    placeholderTextColor="#94A3B8"
+                    textAlign="center"
+                  />
+                </View>
+
+                {/* Resend Code Link */}
+                <TouchableOpacity
+                  onPress={handleSendOtp}
+                  disabled={otpLoading}
+                  style={styles.resendCodeBtn}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.resendCodeText}>
+                    {otpLoading ? 'Resending...' : "Didn't receive code? Resend"}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Submit Withdrawal Button */}
+                <Button
+                  title={withdrawMutation.isPending ? 'Processing Payout...' : 'Confirm Withdrawal'}
+                  onPress={handleConfirmWithdraw}
+                  disabled={withdrawMutation.isPending}
+                  size="lg"
+                  style={{ backgroundColor: '#0F766E', marginTop: 8 }}
+                />
+              </>
+            )}
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -375,6 +676,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
+    borderBottomWidth: 1,
   },
   backBtn: {
     width: 40,
@@ -387,153 +689,221 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.headingBold,
     fontSize: FontSize.lg,
   },
+  settingsHeaderBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   scroll: {
     paddingHorizontal: 20,
+    paddingTop: 16,
     paddingBottom: 100,
+    gap: 16,
   },
-  balanceCard: {
+  // Payout Alert
+  payoutAlert: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    padding: 14,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+  },
+  alertDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 4,
+    flexShrink: 0,
+  },
+  alertTitle: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 13.5,
+  },
+  alertDesc: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 12,
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  // Available Balance Card
+  balanceCardWrapper: {
     borderRadius: Radius.xl,
     overflow: 'hidden',
-    marginBottom: 24,
   },
-  balanceGradient: {
-    padding: 20,
+  balanceCard: {
+    padding: 22,
+    gap: 20,
   },
-  balanceTop: {
+  balanceTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 20,
   },
-  balanceLabel: {
-    fontSize: 13,
-    fontFamily: FontFamily.bodyRegular,
+  balanceHeaderLabel: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 12,
     color: 'rgba(255,255,255,0.85)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  balanceAmount: {
-    fontSize: 30,
+  balancePrimaryAmount: {
     fontFamily: FontFamily.headingBold,
+    fontSize: 32,
     color: '#FFFFFF',
-    marginTop: 4,
+    marginTop: 6,
   },
-  walletIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
+  availableBadge: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
-  balanceStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    borderRadius: Radius.lg,
-    padding: 12,
-    marginBottom: 16,
-  },
-  balanceStat: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  balanceStatVal: {
-    fontSize: 13,
+  availableBadgeText: {
     fontFamily: FontFamily.headingBold,
+    fontSize: 10,
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
-  balanceStatLabel: {
-    fontSize: 10.5,
-    fontFamily: FontFamily.bodyRegular,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 2,
-  },
-  balanceStatDivider: {
-    width: 1,
-    height: 24,
-  },
-  withdrawBtn: {
+  withdrawMainBtn: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 9999,
-  },
-  sectionHeader: {
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontFamily: FontFamily.headingBold,
-    color: '#0F172A',
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    fontFamily: FontFamily.bodyRegular,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  tierList: {
-    gap: 10,
-    marginBottom: 24,
-  },
-  tierRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 14,
-    gap: 12,
-  },
-  tierIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: Radius.lg,
   },
-  tierName: {
-    fontSize: 13.5,
+  withdrawMainBtnText: {
     fontFamily: FontFamily.headingBold,
-    color: '#0F172A',
+    fontSize: 14,
+    color: '#0F766E',
   },
-  tierRange: {
-    fontSize: 11,
-    fontFamily: FontFamily.bodyRegular,
-    color: '#64748B',
-    marginTop: 2,
+  // Info Cards (Pending & Settlement Bank)
+  infoCard: {
+    padding: 18,
+    borderRadius: Radius.xl,
+    borderWidth: 1,
+    gap: 10,
   },
-  tierPayout: {
+  infoCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  infoCardLabel: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 12,
-    fontFamily: FontFamily.headingBold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  activeBadge: {
-    backgroundColor: 'rgba(18, 140, 126, 0.12)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+  heldBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 4,
   },
-  activeBadgeText: {
-    fontSize: 9,
+  heldBadgeText: {
     fontFamily: FontFamily.headingBold,
-    color: '#128C7E',
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
-  txSkeleton: {
+  infoCardAmount: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 24,
+  },
+  infoCardNote: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  // Settlement Account specifics
+  verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    gap: 12,
-    marginBottom: 10,
+    gap: 4,
+    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
+  verifiedBadgeText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 11,
+    color: '#16A34A',
+  },
+  unlinkedBadge: {
+    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  unlinkedBadgeText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 11,
+    color: '#DC2626',
+  },
+  bankDetailsContainer: {
+    gap: 2,
+  },
+  bankNameText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 15,
+  },
+  bankAcctNumber: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 13,
+    letterSpacing: 0.5,
+  },
+  bankAcctName: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 12,
+  },
+  bankEmptyNotice: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 12.5,
+    lineHeight: 18,
+  },
+  manageBankBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  manageBankBtnText: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 12.5,
+  },
+  // Section Header
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  sectionTitle: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 15,
+  },
+  txCountText: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 12,
+  },
+  // History list
   txCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: Radius.lg,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     gap: 12,
-    marginBottom: 10,
   },
-  txIcon: {
+  txIconContainer: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -544,14 +914,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   txDesc: {
-    fontSize: 13.5,
     fontFamily: FontFamily.headingSemiBold,
-    color: '#0F172A',
+    fontSize: 13,
   },
   txDate: {
-    fontSize: 11,
     fontFamily: FontFamily.bodyRegular,
-    color: '#64748B',
+    fontSize: 11,
     marginTop: 2,
   },
   txRight: {
@@ -559,37 +927,57 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   txAmount: {
-    fontSize: 13.5,
     fontFamily: FontFamily.headingBold,
+    fontSize: 13.5,
   },
-  emptyTx: {
+  txStatusBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  txStatusBadgeText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 9.5,
+    textTransform: 'uppercase',
+  },
+  txSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    gap: 12,
+  },
+  emptyStateContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    padding: 36,
+    borderRadius: Radius.xl,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    gap: 8,
   },
-  emptyText: {
-    fontSize: 13,
+  emptyStateTitle: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 14,
+    marginTop: 4,
+  },
+  emptyStateDesc: {
     fontFamily: FontFamily.bodyRegular,
-    color: '#64748B',
+    fontSize: 12,
     textAlign: 'center',
-    marginTop: 8,
+    lineHeight: 17,
   },
-  // Modal Styles
+  // Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     justifyContent: 'flex-end',
   },
   modalCard: {
-    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 24,
-    gap: 16,
+    padding: 22,
+    gap: 14,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -597,72 +985,112 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   modalTitle: {
-    fontSize: 18,
     fontFamily: FontFamily.headingBold,
-    color: '#0F172A',
+    fontSize: 18,
   },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalSubtitle: {
-    fontSize: 13.5,
+  modalBalanceBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: Radius.md,
+  },
+  modalBalanceLabel: {
     fontFamily: FontFamily.bodyRegular,
-    color: '#64748B',
+    fontSize: 12.5,
+  },
+  modalBalanceVal: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 14,
+  },
+  destinationBankBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: Radius.md,
+    backgroundColor: 'rgba(15, 118, 110, 0.06)',
+    borderWidth: 1,
+    gap: 10,
+  },
+  destinationBankName: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 13,
+  },
+  destinationBankSub: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 11,
+    marginTop: 2,
   },
   inputGroup: {
-    gap: 8,
+    gap: 6,
   },
   inputLabel: {
-    fontSize: 13,
     fontFamily: FontFamily.headingSemiBold,
-    color: '#0F172A',
+    fontSize: 12.5,
+  },
+  useMaxText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 12,
+    color: '#0F766E',
   },
   amountInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: Radius.lg,
     borderWidth: 1.5,
-    borderColor: '#128C7E',
-    paddingHorizontal: 16,
-    height: 52,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    height: 48,
   },
   currencyPrefix: {
-    fontSize: 18,
     fontFamily: FontFamily.headingBold,
-    color: '#128C7E',
-    marginRight: 8,
+    fontSize: 18,
+    color: '#0F766E',
+    marginRight: 6,
   },
   amountInput: {
     flex: 1,
-    fontSize: 20,
     fontFamily: FontFamily.headingBold,
-    color: '#0F172A',
+    fontSize: 18,
   },
-  bankBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: Radius.lg,
-    backgroundColor: '#F0FDF4',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    gap: 12,
+  otpNoticeBox: {
+    backgroundColor: 'rgba(15, 118, 110, 0.08)',
+    borderRadius: Radius.md,
+    padding: 12,
+    gap: 4,
   },
-  bankTitle: {
+  otpNoticeTitle: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 13,
-    fontFamily: FontFamily.headingBold,
-    color: '#0F172A',
+    color: '#0F766E',
   },
-  bankSub: {
-    fontSize: 11,
+  otpNoticeDesc: {
     fontFamily: FontFamily.bodyRegular,
-    color: '#64748B',
-    marginTop: 2,
+    fontSize: 11.5,
+    color: '#0F766E',
+    lineHeight: 16,
+  },
+  otpInput: {
+    height: 50,
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
+    fontFamily: FontFamily.headingBold,
+    fontSize: 22,
+    letterSpacing: 8,
+  },
+  resendCodeBtn: {
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  resendCodeText: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 12,
+    color: '#0F766E',
   },
 });

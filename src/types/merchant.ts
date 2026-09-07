@@ -93,15 +93,25 @@ export interface TopProduct {
   revenue: number;
 }
 
+export interface PayoutStatusSummary {
+  state: 'paid' | 'processing' | 'scheduled' | 'under_review';
+  next_payout_at?: string | null;
+}
+
 export interface Wallet {
   balance: number;
+  withdrawable_balance?: number;
   pending_balance: number;
   total_earned: number;
   total_withdrawn: number;
-  currency: string;
+  currency?: string;
+  bank_name?: string;
+  bank_account_number?: string;
+  bank_account_name?: string;
+  bank_account_verified?: boolean;
+  payout_status?: PayoutStatusSummary;
   transactions: WalletTransaction[];
-  trust_score: number;
-  seller_level: number;
+  withdrawals?: any[];
 }
 
 export interface WalletTransaction {

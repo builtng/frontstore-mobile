@@ -40,6 +40,8 @@ export default function AddProductScreen() {
   const [trackStock, setTrackStock] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [autoFilled, setAutoFilled] = useState(false);
 
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -54,22 +56,51 @@ export default function AddProductScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.85,
+      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
-      const localUri = result.assets[0].uri;
+      const asset = result.assets[0];
+      const localUri = asset.uri;
+      const isFirst = localImages.length === 0;
       setLocalImages((prev) => [...prev, localUri]);
       setIsUploading(true);
-      try {
-        const formData = new FormData();
-        formData.append('image', { uri: localUri, name: `product_${Date.now()}.jpg`, type: 'image/jpeg' } as any);
-        const res = await merchantApi.uploadProductImage(formData);
-        setUploadedUrls((prev) => [...prev, res.data?.url ?? res.url]);
-      } catch {
-        setLocalImages((prev) => prev.filter((u) => u !== localUri));
-        toast.error('Failed to upload image. Please try again.');
-      } finally {
-        setIsUploading(false);
+
+      const uploadPromise = (async () => {
+        try {
+          const formData = new FormData();
+          formData.append('image', { uri: localUri, name: `product_${Date.now()}.jpg`, type: 'image/jpeg' } as any);
+          const res = await merchantApi.uploadProductImage(formData);
+          setUploadedUrls((prev) => [...prev, res.data?.url ?? res.url]);
+        } catch {
+          setLocalImages((prev) => prev.filter((u) => u !== localUri));
+          toast.error('Failed to upload image. Please try again.');
+        } finally {
+          setIsUploading(false);
+        }
+      })();
+
+      if (asset.base64 && (isFirst || !productName)) {
+        setIsAnalyzingImage(true);
+        try {
+          const mime = asset.mimeType || 'image/jpeg';
+          const aiResponse = await merchantApi.analyzeProductImage(asset.base64, mime);
+          const aiData = aiResponse?.data ?? aiResponse;
+          if (aiData) {
+            if (aiData.name) setValue('name', aiData.name);
+            if (aiData.recommended_price) setValue('price', String(aiData.recommended_price));
+            if (aiData.description) setValue('description', aiData.description);
+            setAutoFilled(true);
+            haptics.success();
+            toast.success('✨ Details auto-filled from photo! You can edit any field.');
+          }
+        } catch (e: any) {
+          console.warn('AI photo analysis failed:', e);
+        } finally {
+          setIsAnalyzingImage(false);
+        }
       }
+
+      await uploadPromise;
     }
   };
 
@@ -81,8 +112,11 @@ export default function AddProductScreen() {
     setIsGenerating(true);
     try {
       const result = await merchantApi.generateAIDescription(productName);
-      setValue('description', result.description);
-      haptics.success();
+      const desc = result?.description ?? result?.data?.description;
+      if (desc) {
+        setValue('description', desc);
+        haptics.success();
+      }
     } catch {
       toast.error('Could not generate description');
     } finally {
@@ -139,7 +173,22 @@ export default function AddProductScreen() {
 
           {/* Images */}
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: theme.text }]}>Product Images</Text>
+            <View style={styles.photosHeader}>
+              <Text style={[styles.sectionLabel, { color: theme.text, marginBottom: 0 }]}>Product Images</Text>
+              {isAnalyzingImage ? (
+                <View style={[styles.aiBadge, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <Sparkles size={12} color={Colors.primaryLight} />
+                  <Text style={[styles.aiBadgeText, { color: Colors.primaryLight }]}>Analyzing & auto-filling…</Text>
+                </View>
+              ) : autoFilled ? (
+                <View style={[styles.aiBadge, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <Sparkles size={12} color={Colors.primaryLight} />
+                  <Text style={[styles.aiBadgeText, { color: Colors.primaryLight }]}>✨ Auto-filled (editable)</Text>
+                </View>
+              ) : (
+                <Text style={[styles.photosHint, { color: theme.textTertiary }]}>Auto-fills details from photo</Text>
+              )}
+            </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageRow}>
               {localImages.map((uri, i) => (
                 <View key={i} style={styles.imageThumb}>
@@ -301,6 +350,10 @@ const styles = StyleSheet.create({
   subtitle: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.base, lineHeight: 24 },
   section: { marginBottom: Spacing[5] },
   sectionLabel: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm, marginBottom: Spacing[3] },
+  photosHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing[3] },
+  photosHint: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs },
+  aiBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: Spacing[2], paddingVertical: Spacing[1], borderRadius: Radius.full },
+  aiBadgeText: { fontFamily: FontFamily.bodySemiBold, fontSize: 11 },
   imageRow: { gap: Spacing[3] },
   imageThumb: { width: 80, height: 80, borderRadius: Radius.md, overflow: 'hidden', position: 'relative' },
   removeImage: {

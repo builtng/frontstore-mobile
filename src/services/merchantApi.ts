@@ -223,7 +223,10 @@ export const mapWalletToFrontend = (d: any) => {
     amount: Number(w.amount || 0),
     description: `Payout to ${w.bank_name || d.bank_name || 'Bank'} (${(w.bank_account_number || d.bank_account_number || '').slice(-4)})`,
     reference: w.reference || `PAY-${w.id}`,
-    status: ['completed', 'paid'].includes(w.status) ? 'success' : w.status === 'failed' ? 'failed' : 'pending',
+    bank_name: w.bank_name || d.bank_name,
+    bank_account_number: w.bank_account_number || d.bank_account_number,
+    bank_account_name: w.bank_account_name || d.bank_account_name,
+    status: ['completed', 'paid', 'success'].includes(w.status) ? 'success' : w.status === 'failed' ? 'failed' : 'pending',
     created_at: w.created_at,
   }));
 
@@ -234,10 +237,13 @@ export const mapWalletToFrontend = (d: any) => {
     pending_balance: pending,
     total_earned: withdrawable + pending + completedWithdrawn,
     total_withdrawn: completedWithdrawn,
+    bank_name: d.bank_name || '',
+    bank_account_number: d.bank_account_number || '',
+    bank_account_name: d.bank_account_name || '',
+    bank_account_verified: !!d.bank_account_verified,
+    payout_status: d.payout_status || { state: 'paid', next_payout_at: null },
     transactions,
     withdrawals,
-    seller_level: d.payout_status?.state === 'under_review' ? 1 : 2,
-    trust_score: 85,
   };
 };
 
@@ -375,9 +381,20 @@ export const merchantApi = {
     return data;
   },
 
-  generateAIDescription: async (name: string) => {
-    const { data } = await api.post('/ai/generate-description', { name });
-    return data;
+  generateAIDescription: async (name: string, categoryHint?: string) => {
+    const { data } = await api.post('/ai/generate-description', {
+      product_name: name,
+      category_hint: categoryHint,
+    });
+    return data?.data ?? data;
+  },
+
+  analyzeProductImage: async (imageBase64: string, imageMime: string = 'image/jpeg') => {
+    const { data } = await api.post('/ai/generate-description', {
+      image_base64: imageBase64,
+      image_mime: imageMime,
+    });
+    return data?.data ?? data;
   },
 
   // Categories

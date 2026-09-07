@@ -57,6 +57,8 @@ export default function AddProductScreen() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [autoFilled, setAutoFilled] = useState(false);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -92,28 +94,72 @@ export default function AddProductScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.85,
+      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
-      const localUri = result.assets[0].uri;
+      const asset = result.assets[0];
+      const localUri = asset.uri;
+      const isFirst = localImages.length === 0;
       setLocalImages((prev) => [...prev, localUri]);
       // Upload immediately so we have the server URL ready when submitting
       setIsUploading(true);
-      try {
-        const formData = new FormData();
-        formData.append('image', {
-          uri: localUri,
-          name: `product_${Date.now()}.jpg`,
-          type: 'image/jpeg',
-        } as any);
-        const res = await merchantApi.uploadProductImage(formData);
-        setUploadedUrls((prev) => [...prev, res.data?.url ?? res.url]);
-      } catch {
-        // Remove the local preview if upload failed
-        setLocalImages((prev) => prev.filter((u) => u !== localUri));
-        toast.error('Failed to upload image. Please try again.');
-      } finally {
-        setIsUploading(false);
+
+      const uploadPromise = (async () => {
+        try {
+          const formData = new FormData();
+          formData.append('image', {
+            uri: localUri,
+            name: `product_${Date.now()}.jpg`,
+            type: 'image/jpeg',
+          } as any);
+          const res = await merchantApi.uploadProductImage(formData);
+          setUploadedUrls((prev) => [...prev, res.data?.url ?? res.url]);
+        } catch {
+          // Remove the local preview if upload failed
+          setLocalImages((prev) => prev.filter((u) => u !== localUri));
+          toast.error('Failed to upload image. Please try again.');
+        } finally {
+          setIsUploading(false);
+        }
+      })();
+
+      // Auto-analyze on first photo upload or if product name isn't filled yet
+      if (asset.base64 && (isFirst || !productName)) {
+        setIsAnalyzingImage(true);
+        try {
+          const mime = asset.mimeType || 'image/jpeg';
+          const aiResponse = await merchantApi.analyzeProductImage(asset.base64, mime);
+          const aiData = aiResponse?.data ?? aiResponse;
+          if (aiData) {
+            if (aiData.name) setValue('name', aiData.name);
+            if (aiData.recommended_price) setValue('price', String(aiData.recommended_price));
+            if (aiData.description) setValue('description', aiData.description);
+            if (aiData.listing_type && ['physical', 'digital', 'service'].includes(aiData.listing_type)) {
+              setValue('type', aiData.listing_type);
+            }
+
+            // Auto-match category if not already selected
+            if (categories && categories.length > 0 && !selectedCategory) {
+              const tagsAndName = `${aiData.name || ''} ${(aiData.tags || []).join(' ')}`.toLowerCase();
+              const matched = categories.find((c: Category) => {
+                const cName = c.name.toLowerCase();
+                return tagsAndName.includes(cName) || cName.split(/\s+/).some((w: string) => w.length > 3 && tagsAndName.includes(w));
+              });
+              if (matched) setSelectedCategory(matched);
+            }
+
+            setAutoFilled(true);
+            haptics.success();
+            toast.success('✨ Details auto-filled from photo! You can update any field.');
+          }
+        } catch (e: any) {
+          console.warn('AI photo analysis skipped/failed:', e);
+        } finally {
+          setIsAnalyzingImage(false);
+        }
       }
+
+      await uploadPromise;
     }
   };
 
@@ -129,9 +175,12 @@ export default function AddProductScreen() {
     }
     setIsGenerating(true);
     try {
-      const result = await merchantApi.generateAIDescription(productName);
-      setValue('description', result.description);
-      haptics.success();
+      const result = await merchantApi.generateAIDescription(productName, selectedCategory?.name);
+      const desc = result?.description ?? result?.data?.description;
+      if (desc) {
+        setValue('description', desc);
+        haptics.success();
+      }
     } catch {
       toast.error('Could not generate description');
     } finally {
@@ -213,7 +262,22 @@ export default function AddProductScreen() {
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Images */}
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: theme.text }]}>Photos</Text>
+            <View style={styles.photosHeader}>
+              <Text style={[styles.sectionLabel, { color: theme.text, marginBottom: 0 }]}>Photos</Text>
+              {isAnalyzingImage ? (
+                <View style={[styles.aiBadge, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <Sparkles size={12} color={Colors.primaryLight} />
+                  <Text style={[styles.aiBadgeText, { color: Colors.primaryLight }]}>Analyzing & auto-filling…</Text>
+                </View>
+              ) : autoFilled ? (
+                <View style={[styles.aiBadge, { backgroundColor: Colors.glow.primarySoft }]}>
+                  <Sparkles size={12} color={Colors.primaryLight} />
+                  <Text style={[styles.aiBadgeText, { color: Colors.primaryLight }]}>✨ Auto-filled (editable)</Text>
+                </View>
+              ) : (
+                <Text style={[styles.photosHint, { color: theme.textTertiary }]}>Auto-fills details from photo</Text>
+              )}
+            </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageRow}>
               {localImages.map((uri, i) => (
                 <View key={i} style={styles.imageThumb}>
@@ -440,6 +504,10 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: Spacing[6], paddingBottom: Spacing[4] },
   section: { marginBottom: Spacing[5] },
   sectionLabel: { fontFamily: FontFamily.bodySemiBold, fontSize: FontSize.sm, marginBottom: Spacing[3] },
+  photosHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing[3] },
+  photosHint: { fontFamily: FontFamily.bodyRegular, fontSize: FontSize.xs },
+  aiBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: Spacing[2], paddingVertical: Spacing[1], borderRadius: Radius.full },
+  aiBadgeText: { fontFamily: FontFamily.bodySemiBold, fontSize: 11 },
   imageRow: { gap: Spacing[3] },
   imageThumb: { width: 88, height: 88, borderRadius: Radius.md, overflow: 'hidden', position: 'relative' },
   primaryBadge: { position: 'absolute', bottom: 4, left: 4, backgroundColor: Colors.primaryLight, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1, zIndex: 1 },
