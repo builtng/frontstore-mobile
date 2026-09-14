@@ -313,6 +313,14 @@ export default function MoreScreen() {
           action: () => Linking.openURL(storeUrl),
         },
         {
+          label: 'App Onboarding Tour',
+          subtitle: 'Preview introduction & onboarding screens',
+          Icon: Sparkles,
+          color: '#10B981',
+          bgColor: '#ECFDF5',
+          action: () => router.push('/(auth)/welcome' as any),
+        },
+        {
           label: 'Sign Out',
           subtitle: 'Sign out of this merchant session',
           Icon: LogOut,

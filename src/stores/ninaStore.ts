@@ -8,6 +8,7 @@ export interface NinaMessage {
 }
 
 interface NinaStore {
+
   messages: NinaMessage[];
   isTyping: boolean;
   addUserMessage: (content: string) => NinaMessage;
