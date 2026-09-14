@@ -1,10 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  FlatList,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
@@ -14,217 +18,381 @@ import Animated, {
   withDelay,
   withSpring,
   Easing,
+  FadeIn,
+  FadeInDown,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import {
-  ShoppingBag,
-  TrendingUp,
-  Wallet,
-  LucideIcon,
   ArrowRight,
+  Sparkles,
   Zap,
+  MessageCircle,
+  ShoppingBag,
+  ShieldCheck,
+  TrendingUp,
+  ChevronRight,
+  LucideIcon,
 } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Colors } from '@/constants/colors';
 import { FontFamily, FontSize } from '@/constants/typography';
-import { Radius, Spacing } from '@/constants/spacing';
 
-const { height } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+interface OnboardingSlide {
+  id: string;
+  badge: string;
+  badgeIcon: LucideIcon;
+  headline: string;
+  headlineAccent: string;
+  subheadline: string;
+  image: any;
+  metricLabel: string;
+  metricHighlight: string;
+  accentColor: string;
+  accentBg: string;
+}
 
-const FEATURES: { icon: LucideIcon; label: string; caption: string; color: string; bg: string }[] = [
-  { icon: ShoppingBag, label: 'Catalog', caption: 'Manage inventory', color: '#14B8A6', bg: 'rgba(20,184,166,0.12)' },
-  { icon: TrendingUp, label: 'Analytics', caption: 'Real-time data', color: '#22C55E', bg: 'rgba(34,197,94,0.12)' },
-  { icon: Wallet, label: 'Wallet', caption: 'Instant payouts', color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
-];
-
-const STATS = [
-  { value: '10K+', label: 'Merchants' },
-  { value: '₦2B+', label: 'Processed' },
-  { value: '99.9%', label: 'Uptime' },
+const ONBOARDING_SLIDES: OnboardingSlide[] = [
+  {
+    id: 'slide-1',
+    badge: 'INSTANT STOREFRONT',
+    badgeIcon: Zap,
+    headline: 'Build your dream store\n',
+    headlineAccent: 'in under 2 minutes.',
+    subheadline:
+      'Turn your products into a high-converting digital storefront. Zero coding, zero agency fees, instantaneous setup.',
+    image: require('../../assets/website-designer-illustration-concept_1150-39366.png'),
+    metricLabel: 'Setup Time',
+    metricHighlight: '< 120 Seconds',
+    accentColor: '#10B981',
+    accentBg: 'rgba(16, 185, 129, 0.12)',
+  },
+  {
+    id: 'slide-2',
+    badge: 'SOCIAL COMMERCE',
+    badgeIcon: MessageCircle,
+    headline: 'Sell directly where\n',
+    headlineAccent: 'your customers browse.',
+    subheadline:
+      'Transform WhatsApp chats, Instagram DMs, and social links into automated checkouts with mobile-first storefronts.',
+    image: require('../../assets/pngtree-mobile-shopping-concept-with-giant-mobile-phone-png-image_5356739.png'),
+    metricLabel: 'Channel Reach',
+    metricHighlight: 'WhatsApp & Socials',
+    accentColor: '#22C55E',
+    accentBg: 'rgba(34, 197, 94, 0.12)',
+  },
+  {
+    id: 'slide-3',
+    badge: 'BUYER EXPERIENCE',
+    badgeIcon: ShoppingBag,
+    headline: 'Delight your shoppers,\n',
+    headlineAccent: 'ignite repeat orders.',
+    subheadline:
+      'Offer frictionless browsing, lightning-fast product loading, and one-tap checkout that turns visitors into lifelong customers.',
+    image: require('../../assets/pngtree-female-customers-shopping-online-vector-design-png-image_5347768.png'),
+    metricLabel: 'Checkout Velocity',
+    metricHighlight: '3.4x Conversion',
+    accentColor: '#14B8A6',
+    accentBg: 'rgba(20, 184, 166, 0.12)',
+  },
+  {
+    id: 'slide-4',
+    badge: 'PAYMENTS & LOGISTICS',
+    badgeIcon: ShieldCheck,
+    headline: 'Get paid instantly,\n',
+    headlineAccent: 'dispatch with ease.',
+    subheadline:
+      'Accept bank cards, instant transfers, and mobile money securely. Track orders and manage delivery straight from your pocket.',
+    image: require('../../assets/the-couple-goes-shopping-chart-in-a-mobile-online-shop-illustration-svg-download-png-4254817.webp'),
+    metricLabel: 'Settlement Speed',
+    metricHighlight: 'Instant Payouts',
+    accentColor: '#38BDF8',
+    accentBg: 'rgba(56, 189, 248, 0.12)',
+  },
+  {
+    id: 'slide-5',
+    badge: 'EXECUTIVE INTELLIGENCE',
+    badgeIcon: TrendingUp,
+    headline: 'Command your entire\n',
+    headlineAccent: 'commerce empire.',
+    subheadline:
+      'Live revenue analytics, inventory tracking, and merchant capital tools. Everything you need to scale profitably.',
+    image: require('../../assets/dashboard_mock.png'),
+    metricLabel: 'Platform Volume',
+    metricHighlight: '₦2B+ Processed',
+    accentColor: '#A78BFA',
+    accentBg: 'rgba(167, 139, 250, 0.12)',
+  },
 ];
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const flatListRef = useRef<FlatList>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  // Staggered entrance animations
-  const logoOpacity = useSharedValue(0);
-  const logoY = useSharedValue(-10);
-
-  const heroOpacity = useSharedValue(0);
-  const heroY = useSharedValue(20);
-
-  const cardOpacity = useSharedValue(0);
-  const cardScale = useSharedValue(0.92);
-  const cardY = useSharedValue(30);
-
-  const statsOpacity = useSharedValue(0);
-  const statsY = useSharedValue(16);
-
-  const featuresOpacity = useSharedValue(0);
-  const featuresY = useSharedValue(16);
-
-  const ctaOpacity = useSharedValue(0);
-  const ctaY = useSharedValue(24);
+  // Header and controls animation values
+  const headerOpacity = useSharedValue(0);
+  const headerY = useSharedValue(-12);
+  const footerOpacity = useSharedValue(0);
+  const footerY = useSharedValue(20);
 
   useEffect(() => {
     const easeOut = Easing.out(Easing.cubic);
+    headerOpacity.value = withDelay(100, withTiming(1, { duration: 500, easing: easeOut }));
+    headerY.value = withDelay(100, withTiming(0, { duration: 500, easing: easeOut }));
 
-    logoOpacity.value = withDelay(50, withTiming(1, { duration: 500, easing: easeOut }));
-    logoY.value = withDelay(50, withTiming(0, { duration: 500, easing: easeOut }));
-
-    heroOpacity.value = withDelay(200, withTiming(1, { duration: 600, easing: easeOut }));
-    heroY.value = withDelay(200, withTiming(0, { duration: 600, easing: easeOut }));
-
-    cardOpacity.value = withDelay(350, withTiming(1, { duration: 700, easing: easeOut }));
-    cardScale.value = withDelay(350, withSpring(1, { damping: 14, stiffness: 100 }));
-    cardY.value = withDelay(350, withTiming(0, { duration: 700, easing: easeOut }));
-
-    statsOpacity.value = withDelay(550, withTiming(1, { duration: 500, easing: easeOut }));
-    statsY.value = withDelay(550, withTiming(0, { duration: 500, easing: easeOut }));
-
-    featuresOpacity.value = withDelay(650, withTiming(1, { duration: 500, easing: easeOut }));
-    featuresY.value = withDelay(650, withTiming(0, { duration: 500, easing: easeOut }));
-
-    ctaOpacity.value = withDelay(800, withTiming(1, { duration: 600, easing: easeOut }));
-    ctaY.value = withDelay(800, withTiming(0, { duration: 600, easing: easeOut }));
+    footerOpacity.value = withDelay(300, withTiming(1, { duration: 600, easing: easeOut }));
+    footerY.value = withDelay(300, withTiming(0, { duration: 600, easing: easeOut }));
   }, []);
 
-  const logoStyle = useAnimatedStyle(() => ({ opacity: logoOpacity.value, transform: [{ translateY: logoY.value }] }));
-  const heroStyle = useAnimatedStyle(() => ({ opacity: heroOpacity.value, transform: [{ translateY: heroY.value }] }));
-  const cardStyle = useAnimatedStyle(() => ({
-    opacity: cardOpacity.value,
-    transform: [{ translateY: cardY.value }, { scale: cardScale.value }],
+  const headerStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+    transform: [{ translateY: headerY.value }],
   }));
-  const statsStyle = useAnimatedStyle(() => ({ opacity: statsOpacity.value, transform: [{ translateY: statsY.value }] }));
-  const featuresStyle = useAnimatedStyle(() => ({ opacity: featuresOpacity.value, transform: [{ translateY: featuresY.value }] }));
-  const ctaStyle = useAnimatedStyle(() => ({ opacity: ctaOpacity.value, transform: [{ translateY: ctaY.value }] }));
+
+  const footerStyle = useAnimatedStyle(() => ({
+    opacity: footerOpacity.value,
+    transform: [{ translateY: footerY.value }],
+  }));
+
+  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const slideSize = event.nativeEvent.layoutMeasurement.width;
+    const offset = event.nativeEvent.contentOffset.x;
+    const index = Math.round(offset / slideSize);
+    if (index !== activeIndex && index >= 0 && index < ONBOARDING_SLIDES.length) {
+      setActiveIndex(index);
+      Haptics.selectionAsync();
+    }
+  };
+
+  const handleNext = () => {
+    if (activeIndex < ONBOARDING_SLIDES.length - 1) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      flatListRef.current?.scrollToIndex({
+        index: activeIndex + 1,
+        animated: true,
+      });
+    } else {
+      handleGetStarted();
+    }
+  };
+
+  const handleSkip = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    flatListRef.current?.scrollToIndex({
+      index: ONBOARDING_SLIDES.length - 1,
+      animated: true,
+    });
+  };
+
+  const handleGetStarted = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push('/(auth)/otp-login' as any);
+  };
+
+  const handleSignIn = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/(auth)/sign-in');
+  };
+
+  const isLastSlide = activeIndex === ONBOARDING_SLIDES.length - 1;
+  const currentSlide = ONBOARDING_SLIDES[activeIndex];
+
+  // Dynamic image container height responsive to screen size
+  const illustrationHeight = Math.min(SCREEN_HEIGHT * 0.35, 300);
 
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
 
-      {/* Full-screen aurora background */}
-      <Image
-        source={require('../../assets/welcome_bg.png')}
-        style={StyleSheet.absoluteFill}
-        contentFit="cover"
-      />
+      {/* Subtle executive ambient glow - NO background noise or box */}
+      <View style={styles.ambientGlowContainer} pointerEvents="none">
+        <LinearGradient
+          colors={['rgba(16, 185, 129, 0.08)', 'rgba(6, 78, 59, 0.03)', 'transparent']}
+          style={styles.ambientTopGlow}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+        />
+      </View>
 
-      {/* Dark overlay to ensure text legibility */}
-      <LinearGradient
-        colors={['rgba(3,8,16,0.55)', 'rgba(3,8,16,0.15)', 'rgba(3,8,16,0.82)', 'rgba(3,8,16,0.98)']}
-        locations={[0, 0.25, 0.55, 1]}
-        style={StyleSheet.absoluteFill}
-      />
-
-      <View style={[styles.safe, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 16 }]}>
-
-        {/* ── LOGO ── */}
-        <Animated.View style={[styles.header, logoStyle]}>
-          <View style={styles.logoRow}>
-            <View style={styles.logoIconWrap}>
-              <Image source={require('../../assets/logo.png')} style={styles.logoImage} contentFit="cover" />
+      <View
+        style={[
+          styles.safeContainer,
+          {
+            paddingTop: insets.top + (Platform.OS === 'ios' ? 8 : 14),
+            paddingBottom: Math.max(insets.bottom, 12),
+          },
+        ]}
+      >
+        {/* ── TOP NAV / BRAND HEADER ── */}
+        <Animated.View style={[styles.topNav, headerStyle]}>
+          <View style={styles.brandRow}>
+            <View style={styles.brandLogoWrap}>
+              <Image
+                source={require('../../assets/logo.png')}
+                style={styles.brandLogoImage}
+                contentFit="contain"
+              />
             </View>
-            <Text style={styles.logoText}>frontstore</Text>
-          </View>
-          <View style={styles.badgePill}>
-            <View style={styles.badgeDot} />
-            <Text style={styles.badgeText}>Merchant App</Text>
-          </View>
-        </Animated.View>
-
-        {/* ── HERO COPY ── */}
-        <Animated.View style={[styles.heroSection, heroStyle]}>
-          <View style={styles.kickerRow}>
-            <Zap size={11} color="#22C55E" fill="#22C55E" />
-            <Text style={styles.kicker}>FOR MERCHANTS</Text>
-          </View>
-          <Text style={styles.headline}>
-            Run your store.{'\n'}
-            <Text style={styles.headlineAccent}>From anywhere.</Text>
-          </Text>
-          <Text style={styles.subheadline}>
-            Catalog, orders, analytics & payouts — all in one powerful app built for African merchants.
-          </Text>
-        </Animated.View>
-
-        {/* ── HERO DASHBOARD ILLUSTRATION (PNG) ── */}
-        <Animated.View style={[styles.illustrationWrapper, cardStyle]}>
-          <Image
-            source={require('../../assets/dashboard_mock.png')}
-            style={styles.illustrationImage}
-            contentFit="contain"
-          />
-        </Animated.View>
-
-        {/* ── STATS ROW ── */}
-        <Animated.View style={[styles.statsRow, statsStyle]}>
-          {STATS.map((s, i) => (
-            <View key={s.label} style={styles.statItem}>
-              <Text style={styles.statValue}>{s.value}</Text>
-              <Text style={styles.statLabel}>{s.label}</Text>
-              {i < STATS.length - 1 && <View style={styles.statDivider} />}
+            <View>
+              <Text style={styles.brandName}>frontstore</Text>
             </View>
-          ))}
-        </Animated.View>
-
-        {/* ── FEATURE PILLS ── */}
-        <Animated.View style={[styles.featuresRow, featuresStyle]}>
-          {FEATURES.map((f) => (
-            <View key={f.label} style={[styles.featurePill, { backgroundColor: f.bg }]}>
-              <f.icon size={13} color={f.color} strokeWidth={2.2} />
-              <Text style={[styles.featurePillLabel, { color: f.color }]}>{f.label}</Text>
+            <View style={styles.brandBadge}>
+              <View style={styles.badgePulseDot} />
+              <Text style={styles.badgeLabel}>Merchant OS</Text>
             </View>
-          ))}
-        </Animated.View>
+          </View>
 
-        {/* ── CTA BUTTONS ── */}
-        <Animated.View style={[styles.ctaSection, ctaStyle]}>
-          {/* Primary */}
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push('/(auth)/otp-login' as any);
-            }}
-            style={styles.primaryBtnWrapper}
-          >
-            <LinearGradient
-              colors={['#0D9E6E', '#22C55E']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.primaryBtn}
+          {/* Skip CTA if not on final slide */}
+          {!isLastSlide ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleSkip}
+              style={styles.skipBtn}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <Text style={styles.primaryBtnLabel}>Get Started</Text>
-              <View style={styles.primaryBtnArrow}>
-                <ArrowRight size={18} color="#fff" strokeWidth={2.5} />
+              <Text style={styles.skipBtnText}>Skip</Text>
+              <ChevronRight size={14} color="rgba(255, 255, 255, 0.45)" strokeWidth={2.2} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.slideCounterPill}>
+              <Text style={styles.slideCounterText}>5 of 5</Text>
+            </View>
+          )}
+        </Animated.View>
+
+        {/* ── SWIPEABLE ONBOARDING CAROUSEL ── */}
+        <FlatList
+          ref={flatListRef}
+          data={ONBOARDING_SLIDES}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          renderItem={({ item }) => {
+            const BadgeIcon = item.badgeIcon;
+            return (
+              <View style={styles.slide}>
+                {/* 100% CLEAN HERO ILLUSTRATION - ZERO BACKGROUND */}
+                <View style={[styles.illustrationFrame, { height: illustrationHeight }]}>
+                  <Image
+                    source={item.image}
+                    style={styles.illustrationImage}
+                    contentFit="contain"
+                    priority="high"
+                    cachePolicy="memory-disk"
+                  />
+                </View>
+
+                {/* SLIDE CONTENT AREA */}
+                <View style={styles.slideContent}>
+                  {/* Category Pill + Metric Pill */}
+                  <View style={styles.metaRow}>
+                    <View style={[styles.categoryPill, { backgroundColor: item.accentBg }]}>
+                      <BadgeIcon size={12} color={item.accentColor} strokeWidth={2.5} />
+                      <Text style={[styles.categoryPillText, { color: item.accentColor }]}>
+                        {item.badge}
+                      </Text>
+                    </View>
+
+                    <View style={styles.statChip}>
+                      <Sparkles size={11} color="#10B981" strokeWidth={2} />
+                      <Text style={styles.statChipText}>{item.metricHighlight}</Text>
+                    </View>
+                  </View>
+
+                  {/* Headline */}
+                  <Text style={styles.headline}>
+                    {item.headline}
+                    <Text style={[styles.headlineAccent, { color: item.accentColor }]}>
+                      {item.headlineAccent}
+                    </Text>
+                  </Text>
+
+                  {/* Subheadline Copy */}
+                  <Text style={styles.subheadline}>{item.subheadline}</Text>
+                </View>
               </View>
-            </LinearGradient>
-          </TouchableOpacity>
+            );
+          }}
+        />
 
-          {/* Secondary */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/(auth)/sign-in');
-            }}
-            style={styles.secondaryBtn}
-          >
-            <Text style={styles.secondaryBtnLabel}>Sign in with Password</Text>
-          </TouchableOpacity>
+        {/* ── FOOTER CONTROLS ── */}
+        <Animated.View style={[styles.footer, footerStyle]}>
+          {/* Pagination Indicator Pills */}
+          <View style={styles.paginationRow}>
+            {ONBOARDING_SLIDES.map((slide, idx) => {
+              const isActive = idx === activeIndex;
+              return (
+                <TouchableOpacity
+                  key={slide.id}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    flatListRef.current?.scrollToIndex({ index: idx, animated: true });
+                  }}
+                  activeOpacity={0.8}
+                  style={[
+                    styles.pageDot,
+                    isActive && styles.pageDotActive,
+                    isActive && { backgroundColor: slide.accentColor },
+                  ]}
+                />
+              );
+            })}
+          </View>
 
-          <Text style={styles.terms}>
-            By continuing, you agree to our{' '}
-            <Text style={styles.termsLink}>Terms of Service</Text>
-            {' '}and{' '}
-            <Text style={styles.termsLink}>Privacy Policy</Text>
+          {/* CTA Actions */}
+          <View style={styles.ctaGroup}>
+            {/* Primary Action Button */}
+            <TouchableOpacity
+              activeOpacity={0.88}
+              onPress={handleNext}
+              style={styles.primaryBtnOuter}
+            >
+              <LinearGradient
+                colors={
+                  isLastSlide
+                    ? ['#059669', '#10B981', '#34D399']
+                    : ['#0D9488', '#10B981']
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.primaryBtn}
+              >
+                <Text style={styles.primaryBtnText}>
+                  {isLastSlide ? 'Get Started Free' : 'Continue'}
+                </Text>
+                <View style={styles.primaryBtnIconCircle}>
+                  <ArrowRight size={17} color="#FFFFFF" strokeWidth={2.6} />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Secondary Action - Sign In (Clean Minimalist Glass) */}
+            <TouchableOpacity
+              activeOpacity={0.78}
+              onPress={handleSignIn}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryBtnText}>
+                Already have an account? <Text style={styles.secondaryBtnLink}>Sign in</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Regulatory & Trust Statement */}
+          <Text style={styles.legalDisclaimer}>
+            By continuing, you agree to Frontstore's{' '}
+            <Text style={styles.legalLink}>Terms</Text> and{' '}
+            <Text style={styles.legalLink}>Privacy Policy</Text>.
           </Text>
         </Animated.View>
       </View>
@@ -235,242 +403,268 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#030810',
+    backgroundColor: '#030712', // Deep luxury slate black
   },
-  safe: {
+  ambientGlowContainer: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  ambientTopGlow: {
+    width: '100%',
+    height: SCREEN_HEIGHT * 0.45,
+  },
+  safeContainer: {
     flex: 1,
-    paddingHorizontal: 24,
+    justifyContent: 'space-between',
   },
 
-  // ── Header / Logo ──
-  header: {
+  // ── Top Navigation ──
+  topNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    paddingHorizontal: 22,
+    marginBottom: 6,
+    zIndex: 10,
   },
-  logoRow: {
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 9,
   },
-  logoIconWrap: {
+  brandLogoWrap: {
     width: 32,
     height: 32,
     borderRadius: 9,
-    overflow: 'hidden',
-    shadowColor: '#14B8A6',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  logoImage: {
-    width: 32,
-    height: 32,
+  brandLogoImage: {
+    width: 24,
+    height: 24,
   },
-  logoText: {
+  brandName: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 19,
-    color: '#FFFFFF',
-    letterSpacing: -0.4,
+    fontSize: 18,
+    color: '#F9FAFB',
+    letterSpacing: -0.5,
   },
-  badgePill: {
+  brandBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(20,184,166,0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(20,184,166,0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    marginLeft: 3,
   },
-  badgeDot: {
+  badgePulseDot: {
     width: 5,
     height: 5,
     borderRadius: 3,
-    backgroundColor: '#14B8A6',
+    backgroundColor: '#10B981',
   },
-  badgeText: {
+  badgeLabel: {
     fontFamily: FontFamily.bodySemiBold,
     fontSize: 10,
-    color: '#14B8A6',
+    color: 'rgba(255, 255, 255, 0.7)',
     letterSpacing: 0.3,
   },
-
-  // ── Hero Section ──
-  heroSection: {
-    marginBottom: 18,
-  },
-  kickerRow: {
+  skipBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    marginBottom: 10,
+    gap: 2,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
-  kicker: {
+  skipBtnText: {
     fontFamily: FontFamily.bodySemiBold,
-    fontSize: 10,
-    color: '#22C55E',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.65)',
   },
-  headline: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 34,
-    lineHeight: 40,
-    color: '#FFFFFF',
-    letterSpacing: -0.8,
-    marginBottom: 10,
+  slideCounterPill: {
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.25)',
   },
-  headlineAccent: {
-    color: '#22C55E',
-  },
-  subheadline: {
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: 14,
-    lineHeight: 21,
-    color: 'rgba(255,255,255,0.52)',
+  slideCounterText: {
+    fontFamily: FontFamily.bodySemiBold,
+    fontSize: 11,
+    color: '#10B981',
   },
 
-  // ── Hero Illustration (PNG) ──
-  illustrationWrapper: {
-    width: '100%',
-    height: height * 0.28,
-    borderRadius: 22,
-    overflow: 'hidden',
-    marginBottom: 16,
+  // ── Slide Layout ──
+  slide: {
+    width: SCREEN_WIDTH,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  illustrationFrame: {
+    width: SCREEN_WIDTH - 48,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(3, 8, 16, 0.6)',
-    borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.15)',
-    shadowColor: '#22C55E',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
+    // Zero background, zero border, zero box
+    backgroundColor: 'transparent',
+    marginBottom: 16,
   },
   illustrationImage: {
     width: '100%',
     height: '100%',
   },
-
-  // ── Stats ──
-  statsRow: {
+  slideContent: {
+    width: '100%',
+  },
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    gap: 0,
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  statValue: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 20,
-    color: '#FFFFFF',
-    letterSpacing: -0.4,
-  },
-  statLabel: {
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.4)',
-    marginTop: 2,
-  },
-  statDivider: {
-    position: 'absolute',
-    right: 0,
-    top: '15%',
-    height: '70%',
-    width: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-
-  // ── Feature Pills ──
-  featuresRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 20,
-  },
-  featurePill: {
-    flex: 1,
+  categoryPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    paddingVertical: 9,
-    borderRadius: 12,
+    gap: 6,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  categoryPillText: {
+    fontFamily: FontFamily.bodySemiBold,
+    fontSize: 10.5,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+  },
+  statChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 999,
   },
-  featurePillLabel: {
-    fontFamily: FontFamily.headingSemiBold,
-    fontSize: 12,
+  statChipText: {
+    fontFamily: FontFamily.bodySemiBold,
+    fontSize: 10.5,
+    color: 'rgba(255, 255, 255, 0.85)',
+    letterSpacing: 0.2,
+  },
+  headline: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 28,
+    lineHeight: 35,
+    color: '#FFFFFF',
+    letterSpacing: -0.6,
+    marginBottom: 10,
+  },
+  headlineAccent: {
+    color: '#10B981',
+  },
+  subheadline: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 14.5,
+    lineHeight: 22,
+    color: 'rgba(255, 255, 255, 0.62)',
+    letterSpacing: -0.1,
   },
 
-  // ── CTA ──
-  ctaSection: {
-    gap: 10,
+  // ── Footer Controls ──
+  footer: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    gap: 12,
   },
-  primaryBtnWrapper: {
+  paginationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    marginBottom: 4,
+  },
+  pageDot: {
+    height: 4.5,
+    width: 14,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+  },
+  pageDotActive: {
+    width: 32,
+    backgroundColor: '#10B981',
+  },
+
+  // ── CTA Buttons ──
+  ctaGroup: {
+    gap: 8,
+  },
+  primaryBtnOuter: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#22C55E',
-    shadowOffset: { width: 0, height: 6 },
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.35,
-    shadowRadius: 18,
+    shadowRadius: 20,
     elevation: 8,
   },
   primaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     gap: 10,
   },
-  primaryBtnLabel: {
+  primaryBtnText: {
     fontFamily: FontFamily.bodyBold,
     fontSize: 16,
     color: '#FFFFFF',
-    letterSpacing: 0.2,
+    letterSpacing: -0.1,
   },
-  primaryBtnArrow: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+  primaryBtnIconCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   secondaryBtn: {
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.12)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    paddingVertical: 11,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 15,
   },
-  secondaryBtnLabel: {
-    fontFamily: FontFamily.bodyBold,
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.85)',
-  },
-  terms: {
+  secondaryBtnText: {
     fontFamily: FontFamily.bodyRegular,
-    fontSize: 10.5,
-    color: 'rgba(255,255,255,0.28)',
+    fontSize: 13.5,
+    color: 'rgba(255, 255, 255, 0.55)',
+  },
+  secondaryBtnLink: {
+    fontFamily: FontFamily.bodySemiBold,
+    color: '#10B981',
+  },
+  legalDisclaimer: {
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.32)',
     textAlign: 'center',
     lineHeight: 16,
-    marginTop: 2,
+    marginTop: -2,
   },
-  termsLink: {
-    color: 'rgba(255,255,255,0.5)',
+  legalLink: {
+    color: 'rgba(255, 255, 255, 0.55)',
     textDecorationLine: 'underline',
   },
 });

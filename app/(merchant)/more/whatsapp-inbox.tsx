@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Linking, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import { FontFamily, FontSize } from '@/constants/typography';
@@ -37,9 +37,19 @@ export default function WhatsAppInboxScreen() {
         <EmptyState
           type="generic"
           title="WhatsApp Inbox is a Pro feature"
-          description="Manage every WhatsApp order and conversation from one inbox. Upgrade to Pro to unlock it."
-          actionLabel="Upgrade to Pro"
-          onAction={() => Linking.openURL('https://frontstore.ng/dashboard?tab=billing')}
+          description="Manage every WhatsApp order and conversation from one inbox."
+          actionLabel={Platform.OS === 'ios' ? 'Manage Plan' : 'Upgrade to Pro'}
+          onAction={() => {
+            if (Platform.OS === 'ios') {
+              Alert.alert(
+                'FrontStore Pro',
+                'To manage your plan and unlock WhatsApp Inbox, please visit your account dashboard at frontstore.ng on your web browser.',
+                [{ text: 'Got it' }]
+              );
+            } else {
+              Linking.openURL('https://frontstore.ng/dashboard?tab=billing');
+            }
+          }}
         />
       ) : (
         <EmptyState

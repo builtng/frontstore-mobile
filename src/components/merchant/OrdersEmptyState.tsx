@@ -11,7 +11,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import {
   ShoppingBag,
-  Sparkles,
   Share2,
   Copy,
   Check,
@@ -19,10 +18,6 @@ import {
   Globe,
   Search,
   X,
-  TrendingUp,
-  Package,
-  ArrowRight,
-  MessageCircle,
 } from 'lucide-react-native';
 import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 import { FontFamily, FontSize } from '@/constants/typography';
@@ -143,84 +138,25 @@ export const OrdersEmptyState: React.FC<OrdersEmptyStateProps> = ({
     );
   }
 
-  // --- Default Rich Commerce Launchpad Empty State ---
+  // --- Default Clean Professional Orders Empty State ---
   return (
     <View style={styles.container}>
-      {/* Background Soft Glow */}
-      <View style={styles.glowOrb} />
-
-      {/* Hero Visual Mockup: Realistic Order Preview with Depth */}
-      <View style={styles.mockupWrapper}>
-        <View
-          style={[
-            styles.mockupCard,
-            {
-              backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
-              borderColor: isDark ? '#334155' : '#E2E8F0',
-            },
-          ]}
-        >
-          {/* Card Top Row: Ref & Paid Badge */}
-          <View style={styles.mockupTopRow}>
-            <View style={styles.mockupRefGroup}>
-              <View style={styles.mockupIconBadge}>
-                <ShoppingBag size={14} color="#0F766E" strokeWidth={2.2} />
-              </View>
-              <Text style={[styles.mockupRefText, { color: theme.text }]}>
-                #ORD-8421
-              </Text>
-            </View>
-            <View style={styles.mockupStatusPill}>
-              <View style={styles.mockupStatusDot} />
-              <Text style={styles.mockupStatusText}>PAID</Text>
-            </View>
-          </View>
-
-          {/* Card Middle: Customer & Items */}
-          <View style={styles.mockupBody}>
-            <View style={styles.mockupCustomerRow}>
-              <Text style={[styles.mockupCustomerName, { color: theme.text }]}>
-                Amara Okon
-              </Text>
-              <Text style={styles.mockupPrice}>₦ 34,500</Text>
-            </View>
-            <Text style={[styles.mockupItemDesc, { color: theme.textTertiary }]}>
-              2 items • Standard Delivery (Lagos)
-            </Text>
-          </View>
-
-          {/* Card Bottom: Milestone Progress Bar */}
-          <View
-            style={[
-              styles.mockupFooterBar,
-              { backgroundColor: isDark ? '#0F172A' : '#F8FAFC' },
-            ]}
-          >
-            <View style={styles.mockupStepIndicator}>
-              <View style={[styles.stepDot, styles.stepDotActive]} />
-              <View style={[styles.stepLine, styles.stepLineActive]} />
-              <View style={[styles.stepDot, styles.stepDotActive]} />
-              <View style={styles.stepLine} />
-              <View style={styles.stepDot} />
-            </View>
-            <Text style={styles.mockupFooterStatus}>Confirmed & Escrow Held</Text>
-          </View>
-        </View>
-
-        {/* Floating Sparkle Pill */}
-        <View style={styles.floatingReadyBadge}>
-          <Sparkles size={13} color="#059669" strokeWidth={2.5} />
-          <Text style={styles.floatingReadyText}>Ready for orders</Text>
-        </View>
+      {/* Clean Modern Icon */}
+      <View
+        style={[
+          styles.iconWrap,
+          { backgroundColor: isDark ? 'rgba(15, 118, 110, 0.15)' : '#ECFDF5' },
+        ]}
+      >
+        <ShoppingBag size={30} color="#0F766E" strokeWidth={2} />
       </View>
 
-      {/* Headline & Value Proposition */}
+      {/* Headline & Subtitle */}
       <Text style={[styles.heroTitle, { color: theme.text }]}>
-        Start Receiving Orders
+        No orders yet
       </Text>
       <Text style={[styles.heroSubtitle, { color: theme.textSecondary }]}>
-        Share your store link with customers. When orders are placed, they'll
-        appear here with instant payment verification.
+        When customers place orders from your store link, they'll appear here with instant payment verification.
       </Text>
 
       {/* Live Storefront Quick Share Card */}
@@ -316,63 +252,6 @@ export const OrdersEmptyState: React.FC<OrdersEmptyStateProps> = ({
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Pro Tips: 3-step Quick Commerce Guide */}
-      <View
-        style={[
-          styles.tipsCard,
-          {
-            backgroundColor: isDark ? 'rgba(30, 41, 59, 0.5)' : '#F8FAFC',
-            borderColor: isDark ? '#334155' : '#E2E8F0',
-          },
-        ]}
-      >
-        <Text style={[styles.tipsTitle, { color: theme.text }]}>
-          How to get your first sales today
-        </Text>
-
-        <View style={styles.tipRow}>
-          <View style={styles.tipIconBadge}>
-            <Text style={styles.tipEmoji}>📱</Text>
-          </View>
-          <View style={styles.tipContent}>
-            <Text style={[styles.tipHeadline, { color: theme.text }]}>
-              Post to WhatsApp Status
-            </Text>
-            <Text style={[styles.tipBody, { color: theme.textSecondary }]}>
-              80% of Nigerian merchant sales come from WhatsApp contacts.
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.tipRow}>
-          <View style={styles.tipIconBadge}>
-            <Text style={styles.tipEmoji}>🛍️</Text>
-          </View>
-          <View style={styles.tipContent}>
-            <Text style={[styles.tipHeadline, { color: theme.text }]}>
-              Showcase 3+ Products
-            </Text>
-            <Text style={[styles.tipBody, { color: theme.textSecondary }]}>
-              Add clear pictures, descriptions, and sizes to your catalog.
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.tipRow}>
-          <View style={styles.tipIconBadge}>
-            <Text style={styles.tipEmoji}>🛡️</Text>
-          </View>
-          <View style={styles.tipContent}>
-            <Text style={[styles.tipHeadline, { color: theme.text }]}>
-              Instant Buyer Protection
-            </Text>
-            <Text style={[styles.tipBody, { color: theme.textSecondary }]}>
-              Customers buy with confidence via Bank Transfer and Card payments.
-            </Text>
-          </View>
-        </View>
-      </View>
     </View>
   );
 };
@@ -381,172 +260,23 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     paddingHorizontal: Spacing[5],
-    paddingTop: Spacing[2],
+    paddingTop: Spacing[6],
     paddingBottom: Spacing[10],
-    position: 'relative',
   },
-  glowOrb: {
-    position: 'absolute',
-    top: 20,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
-  },
-
-  // Mockup card styling
-  mockupWrapper: {
-    position: 'relative',
-    marginBottom: Spacing[5],
-    marginTop: Spacing[2],
-  },
-  mockupCard: {
-    width: 260,
-    borderRadius: Radius.xl,
-    borderWidth: 1.5,
-    overflow: 'hidden',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 4,
-  },
-  mockupTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingTop: 14,
-    paddingBottom: 8,
-  },
-  mockupRefGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  mockupIconBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    backgroundColor: '#ECFDF5',
+  iconWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  mockupRefText: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 13,
-    letterSpacing: -0.2,
-  },
-  mockupStatusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: Radius.full,
-  },
-  mockupStatusDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: '#16A34A',
-  },
-  mockupStatusText: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 10,
-    color: '#15803D',
-    letterSpacing: 0.5,
-  },
-  mockupBody: {
-    paddingHorizontal: 14,
-    paddingBottom: 12,
-  },
-  mockupCustomerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 3,
-  },
-  mockupCustomerName: {
-    fontFamily: FontFamily.bodySemiBold,
-    fontSize: 13.5,
-  },
-  mockupPrice: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 14,
-    color: '#0F766E',
-  },
-  mockupItemDesc: {
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: 11,
-  },
-  mockupFooterBar: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  mockupStepIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  stepDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#CBD5E1',
-  },
-  stepDotActive: {
-    backgroundColor: '#0F766E',
-  },
-  stepLine: {
-    width: 10,
-    height: 2,
-    backgroundColor: '#CBD5E1',
-  },
-  stepLineActive: {
-    backgroundColor: '#0F766E',
-  },
-  mockupFooterStatus: {
-    fontFamily: FontFamily.bodySemiBold,
-    fontSize: 10,
-    color: '#0F766E',
-  },
-  floatingReadyBadge: {
-    position: 'absolute',
-    bottom: -10,
-    right: -10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: Radius.full,
-    shadowColor: '#059669',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  floatingReadyText: {
-    fontFamily: FontFamily.bodySemiBold,
-    fontSize: 10.5,
-    color: '#047857',
+    marginBottom: Spacing[4],
   },
 
   // Titles
   heroTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 22,
-    letterSpacing: -0.5,
+    fontSize: 20,
+    letterSpacing: -0.4,
     textAlign: 'center',
     marginBottom: Spacing[2],
   },
@@ -555,7 +285,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     lineHeight: 20,
     textAlign: 'center',
-    maxWidth: 310,
+    maxWidth: 300,
     marginBottom: Spacing[5],
   },
 
@@ -680,52 +410,6 @@ const styles = StyleSheet.create({
   secondaryShareText: {
     fontFamily: FontFamily.bodySemiBold,
     fontSize: FontSize.xs,
-  },
-
-  // Tips Card
-  tipsCard: {
-    width: '100%',
-    borderRadius: Radius.xl,
-    borderWidth: 1,
-    padding: Spacing[4],
-    gap: 12,
-  },
-  tipsTitle: {
-    fontFamily: FontFamily.headingSemiBold,
-    fontSize: 13,
-    letterSpacing: -0.2,
-    marginBottom: 2,
-  },
-  tipRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  tipIconBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  tipEmoji: {
-    fontSize: 14,
-  },
-  tipContent: {
-    flex: 1,
-  },
-  tipHeadline: {
-    fontFamily: FontFamily.bodySemiBold,
-    fontSize: 12.5,
-  },
-  tipBody: {
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: 11,
-    lineHeight: 16,
-    marginTop: 1,
   },
 
   // Filtered empty state

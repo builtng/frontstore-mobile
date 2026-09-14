@@ -26,7 +26,6 @@ import {
   Users,
   BarChart2,
   Tag,
-  MessageCircle,
   QrCode,
   Copy,
   Check,
@@ -38,6 +37,7 @@ import {
 } from 'lucide-react-native';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/services/authApi';
 import { merchantApi } from '@/services/merchantApi';
@@ -231,9 +231,9 @@ export default function MoreScreen() {
         {
           label: 'WhatsApp Inbox & Growth',
           subtitle: 'Automated order notifications',
-          Icon: MessageCircle,
+          Icon: WhatsAppIcon,
           route: '/(merchant)/more/whatsapp-inbox',
-          color: '#16A34A',
+          color: '#25D366',
           bgColor: '#F0FDF4',
         },
       ],
@@ -350,7 +350,7 @@ export default function MoreScreen() {
             activeOpacity={0.8}
           >
             <Store size={14} color="#0F766E" strokeWidth={2.2} />
-            <Text style={styles.headerViewStoreText}>Live Shop</Text>
+            <Text style={styles.headerViewStoreText}>Live Store</Text>
             <ArrowUpRight size={13} color="#0F766E" strokeWidth={2} />
           </TouchableOpacity>
         </View>
@@ -480,7 +480,7 @@ export default function MoreScreen() {
               activeOpacity={0.8}
             >
               <Share2 size={15} color="#0F766E" strokeWidth={2.2} />
-              <Text style={styles.heroActionText}>Share Shop</Text>
+              <Text style={styles.heroActionText}>Share Store</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -533,7 +533,7 @@ export default function MoreScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={[styles.menuIconContainer, { backgroundColor: item.bgColor ?? '#F1F5F9' }]}>
-                    <item.Icon size={18} color={item.color} strokeWidth={2.2} />
+                    <item.Icon size={item.Icon === WhatsAppIcon ? 20 : 18} color={item.color} strokeWidth={2.2} />
                   </View>
 
                   <View style={styles.menuLabelContainer}>

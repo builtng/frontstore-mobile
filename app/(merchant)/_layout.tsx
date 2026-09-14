@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import { LayoutGrid, FileText, Package, User } from 'lucide-react-native';
+import { LayoutGrid, ShoppingBag, Package, User } from 'lucide-react-native';
 import { FontFamily } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { useHaptics } from '@/hooks/useHaptics';
@@ -77,7 +77,7 @@ export default function MerchantLayout() {
           tabPress: () => haptics.light(),
         }}
         options={{
-          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} Icon={FileText} label="Orders" />,
+          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} Icon={ShoppingBag} label="Orders" />,
         }}
       />
       <Tabs.Screen

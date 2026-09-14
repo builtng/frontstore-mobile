@@ -3,12 +3,22 @@ import { Redirect } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 
 export default function Index() {
-  const { loadStoredAuth } = useAuthStore();
+  const { isAuthenticated, isLoading, loadStoredAuth } = useAuthStore();
 
   useEffect(() => {
     loadStoredAuth();
-  }, []);
+  }, [loadStoredAuth]);
 
-  // Frontstore is the merchant app — open the merchant dashboard directly
-  return <Redirect href="/(merchant)" />;
+  if (isLoading) {
+    return null;
+  }
+
+  // Authenticated merchants go straight to their dashboard
+  if (isAuthenticated) {
+    return <Redirect href="/(merchant)" />;
+  }
+
+  // Unauthenticated users land on the onboarding / welcome flow
+  return <Redirect href="/(auth)/welcome" />;
 }
+

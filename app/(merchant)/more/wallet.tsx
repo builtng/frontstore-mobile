@@ -19,8 +19,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   ArrowUpRight,
-  Receipt,
-  Building2,
+  Landmark,
+  Settings,
+  History,
+  ArrowDownUp,
   CheckCircle2,
   AlertCircle,
   Clock,
@@ -29,6 +31,8 @@ import {
   X,
   Wallet as WalletIcon,
   ShieldCheck,
+  Receipt,
+  Building2,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '@/components/ui/Button';
@@ -223,7 +227,7 @@ export default function WalletScreen() {
           style={styles.settingsHeaderBtn}
           activeOpacity={0.7}
         >
-          <Building2 size={20} color={isDark ? '#94A3B8' : '#64748B'} />
+          <Settings size={20} color={isDark ? '#94A3B8' : '#64748B'} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -335,7 +339,7 @@ export default function WalletScreen() {
         >
           <View style={styles.infoCardTop}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Building2 size={16} color="#0F766E" />
+              <Landmark size={16} color="#0F766E" strokeWidth={2} />
               <Text style={[styles.infoCardLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
                 Settlement Account
               </Text>
@@ -394,7 +398,7 @@ export default function WalletScreen() {
         {/* Withdrawal History Section */}
         <View style={styles.sectionHeaderRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Receipt size={18} color="#0F766E" />
+            <History size={18} color="#0F766E" strokeWidth={2} />
             <Text style={[styles.sectionTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
               Withdrawal History
             </Text>
@@ -430,7 +434,14 @@ export default function WalletScreen() {
               { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: isDark ? '#334155' : '#E2E8F0' },
             ]}
           >
-            <Receipt size={36} color={isDark ? '#475569' : '#CBD5E1'} strokeWidth={1.5} />
+            <View
+              style={[
+                styles.emptyIconBadge,
+                { backgroundColor: isDark ? 'rgba(15, 118, 110, 0.15)' : '#ECFDF5' },
+              ]}
+            >
+              <ArrowDownUp size={22} color="#0F766E" strokeWidth={2} />
+            </View>
             <Text style={[styles.emptyStateTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
               No withdrawals yet
             </Text>
@@ -548,7 +559,7 @@ export default function WalletScreen() {
 
             {/* Destination Bank Account Summary */}
             <View style={[styles.destinationBankBox, { borderColor: isDark ? '#334155' : '#BBF7D0' }]}>
-              <Building2 size={18} color="#0F766E" />
+              <Landmark size={18} color="#0F766E" strokeWidth={2} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.destinationBankName, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
                   {wallet?.bank_name}
@@ -955,6 +966,14 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xl,
     borderWidth: 1,
     gap: 8,
+  },
+  emptyIconBadge: {
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   emptyStateTitle: {
     fontFamily: FontFamily.headingBold,

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Share, Alert, Linking,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Share, Alert, Linking, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Download, Share2, Printer, CheckCircle } from 'lucide-react-native';
@@ -93,9 +93,19 @@ export default function QRCodeScreen() {
         <EmptyState
           type="generic"
           title="My QR Code is a Pro feature"
-          description="Get a branded, printable QR code for your store so customers can scan and shop instantly. Upgrade to Pro to unlock it."
-          actionLabel="Upgrade to Pro"
-          onAction={() => Linking.openURL('https://frontstore.ng/dashboard?tab=billing')}
+          description="Get a branded, printable QR code for your store so customers can scan and shop instantly."
+          actionLabel={Platform.OS === 'ios' ? 'Manage Plan' : 'Upgrade to Pro'}
+          onAction={() => {
+            if (Platform.OS === 'ios') {
+              Alert.alert(
+                'FrontStore Pro',
+                'To manage your plan and unlock Pro features, please visit your account dashboard at frontstore.ng on your web browser.',
+                [{ text: 'Got it' }]
+              );
+            } else {
+              Linking.openURL('https://frontstore.ng/dashboard?tab=billing');
+            }
+          }}
         />
       ) : (
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
