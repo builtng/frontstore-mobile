@@ -68,3 +68,9 @@ mobile/
 ## API
 
 Configured to `https://api.frontstore.ng/v1`. Change `API_BASE_URL` in `src/constants/index.ts` for local development.
+
+## Store Submissions (App Store & Google Play)
+
+Complete submission guides, store listing copy, privacy nutrition labels, reviewer test credentials, and screenshot guides are documented in:
+👉 [Store Submission Documentation Suite](../../docs/store_submission/README.md)
+
