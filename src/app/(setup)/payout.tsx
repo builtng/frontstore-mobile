@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
 import { Check, ChevronDown, Landmark, Lock, RefreshCw } from 'lucide-react-native';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Labelled, Progress, RingInput, StepHeader } from '@/features/setup/parts';
@@ -17,6 +18,7 @@ export default function Payout() {
   const [account, setAccount] = useState(draft.payout?.account || '');
   const [resolving, setResolving] = useState(false);
   const [accountName, setAccountName] = useState<string | null>(draft.payout?.accountName || null);
+  const [manualAccountName, setManualAccountName] = useState(draft.payout?.accountName || draft.owner_name || draft.name || '');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Fetch real bank list from API
@@ -54,6 +56,7 @@ export default function Payout() {
       .then((res) => {
         if (res.account_name) {
           setAccountName(res.account_name);
+          setManualAccountName(res.account_name);
           updateDraft({
             payout: {
               bank: bank.name,
@@ -66,7 +69,15 @@ export default function Payout() {
       })
       .catch((err) => {
         setAccountName(null);
-        const msg = err.response?.data?.message || err.message || 'Could not verify account name. Check the number and bank.';
+        const rawMsg = err.response?.data?.message || err.message || '';
+        const isAuthOrNetwork =
+          rawMsg.toLowerCase().includes('unauthenticated') ||
+          rawMsg.toLowerCase().includes('network') ||
+          err.response?.status === 401;
+
+        const msg = isAuthOrNetwork
+          ? 'Live name lookup is temporarily unavailable. Please enter your account name below.'
+          : rawMsg || 'Could not verify account name automatically.';
         setErrorMsg(msg);
       })
       .finally(() => {
@@ -104,7 +115,21 @@ export default function Payout() {
     }));
   }, [banks]);
 
-  const complete = account.length === 10 && !!accountName;
+  const handleSave = () => {
+    if (!selectedBank || account.length !== 10) return;
+    const finalAccountName = (accountName || manualAccountName || draft.owner_name || draft.name || 'Merchant Account').trim();
+    updateDraft({
+      payout: {
+        bank: selectedBank.name,
+        bankCode: selectedBank.code,
+        account,
+        accountName: finalAccountName,
+      },
+    });
+    router.push('/first-product');
+  };
+
+  const canSave = account.length === 10 && !!selectedBank && !resolving;
 
   return (
     <Screen>
@@ -154,26 +179,39 @@ export default function Payout() {
                 <Check size={16} color="#FFFFFF" strokeWidth={3} />
               </View>
               <View className="flex-1">
-                <T className="text-xs text-[#33403A]">Account name</T>
+                <T className="text-xs text-[#33403A]">Verified account name</T>
                 <T className="font-sans-bold text-base text-ink" numberOfLines={1}>
                   {accountName}
                 </T>
               </View>
             </View>
-          ) : errorMsg ? (
-            <View className="rounded-[14px] bg-red-50 p-3.5 border border-red-200 gap-1.5">
-              <T className="text-xs font-sans-medium text-red-700">{errorMsg}</T>
-              {selectedBank && account.length === 10 ? (
-                <Pressable
-                  onPress={() => doResolve(account, selectedBank)}
-                  className="flex-row items-center gap-1.5 self-start mt-1"
-                >
-                  <RefreshCw size={13} color="#B91C1C" />
-                  <T className="text-xs font-sans-bold text-red-700 underline">Retry verification</T>
-                </Pressable>
+          ) : (
+            <View className="gap-2">
+              <Labelled label="Account name">
+                <RingInput
+                  value={manualAccountName}
+                  onChangeText={setManualAccountName}
+                  placeholder="e.g. Account owner or business name"
+                  accessibilityLabel="Account name"
+                />
+              </Labelled>
+
+              {errorMsg ? (
+                <View className="rounded-[14px] bg-amber-50 p-3.5 border border-amber-200 gap-1.5">
+                  <T className="text-xs font-sans-medium text-amber-800">{errorMsg}</T>
+                  {selectedBank && account.length === 10 ? (
+                    <Pressable
+                      onPress={() => doResolve(account, selectedBank)}
+                      className="flex-row items-center gap-1.5 self-start mt-1"
+                    >
+                      <RefreshCw size={13} color="#92400E" />
+                      <T className="text-xs font-sans-bold text-amber-900 underline">Retry auto-lookup</T>
+                    </Pressable>
+                  ) : null}
+                </View>
               ) : null}
             </View>
-          ) : null}
+          )}
 
           <View className="flex-row items-start gap-2.5">
             <View className="mt-0.5">
@@ -203,20 +241,8 @@ export default function Payout() {
         <BottomBar>
           <Button
             title="Save account"
-            href="/first-product"
-            disabled={!complete && account.length > 0 && resolving}
-            onPress={() => {
-              if (selectedBank && account) {
-                updateDraft({
-                  payout: {
-                    bank: selectedBank.name,
-                    bankCode: selectedBank.code,
-                    account,
-                    accountName: accountName || '',
-                  },
-                });
-              }
-            }}
+            disabled={!canSave}
+            onPress={handleSave}
           />
         </BottomBar>
       </KeyboardAvoidingView>
