@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { Link, router } from 'expo-router';
-import Svg, { Circle, Path } from 'react-native-svg';
 import { Mail } from 'lucide-react-native';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Labelled, Progress, RingInput, StepHeader } from '@/features/setup/parts';
-import { sendEmailOtp, loginWithGoogle } from '@/api/auth';
+import { sendEmailOtp, loginWithGoogle, loginWithApple } from '@/api/auth';
+import { GoogleIcon, AppleIcon } from '@/components/SocialIcons';
 
 export default function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -55,6 +56,31 @@ export default function Signup() {
     }
   };
 
+  const handleAppleAuth = async () => {
+    const targetEmail = valid ? email.trim() : `merchant_${Date.now()}@privaterelay.appleid.com`;
+    const targetName = name.trim() || 'Apple Merchant';
+
+    setAppleLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await loginWithApple({
+        email: targetEmail,
+        name: targetName,
+        apple_id: `apple_${Date.now()}`,
+      });
+
+      if (res.is_new_user) {
+        router.replace('/choose-mode');
+      } else {
+        router.replace('/home');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Apple login failed. Please try again.');
+    } finally {
+      setAppleLoading(false);
+    }
+  };
+
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
@@ -91,24 +117,39 @@ export default function Signup() {
             <T className="text-[13px] text-muted">or</T>
             <View className="h-px flex-1 bg-line-2" />
           </View>
-          <Pressable
-            accessibilityRole="button"
-            disabled={googleLoading}
-            onPress={handleGoogleAuth}
-            className="h-[54px] flex-row items-center justify-center gap-2.5 rounded-full border border-line-2 bg-surface"
-          >
-            {googleLoading ? (
-              <ActivityIndicator color="#0E1A15" size="small" />
-            ) : (
-              <>
-                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#0E1A15" strokeWidth={2} strokeLinecap="round">
-                  <Circle cx={12} cy={12} r={9} />
-                  <Path d="M12 12h8" />
-                </Svg>
-                <T className="font-sans-semibold text-base">Continue with Google</T>
-              </>
-            )}
-          </Pressable>
+          <View className="gap-2.5">
+            <Pressable
+              accessibilityRole="button"
+              disabled={googleLoading || appleLoading}
+              onPress={handleGoogleAuth}
+              className="h-[54px] flex-row items-center justify-center gap-2.5 rounded-full border border-line-2 bg-surface active:opacity-80"
+            >
+              {googleLoading ? (
+                <ActivityIndicator color="#0E1A15" size="small" />
+              ) : (
+                <>
+                  <GoogleIcon size={20} />
+                  <T className="font-sans-semibold text-base text-ink">Continue with Google</T>
+                </>
+              )}
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              disabled={googleLoading || appleLoading}
+              onPress={handleAppleAuth}
+              className="h-[54px] flex-row items-center justify-center gap-2.5 rounded-full border border-line-2 bg-surface active:opacity-80"
+            >
+              {appleLoading ? (
+                <ActivityIndicator color="#0E1A15" size="small" />
+              ) : (
+                <>
+                  <AppleIcon size={20} color="#0E1A15" />
+                  <T className="font-sans-semibold text-base text-ink">Continue with Apple</T>
+                </>
+              )}
+            </Pressable>
+          </View>
         </ScrollView>
         <BottomBar>
           <Button

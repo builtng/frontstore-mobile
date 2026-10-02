@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "type-check": "tsc --noEmit",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "postinstall": "node scripts/patch-xcode27.js"
   },
   "dependencies": {
     "@expo-google-fonts/instrument-sans": "^0.4.2",

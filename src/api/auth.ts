@@ -64,6 +64,20 @@ export async function loginWithGoogle(params: {
   return data;
 }
 
+/** Apple OAuth login */
+export async function loginWithApple(params: {
+  email?: string;
+  name?: string;
+  apple_id?: string;
+  identity_token?: string;
+}): Promise<AuthResponse> {
+  const data: AuthResponse = await apiPost('/auth/apple', params);
+  if (data.token) {
+    await setToken(data.token);
+  }
+  return data;
+}
+
 /** Fetch authenticated user profile */
 export async function getMe(): Promise<{ user: User; store: Store | null }> {
   return apiGet<{ user: User; store: Store | null }>('/auth/me');
