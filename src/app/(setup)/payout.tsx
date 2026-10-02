@@ -84,7 +84,14 @@ export default function Payout() {
   }, [account, selectedBank]);
 
   const bankSelectItems: SelectItem[] = useMemo(() => {
-    return banks.map((b) => ({
+    const seen = new Set<string>();
+    const uniqueBanks = banks.filter((b) => {
+      if (seen.has(b.code)) return false;
+      seen.add(b.code);
+      return true;
+    });
+
+    return uniqueBanks.map((b) => ({
       id: b.code,
       title: b.name,
       subtitle: `Code: ${b.code}`,

@@ -140,7 +140,7 @@ export function SearchableSelectModal({
             ) : (
               <FlatList
                 data={filtered}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => `${item.id}-${index}`}
                 keyboardShouldPersistTaps="handled"
                 className="max-h-[380px] px-3"
                 renderItem={({ item, index }) => {
