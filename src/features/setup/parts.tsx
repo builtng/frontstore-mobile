@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextInputProps } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, router, type Href } from 'expo-router';
@@ -94,9 +94,13 @@ export function BottomBar({ children, className }: { children: React.ReactNode; 
 export const RingInput = forwardRef<TextInput, TextInputProps & { left?: React.ReactNode; boxClassName?: string; inputClassName?: string }>(
   function RingInput({ left, boxClassName, inputClassName, onFocus, onBlur, ...rest }, ref) {
     const [focused, setFocused] = useState(false);
+    const innerRef = useRef<TextInput>(null);
+    useImperativeHandle(ref, () => innerRef.current!);
+
     return (
       <View className={cx('rounded-[17px] border-[3px]', focused ? 'border-mint-2' : 'border-transparent')} style={{ margin: -3 }}>
-        <View
+        <Pressable
+          onPress={() => innerRef.current?.focus()}
           className={cx(
             'h-[54px] flex-row items-center gap-2.5 rounded-[14px] bg-surface px-4',
             focused ? 'border-[1.5px] border-green' : 'border border-line-2',
@@ -106,14 +110,14 @@ export const RingInput = forwardRef<TextInput, TextInputProps & { left?: React.R
         >
           {left}
           <TextInput
-            ref={ref}
+            ref={innerRef}
             placeholderTextColor="#8A928E"
             onFocus={(e) => { setFocused(true); onFocus?.(e); }}
             onBlur={(e) => { setFocused(false); onBlur?.(e); }}
             className={cx('h-full flex-1 text-ink', inputClassName ?? 'font-sans text-base')}
             {...rest}
           />
-        </View>
+        </Pressable>
       </View>
     );
   },
