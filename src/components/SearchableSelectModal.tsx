@@ -65,6 +65,8 @@ export function SearchableSelectModal({
     onClose();
   };
 
+  if (!visible) return null;
+
   return (
     <Modal
       visible={visible}
