@@ -3,6 +3,8 @@ import { Animated, Easing, Pressable, TextInput, View } from 'react-native';
 import { Camera, ChevronDown, Lock } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
 import { SparkleIcon } from './parts';
+import { SearchableSelectModal } from '@/components/SearchableSelectModal';
+import { STORE_CATEGORIES } from '@/data/categories';
 
 export type AiStage = 'empty' | 'reading' | 'filled';
 
@@ -130,6 +132,7 @@ const inputBox = 'rounded-[14px] border border-line-2 bg-surface';
 function FilledForm({ product: p, update, onRedo }: { product: AiProduct; update: Flow['update']; onRedo: () => void }) {
   const [sizesOpen, setSizesOpen] = useState(p.sizes.length > 0);
   const [stockOpen, setStockOpen] = useState(p.stock.length > 0);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
   const setPrice = (v: string) => {
     const digits = v.replace(/\D/g, '').slice(0, 9);
@@ -185,14 +188,30 @@ function FilledForm({ product: p, update, onRedo }: { product: AiProduct; update
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`Category: ${p.category}`}
-            // TODO: category picker
+            onPress={() => setCategoryModalOpen(true)}
             className={cx(inputBox, 'h-[50px] flex-row items-center justify-between px-3')}
           >
-            <T className="text-[15px]">{p.category}</T>
+            <T className="text-[15px]" numberOfLines={1}>{p.category || 'Select'}</T>
             <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
           </Pressable>
         </View>
       </View>
+
+      <SearchableSelectModal
+        visible={categoryModalOpen}
+        onClose={() => setCategoryModalOpen(false)}
+        title="Select Category"
+        subtitle="Choose the best category for this item"
+        placeholder="Search categories..."
+        items={STORE_CATEGORIES.map((cat) => ({
+          id: cat.id,
+          title: cat.name,
+          subtitle: cat.description,
+          badge: cat.id,
+        }))}
+        selectedId={p.category}
+        onSelect={(item) => update({ category: item.id })}
+      />
       <T className="-mt-1.5 text-xs text-muted">Similar items in Lagos: ₦16,000 - ₦22,000</T>
 
       <View className="gap-1.5">

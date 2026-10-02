@@ -9,6 +9,7 @@ import { BackHeader, Grip, Tag } from '@/features/seller/parts';
 import { getOrder, updateOrderStatus, refundOrder } from '@/api/orders';
 import { OrderStatus } from '@/api/types';
 import { formatNaira } from '@/lib/format';
+import { SearchableSelectModal } from '@/components/SearchableSelectModal';
 
 const STEPS: OrderStatus[] = ['paid', 'packed', 'shipped', 'delivered'];
 const STEP_LABELS = ['Paid', 'Packed', 'Shipped', 'Delivered'];
@@ -210,28 +211,23 @@ export default function OrderDetail() {
               <T className="font-sans-bold text-[13px]">Reason</T>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => setReasonOpen((v) => !v)}
+                accessibilityLabel={`Reason, ${reason}`}
+                onPress={() => setReasonOpen(true)}
                 className="h-12 flex-row items-center justify-between rounded-xl border border-line-2 bg-surface px-3"
               >
                 <T className="text-base">{reason}</T>
                 <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
               </Pressable>
-              {reasonOpen ? (
-                <View className="overflow-hidden rounded-xl border border-line-2 bg-surface">
-                  {REASONS.map((r, i) => (
-                    <Pressable
-                      key={r}
-                      onPress={() => {
-                        setReason(r);
-                        setReasonOpen(false);
-                      }}
-                      className={cx('h-11 justify-center px-3', i > 0 && 'border-t border-line', r === reason && 'bg-mint')}
-                    >
-                      <T className={cx('text-[15px]', r === reason && 'font-sans-semibold text-green')}>{r}</T>
-                    </Pressable>
-                  ))}
-                </View>
-              ) : null}
+
+              <SearchableSelectModal
+                visible={reasonOpen}
+                onClose={() => setReasonOpen(false)}
+                title="Select Refund Reason"
+                placeholder="Search reason..."
+                items={REASONS.map((r) => ({ id: r, title: r }))}
+                selectedId={reason}
+                onSelect={(item) => setReason(item.id)}
+              />
             </View>
             <Pressable
               accessibilityRole="button"

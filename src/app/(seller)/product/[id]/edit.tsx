@@ -8,6 +8,8 @@ import { Screen, T, cx } from '@/components/ui';
 import { Toggle, goBack } from '@/features/seller/parts';
 import { getProduct, updateProduct } from '@/api/products';
 import { formatNaira } from '@/lib/format';
+import { SearchableSelectModal } from '@/components/SearchableSelectModal';
+import { STORE_CATEGORIES } from '@/data/categories';
 
 const ALL_SIZES = ['S', 'M', 'L', 'XL'];
 
@@ -24,7 +26,8 @@ export default function EditProduct() {
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
-  const [category, setCategory] = useState('Two-piece');
+  const [category, setCategory] = useState('Fashion');
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [sizes, setSizes] = useState<string[]>(ALL_SIZES);
   const [inStock, setInStock] = useState(true);
   const [visible, setVisible] = useState(true);
@@ -119,12 +122,33 @@ export default function EditProduct() {
           </View>
           <View className="w-[140px] gap-1.5">
             <T className="font-sans-bold text-sm">Collection</T>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Collection, ${category}`} className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-3">
-              <T className="text-[15px]">{category}</T>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Collection, ${category}`}
+              onPress={() => setCategoryModalOpen(true)}
+              className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-3"
+            >
+              <T className="text-[15px]" numberOfLines={1}>{category}</T>
               <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
             </Pressable>
           </View>
         </View>
+
+        <SearchableSelectModal
+          visible={categoryModalOpen}
+          onClose={() => setCategoryModalOpen(false)}
+          title="Select Collection"
+          subtitle="Choose collection for this product"
+          placeholder="Search collections..."
+          items={STORE_CATEGORIES.map((cat) => ({
+            id: cat.id,
+            title: cat.name,
+            subtitle: cat.description,
+            badge: cat.id,
+          }))}
+          selectedId={category}
+          onSelect={(item) => setCategory(item.id)}
+        />
 
         <View className="gap-2">
           <T className="font-sans-bold text-sm">Sizes</T>

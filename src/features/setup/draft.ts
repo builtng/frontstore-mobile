@@ -11,12 +11,27 @@ export type PayoutDraft = {
 export type SetupDraft = {
   name: string;
   city: string;
+  country_code?: string;
+  country_name?: string;
+  currency_code?: string;
   color: string;
   category: string;
   payout?: PayoutDraft;
+  setup_token?: string;
+  owner_name?: string;
+  email?: string;
+  phone_number?: string;
 };
 
-let draft: SetupDraft = { name: '', city: '', color: '#0F172A', category: '' };
+let draft: SetupDraft = {
+  name: '',
+  city: 'Nigeria',
+  country_code: 'NG',
+  country_name: 'Nigeria',
+  currency_code: 'NGN',
+  color: '#0B6E4F',
+  category: 'Fashion',
+};
 const listeners = new Set<() => void>();
 
 export function updateDraft(patch: Partial<SetupDraft>) {

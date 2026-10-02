@@ -157,6 +157,20 @@ export interface Bank {
   name: string;
 }
 
+export interface Country {
+  code: string;
+  name: string;
+  default_currency: string;
+}
+
+export interface Currency {
+  code: string;
+  name: string;
+  symbol: string;
+  flag?: string;
+  default_country?: string;
+}
+
 export interface Address {
   id: number;
   label: string;

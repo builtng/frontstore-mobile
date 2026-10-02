@@ -8,6 +8,8 @@ import { Screen, T, cx } from '@/components/ui';
 import { Sparkle, goBack } from '@/features/seller/parts';
 import { createProduct, uploadProductImage, createAiProductDraft, getAiProductDraftStatus } from '@/api/products';
 import { formatNaira } from '@/lib/format';
+import { SearchableSelectModal } from '@/components/SearchableSelectModal';
+import { STORE_CATEGORIES } from '@/data/categories';
 
 type Stage = 'empty' | 'reading' | 'filled';
 const ghost = ['Product name', 'Price', 'Category', 'Description'];
@@ -45,7 +47,8 @@ export default function AddProduct() {
 
   const [name, setName] = useState('Àdìrẹ two-piece set');
   const [price, setPrice] = useState('18500');
-  const [category, setCategory] = useState('Two-piece');
+  const [category, setCategory] = useState('Fashion');
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [desc, setDesc] = useState('Hand-dyed àdìrẹ-style two-piece set.');
   const [colors, setColors] = useState<string[]>(['Saffron']);
   const [sizes, setSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
@@ -251,8 +254,13 @@ export default function AddProduct() {
               </View>
               <View className="w-[140px] gap-1.5">
                 <Label text="Category" />
-                <Pressable accessibilityRole="button" accessibilityLabel={`Category, ${category}`} className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-3">
-                  <T className="text-[15px]">{category}</T>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Category, ${category}`}
+                  onPress={() => setCategoryModalOpen(true)}
+                  className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-3"
+                >
+                  <T className="text-[15px]" numberOfLines={1}>{category}</T>
                   <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
                 </Pressable>
               </View>
@@ -290,6 +298,22 @@ export default function AddProduct() {
           </View>
         )}
       </ScrollView>
+
+      <SearchableSelectModal
+        visible={categoryModalOpen}
+        onClose={() => setCategoryModalOpen(false)}
+        title="Select Category"
+        subtitle="Choose category for this product"
+        placeholder="Search category..."
+        items={STORE_CATEGORIES.map((cat) => ({
+          id: cat.id,
+          title: cat.name,
+          subtitle: cat.description,
+          badge: cat.id,
+        }))}
+        selectedId={category}
+        onSelect={(item) => setCategory(item.id)}
+      />
 
       <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }} className="border-t border-line bg-bg px-5 pt-3">
         <Pressable

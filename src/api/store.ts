@@ -1,5 +1,6 @@
 import { apiGet, apiPost } from './client';
-import { Store, Bank } from './types';
+import { Store, Bank, Country, Currency } from './types';
+import { setToken } from './authStore';
 
 /** Check if a store username / subdomain is available */
 export async function checkSubdomainAvailable(username: string): Promise<boolean> {
@@ -18,6 +19,21 @@ export async function checkSubdomainAvailable(username: string): Promise<boolean
   }
 }
 
+/** Get list of supported countries */
+export async function getCountries(): Promise<Country[]> {
+  return apiGet<Country[]>('/meta/countries');
+}
+
+/** Get list of supported currencies */
+export async function getCurrencies(): Promise<Currency[]> {
+  return apiGet<Currency[]>('/meta/currencies');
+}
+
+/** Detect requester's country and default currency via IP */
+export async function detectLocation(): Promise<{ country_code: string; currency_code: string }> {
+  return apiGet('/meta/detect-location');
+}
+
 /** Get list of supported Nigerian banks */
 export async function getBanks(): Promise<Bank[]> {
   return apiGet<Bank[]>('/payments/banks');
@@ -25,10 +41,14 @@ export async function getBanks(): Promise<Bank[]> {
 
 /** Resolve bank account number to account name */
 export async function resolveAccount(accountNumber: string, bankCode: string): Promise<{ account_name: string; account_number: string }> {
-  return apiPost('/payments/resolve-account', {
-    account_number: accountNumber,
-    bank_code: bankCode,
-  });
+  return apiPost(
+    '/payments/resolve-account',
+    {
+      account_number: accountNumber,
+      bank_code: bankCode,
+    },
+    { skipAuthRedirect: true }
+  );
 }
 
 /** Complete merchant store setup */
@@ -38,15 +58,33 @@ export async function completeStoreSetup(params: {
   store_name: string;
   username: string;
   bank_code?: string;
+  bank_name?: string;
   account_number?: string;
   account_name?: string;
   store_color?: string;
+  primary_color?: string;
   category?: string;
-}): Promise<{ store: Store }> {
-  return apiPost('/auth/complete-setup', params);
+  country_code?: string;
+  currency_code?: string;
+  location?: string;
+  phone_number?: string;
+}): Promise<{ store: Store; token?: string }> {
+  const res = await apiPost<{ store?: Store; token?: string; data?: { store?: Store; user?: any } }>(
+    '/auth/complete-setup',
+    params
+  );
+
+  const token = res.token;
+  if (token) {
+    await setToken(token);
+  }
+
+  const store = res.store || res.data?.store;
+  return { store: store as Store, token };
 }
 
 /** Fetch active seller store details */
 export async function getStore(): Promise<Store> {
   return apiGet<Store>('/store');
 }
+

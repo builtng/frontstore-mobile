@@ -35,12 +35,26 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<any>) => {
     if (error.response?.status === 401) {
-      await removeToken();
-      // Navigate to login if unauthenticated
-      try {
-        router.replace('/login');
-      } catch (navErr) {
-        console.warn('Redirect to login failed', navErr);
+      const url = error.config?.url || '';
+      const isPublicOrVerification =
+        url.includes('/payments/resolve-account') ||
+        url.includes('/auth/complete-setup') ||
+        url.includes('/auth/login') ||
+        url.includes('/auth/signup') ||
+        url.includes('/auth/verify') ||
+        url.includes('/meta/') ||
+        url.includes('/public/');
+
+      const shouldSkip = (error.config as any)?.skipAuthRedirect || isPublicOrVerification;
+
+      if (!shouldSkip) {
+        await removeToken();
+        // Navigate to login if unauthenticated
+        try {
+          router.replace('/login');
+        } catch (navErr) {
+          console.warn('Redirect to login failed', navErr);
+        }
       }
     }
     return Promise.reject(error);
