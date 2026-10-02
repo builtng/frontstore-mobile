@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react-native';
 import { Button, Screen, T } from '@/components/ui';
 import { AccountHeader, BottomSheet, DashedAdd } from '@/features/buyer/account';
-import { getSavedCards, deleteSavedCard, setDefaultSavedCard } from '@/api/buyer';
+import { getSavedCards, deleteSavedCard, setDefaultSavedCard, initializeCardTokenization } from '@/api/buyer';
 import { SavedCard } from '@/api/types';
 
 export default function BuyerCards() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [tokenizing, setTokenizing] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
 
   const { data: liveCards = [] } = useQuery({ queryKey: ['buyer-cards'], queryFn: getSavedCards });
 
@@ -31,8 +33,22 @@ export default function BuyerCards() {
 
   const list: SavedCard[] = liveCards;
 
-  const toSecurePage = () => {
-    setOpen(false);
+  const toSecurePage = async () => {
+    setTokenizing(true);
+    setTokenError(null);
+    try {
+      const res = await initializeCardTokenization();
+      const authUrl = res?.authorization_url || (res as any)?.data?.authorization_url;
+      if (authUrl) {
+        await Linking.openURL(authUrl);
+      }
+      setOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['buyer-cards'] });
+    } catch (err: any) {
+      setTokenError(err.message || 'Could not initialize Paystack card verification.');
+    } finally {
+      setTokenizing(false);
+    }
   };
 
   return (
@@ -93,7 +109,18 @@ export default function BuyerCards() {
         <T className="text-[15px] leading-[22px] text-muted-2">
           You’ll enter your card on Paystack’s secure page. We’ll charge ₦50 to check it and refund it straight away.
         </T>
-        <Button title="Continue to secure page" className="h-[54px]" textClassName="text-base" onPress={toSecurePage} />
+        {tokenError ? (
+          <View className="rounded-xl bg-danger/10 p-2.5">
+            <T className="text-xs font-bold text-danger">{tokenError}</T>
+          </View>
+        ) : null}
+        {tokenizing ? (
+          <View className="h-[54px] items-center justify-center rounded-full bg-green">
+            <ActivityIndicator color="#fff" />
+          </View>
+        ) : (
+          <Button title="Continue to secure page" className="h-[54px]" textClassName="text-base" onPress={toSecurePage} />
+        )}
         <Pressable accessibilityRole="button" onPress={() => setOpen(false)} className="h-11 items-center justify-center">
           <T className="font-sans-bold text-[15px] text-muted">Not now</T>
         </Pressable>

@@ -83,6 +83,11 @@ export async function setDefaultSavedCard(id: number): Promise<void> {
   return apiPatch(`/buyer/cards/${id}/default`);
 }
 
+/** Initialize Paystack tokenization charge */
+export async function initializeCardTokenization(): Promise<{ authorization_url: string; reference: string }> {
+  return apiPost('/buyer/cards/initialize');
+}
+
 /** Follow / unfollow store */
 export async function toggleFollowStore(storeId: number): Promise<{ followed: boolean }> {
   return apiPost<{ followed: boolean }>(`/buyer/follows/${storeId}`);
@@ -130,4 +135,14 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
 /** Update buyer notification preferences */
 export async function updateNotificationPreferences(preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
   return apiPut<NotificationPreferences>('/buyer/notification-preferences', preferences);
+}
+
+/** Place public store order */
+export async function createStoreOrder(slug: string, payload: any): Promise<any> {
+  return apiPost<any>(`/public/store/${slug}/orders`, payload);
+}
+
+/** Initialize order payment via Paystack */
+export async function initOrderPayment(orderId: string | number): Promise<any> {
+  return apiPost<any>(`/orders/${orderId}/initialize-payment`);
 }

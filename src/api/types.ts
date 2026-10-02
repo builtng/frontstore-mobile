@@ -197,6 +197,7 @@ export interface Review {
   store?: Store | null;
   product?: Product | null;
   seller_reply?: string | null;
+  buyer_name?: string | null;
 }
 
 export interface NotificationPreferences {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { Link, type Href } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, T } from '@/components/ui';
@@ -39,8 +39,19 @@ function OrderCard({ o }: { o: any }) {
     ? { label: 'Help' }
     : { label: 'Buy again', href: storeSlug ? `/shop/store/${storeSlug}` : '/shop' };
 
+  const handleHelp = () => {
+    const rawPhone = o.store?.whatsapp_phone || o.store?.phone || '2348000000000';
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello, I need help with my Frontstore order #${orderId}`)}`;
+    Linking.openURL(url).catch(() => {});
+  };
+
   const secondBtn = (
-    <Pressable accessibilityRole="button" className="h-10 justify-center rounded-full border border-line-2 px-3.5">
+    <Pressable
+      accessibilityRole="button"
+      onPress={active ? handleHelp : undefined}
+      className="h-10 justify-center rounded-full border border-line-2 px-3.5"
+    >
       <T className="font-sans-bold text-[13px]">{second.label}</T>
     </Pressable>
   );

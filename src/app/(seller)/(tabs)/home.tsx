@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Switch, View } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Bell, Share } from 'lucide-react-native';
+import { Bell, CheckCircle, Package, Share, Sparkles, X } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
-import { Screen, T, cx } from '@/components/ui';
+import { Button, Screen, T, cx } from '@/components/ui';
+import { BottomSheet } from '@/features/buyer/account';
 import { getMe } from '@/api/auth';
 import { getSellerOrders, getWalletBalance } from '@/api/orders';
 import { formatNaira } from '@/lib/format';
@@ -21,6 +22,9 @@ function Stat({ label, value, delta, dark }: { label: string; value: string; del
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [ninaOpen, setNinaOpen] = useState(false);
+  const [ninaActive, setNinaActive] = useState(true);
 
   const { data: authData, isLoading: authLoading } = useQuery({
     queryKey: ['me'],
@@ -62,7 +66,12 @@ export default function Home() {
             <T className="font-display text-[28px] tracking-[-0.5px]">{ownerName}</T>
           </View>
           <View className="flex-row gap-2">
-            <Pressable accessibilityRole="button" accessibilityLabel="Notifications" className="h-11 w-11 items-center justify-center rounded-full border border-line bg-surface">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Notifications"
+              onPress={() => setNotificationsOpen(true)}
+              className="h-11 w-11 items-center justify-center rounded-full border border-line bg-surface"
+            >
               <Bell size={20} color="#0E1A15" strokeWidth={2} />
               <View className="absolute right-[10px] top-[9px] h-2 w-2 rounded-full bg-[#C8553D]" />
             </Pressable>
@@ -105,25 +114,30 @@ export default function Home() {
         </View>
 
         {/* Nina AI Status Banner */}
-        <View className="flex-row items-center justify-between rounded-[20px] border border-teal/30 bg-[#0A192F] p-4">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open Nina AI Agent settings"
+          onPress={() => setNinaOpen(true)}
+          className="flex-row items-center justify-between rounded-[20px] border border-teal/30 bg-[#0A192F] p-4"
+        >
           <View className="flex-1 gap-1">
             <View className="flex-row items-center gap-2">
-              <View className={cx('h-2 w-2 rounded-full', store?.is_active !== false ? 'bg-[#64FFDA]' : 'bg-muted')} />
+              <View className={cx('h-2 w-2 rounded-full', ninaActive ? 'bg-[#64FFDA]' : 'bg-muted')} />
               <T className="font-sans-bold text-xs tracking-wider text-[#64FFDA] uppercase">
-                {store?.is_active !== false ? 'Frontstore Nina AI Active' : 'Frontstore Nina AI Ready'}
+                {ninaActive ? 'Frontstore Nina AI Active' : 'Frontstore Nina AI Paused'}
               </T>
             </View>
             <T className="font-sans-bold text-sm text-white">
-              {store?.is_active !== false ? 'Monitoring WhatsApp negotiations 24/7' : 'Automate your WhatsApp sales with Nina AI'}
+              {ninaActive ? 'Monitoring WhatsApp negotiations 24/7' : 'Nina AI is currently paused'}
             </T>
             <T className="text-xs text-on-dark-2">
-              {store?.is_active !== false ? 'Auto-closing deals and answering product questions' : 'Enable automated order taking in store settings'}
+              {ninaActive ? 'Auto-closing deals and answering product questions' : 'Tap to enable automatic order taking'}
             </T>
           </View>
           <View className="h-10 w-10 items-center justify-center rounded-xl bg-teal/10">
             <T className="text-lg">⚡</T>
           </View>
-        </View>
+        </Pressable>
 
         <View className="flex-row items-baseline justify-between">
           <T className="font-sans-bold text-lg">To ship</T>
@@ -166,6 +180,98 @@ export default function Home() {
           </Pressable>
         </Link>
       </ScrollView>
+
+      {/* Notifications BottomSheet */}
+      <BottomSheet visible={notificationsOpen} onClose={() => setNotificationsOpen(false)}>
+        <View className="gap-3 py-1">
+          <View className="flex-row items-center justify-between">
+            <T className="font-display text-xl">Notifications</T>
+            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setNotificationsOpen(false)}>
+              <X size={20} color="#0E1A15" />
+            </Pressable>
+          </View>
+          <View className="gap-2.5 pt-1">
+            <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
+              <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint">
+                <Package size={18} color="#0B6E4F" />
+              </View>
+              <View className="flex-1 gap-0.5">
+                <T className="font-sans-bold text-sm">Store is Live & Active</T>
+                <T className="text-xs text-muted-2">Your storefront {link} is accepting orders and connected to WhatsApp.</T>
+                <T className="text-[11px] text-muted">Just now</T>
+              </View>
+            </View>
+
+            {toShipOrders.length > 0 ? (
+              <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
+                <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#F3E3C7]">
+                  <CheckCircle size={18} color="#6B4210" />
+                </View>
+                <View className="flex-1 gap-0.5">
+                  <T className="font-sans-bold text-sm">{toShipOrders.length} Orders Ready to Ship</T>
+                  <T className="text-xs text-muted-2">Orders need courier dispatch or fulfillment packaging.</T>
+                  <T className="text-[11px] text-muted">Today</T>
+                </View>
+              </View>
+            ) : null}
+
+            <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
+              <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#DCE7F3]">
+                <Sparkles size={18} color="#1F3F66" />
+              </View>
+              <View className="flex-1 gap-0.5">
+                <T className="font-sans-bold text-sm">Nina AI Assistant Active</T>
+                <T className="text-xs text-muted-2">Answering buyer inquiries and closing transactions on WhatsApp 24/7.</T>
+                <T className="text-[11px] text-muted">Yesterday</T>
+              </View>
+            </View>
+          </View>
+          <Button title="Close" className="mt-2 h-11" onPress={() => setNotificationsOpen(false)} />
+        </View>
+      </BottomSheet>
+
+      {/* Nina AI Controls BottomSheet */}
+      <BottomSheet visible={ninaOpen} onClose={() => setNinaOpen(false)}>
+        <View className="gap-3 py-1">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <Sparkles size={20} color="#0B6E4F" />
+              <T className="font-display text-xl">Nina AI Assistant</T>
+            </View>
+            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setNinaOpen(false)}>
+              <X size={20} color="#0E1A15" />
+            </Pressable>
+          </View>
+          <T className="text-sm leading-[21px] text-muted-2">
+            Nina handles WhatsApp chats, checks product stock, answers customer questions, and closes orders automatically.
+          </T>
+
+          <View className="flex-row items-center justify-between rounded-2xl border border-line bg-surface p-4">
+            <View className="flex-1 pr-3">
+              <T className="font-sans-bold text-[15px]">Automated Sales Agent</T>
+              <T className="text-xs text-muted-2">Allow Nina to negotiate deals and send payment links</T>
+            </View>
+            <Switch
+              value={ninaActive}
+              onValueChange={setNinaActive}
+              trackColor={{ false: '#D9D9D9', true: '#22A35A' }}
+            />
+          </View>
+
+          <View className="rounded-2xl border border-line bg-surface p-4 gap-2">
+            <T className="font-sans-bold text-[13px] text-muted uppercase">Capabilities Active</T>
+            <T className="text-xs text-deep">✓ 24/7 WhatsApp customer reply</T>
+            <T className="text-xs text-deep">✓ Real-time inventory queries</T>
+            <T className="text-xs text-deep">✓ Instant order generation &amp; bank transfer instructions</T>
+          </View>
+
+          <Button
+            title="Save & Done"
+            className="mt-1 h-[50px]"
+            onPress={() => setNinaOpen(false)}
+          />
+        </View>
+      </BottomSheet>
     </Screen>
   );
 }

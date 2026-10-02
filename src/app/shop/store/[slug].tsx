@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, Share, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, Share, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, Share as ShareIcon } from 'lucide-react-native';
-import { Screen, T, cx } from '@/components/ui';
+import { ChevronLeft, Share as ShareIcon, Star, X } from 'lucide-react-native';
+import { Button, Screen, T, cx } from '@/components/ui';
 import { naira } from '@/lib/format';
 import { Avatar, ChipRow, useTileWidth } from '@/features/buyer/parts';
-import { getPublicStore, toggleFollowStore } from '@/api/buyer';
+import { BottomSheet, SheetField } from '@/features/buyer/account';
+import { getPublicStore, toggleFollowStore, createStoreOrder, initOrderPayment } from '@/api/buyer';
 
 export default function BuyerStore() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -34,6 +35,69 @@ export default function BuyerStore() {
   const [following, setFollowing] = useState(false);
   const [cat, setCat] = useState('All');
   const [cart, setCart] = useState<Record<string, number>>({});
+
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'transfer'>('card');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState<any>(null);
+  const [orderError, setOrderError] = useState<string | null>(null);
+
+  const reviewsList = liveData?.reviews || [];
+
+  const handlePlaceOrder = async () => {
+    if (!customerName.trim() || !customerPhone.trim() || !customerAddress.trim()) {
+      setOrderError('Please provide your name, phone and delivery address.');
+      return;
+    }
+    setIsSubmitting(true);
+    setOrderError(null);
+
+    try {
+      const itemsPayload = Object.entries(cart)
+        .filter(([_, qty]) => qty > 0)
+        .map(([id, quantity]) => ({
+          product_id: id,
+          quantity,
+        }));
+
+      const res = await createStoreOrder(slug!, {
+        customer_name: customerName.trim(),
+        customer_phone: customerPhone.trim(),
+        delivery_method: 'delivery',
+        delivery_address: customerAddress.trim(),
+        payment_method: paymentMethod,
+        items: itemsPayload,
+      });
+
+      const orderData = res?.order || res?.data?.order || res?.data;
+      const whatsappUrl = res?.whatsapp_url || res?.data?.whatsapp_url;
+      const orderId = orderData?.order_number || orderData?.id || 'FS-CONFIRMED';
+
+      setOrderSuccess({ orderId, whatsappUrl });
+      setCart({});
+      queryClient.invalidateQueries({ queryKey: ['buyer-orders'] });
+
+      if (paymentMethod === 'card' && orderData?.id) {
+        try {
+          const payRes = await initOrderPayment(orderData.id);
+          const authUrl = payRes?.authorization_url || payRes?.data?.authorization_url;
+          if (authUrl) {
+            Linking.openURL(authUrl).catch(() => {});
+          }
+        } catch (e) {
+          console.warn('Paystack mobile init error', e);
+        }
+      }
+    } catch (err: any) {
+      setOrderError(err.message || 'Could not place order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const followMutation = useMutation({
     mutationFn: () => toggleFollowStore(storeId!),
@@ -99,8 +163,13 @@ export default function BuyerStore() {
             >
               <T className={cx('font-sans-bold text-[15px]', following ? 'text-ink' : 'text-white')}>{following ? 'Following' : 'Follow'}</T>
             </Pressable>
-            <Pressable accessibilityRole="button" className="h-11 flex-1 items-center justify-center rounded-full border border-line-2 bg-surface">
-              <T className="font-sans-bold text-[15px]">Reviews</T>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`View reviews for ${storeName}`}
+              onPress={() => setReviewsOpen(true)}
+              className="h-11 flex-1 items-center justify-center rounded-full border border-line-2 bg-surface"
+            >
+              <T className="font-sans-bold text-[15px]">Reviews ({reviewsList.length})</T>
             </Pressable>
           </View>
         </View>
@@ -139,12 +208,164 @@ export default function BuyerStore() {
               <T className="text-xs text-on-dark-2">{count} items</T>
               <T className="font-sans-bold text-base text-white">{naira(total)}</T>
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Checkout, ${count} items, ${naira(total)}`} className="h-[46px] justify-center rounded-full bg-green px-5">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Checkout, ${count} items, ${naira(total)}`}
+              onPress={() => {
+                setOrderSuccess(null);
+                setOrderError(null);
+                setCheckoutOpen(true);
+              }}
+              className="h-[46px] justify-center rounded-full bg-green px-5"
+            >
               <T className="font-sans-bold text-[15px] text-white">Checkout</T>
             </Pressable>
           </View>
         </View>
       ) : null}
+
+      {/* Checkout BottomSheet */}
+      <BottomSheet visible={checkoutOpen} onClose={() => setCheckoutOpen(false)}>
+        {orderSuccess ? (
+          <View className="gap-3 py-2">
+            <T className="font-display text-2xl text-green">Order Received!</T>
+            <T className="font-sans-bold text-base text-ink">Order #{orderSuccess.orderId}</T>
+            <T className="text-sm text-muted-2">
+              Your order has been logged with {storeName}. You can chat with the seller on WhatsApp to confirm delivery details or track updates.
+            </T>
+            {orderSuccess.whatsappUrl ? (
+              <Button
+                title="Chat on WhatsApp"
+                className="h-[52px] bg-[#25D366]"
+                onPress={() => {
+                  Linking.openURL(orderSuccess.whatsappUrl).catch(() => {});
+                  setCheckoutOpen(false);
+                  router.push('/shop/orders');
+                }}
+              />
+            ) : null}
+            <Button
+              title="View My Orders"
+              className="h-[52px]"
+              onPress={() => {
+                setCheckoutOpen(false);
+                router.push('/shop/orders');
+              }}
+            />
+          </View>
+        ) : (
+          <View className="gap-3 py-1">
+            <View className="flex-row items-center justify-between">
+              <T className="font-display text-xl">Checkout ({count} items)</T>
+              <T className="font-sans-bold text-lg text-green">{naira(total)}</T>
+            </View>
+
+            {orderError ? (
+              <View className="rounded-xl bg-danger/10 p-2.5">
+                <T className="text-xs font-bold text-danger">{orderError}</T>
+              </View>
+            ) : null}
+
+            <SheetField
+              label="Your Full Name"
+              placeholder="e.g. Chioma Adeyemi"
+              value={customerName}
+              onChangeText={setCustomerName}
+            />
+            <SheetField
+              label="Phone Number"
+              placeholder="e.g. 08012345678"
+              keyboardType="phone-pad"
+              value={customerPhone}
+              onChangeText={setCustomerPhone}
+            />
+            <SheetField
+              label="Delivery Address"
+              placeholder="House number, street, area, city"
+              value={customerAddress}
+              onChangeText={setCustomerAddress}
+            />
+
+            <View className="gap-1.5 pt-1">
+              <T className="font-sans-bold text-[13px]">Payment Method</T>
+              <View className="flex-row gap-2">
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setPaymentMethod('card')}
+                  className={cx(
+                    'h-11 flex-1 items-center justify-center rounded-xl border',
+                    paymentMethod === 'card' ? 'border-green bg-mint' : 'border-line bg-surface'
+                  )}
+                >
+                  <T className={cx('font-sans-bold text-xs', paymentMethod === 'card' ? 'text-green' : 'text-ink')}>
+                    Card / Transfer (Paystack)
+                  </T>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setPaymentMethod('transfer')}
+                  className={cx(
+                    'h-11 flex-1 items-center justify-center rounded-xl border',
+                    paymentMethod === 'transfer' ? 'border-green bg-mint' : 'border-line bg-surface'
+                  )}
+                >
+                  <T className={cx('font-sans-bold text-xs', paymentMethod === 'transfer' ? 'text-green' : 'text-ink')}>
+                    Bank Transfer / WhatsApp
+                  </T>
+                </Pressable>
+              </View>
+            </View>
+
+            {isSubmitting ? (
+              <View className="h-[52px] items-center justify-center rounded-full bg-green">
+                <ActivityIndicator color="#fff" />
+              </View>
+            ) : (
+              <Button
+                title={`Place Order · ${naira(total)}`}
+                className="h-[52px]"
+                onPress={handlePlaceOrder}
+              />
+            )}
+          </View>
+        )}
+      </BottomSheet>
+
+      {/* Reviews BottomSheet */}
+      <BottomSheet visible={reviewsOpen} onClose={() => setReviewsOpen(false)}>
+        <View className="gap-3 py-1">
+          <View className="flex-row items-center justify-between">
+            <T className="font-display text-xl">Store Reviews ({reviewsList.length})</T>
+            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setReviewsOpen(false)}>
+              <X size={20} color="#0E1A15" />
+            </Pressable>
+          </View>
+          <ScrollView className="max-h-[360px]" showsVerticalScrollIndicator={false}>
+            {reviewsList.length > 0 ? (
+              reviewsList.map((r, idx) => (
+                <View key={r.id || idx} className="gap-1 border-b border-line-2 py-3">
+                  <View className="flex-row items-center justify-between">
+                    <T className="font-sans-bold text-sm">{r.customer_name || r.buyer_name || 'Verified Buyer'}</T>
+                    <View className="flex-row items-center gap-0.5">
+                      <Star size={14} color="#E9A23B" fill="#E9A23B" />
+                      <T className="font-sans-bold text-xs">{r.rating ?? 5}.0</T>
+                    </View>
+                  </View>
+                  <T className="text-[13px] text-muted-2">{r.comment || 'Great product and quick delivery!'}</T>
+                  {r.created_at ? (
+                    <T className="text-[11px] text-muted">{new Date(r.created_at).toLocaleDateString()}</T>
+                  ) : null}
+                </View>
+              ))
+            ) : (
+              <View className="py-6 items-center gap-2">
+                <T className="font-sans-medium text-sm text-muted">No customer reviews yet for this store.</T>
+                <T className="text-xs text-muted-2">Be the first to order and leave a review!</T>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </BottomSheet>
     </Screen>
   );
 }
