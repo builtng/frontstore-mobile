@@ -1,6 +1,7 @@
 import { apiGet, apiPost } from './client';
 import { setToken, removeToken, setUserMode } from './authStore';
 import { User, Store } from './types';
+import { registerForPush, unregisterPush } from '@/lib/push';
 
 export interface AuthResponse {
   token?: string;
@@ -32,6 +33,7 @@ export async function verifyOtp(params: {
 
   if (data.token) {
     await setToken(data.token);
+    registerForPush();
   }
   return data;
 }
@@ -45,6 +47,7 @@ export async function loginWithPassword(loginIdentifier: string, password: strin
 
   if (data.token) {
     await setToken(data.token);
+    registerForPush();
   }
   return data;
 }
@@ -60,6 +63,7 @@ export async function loginWithGoogle(params: {
   const data: AuthResponse = await apiPost('/auth/google', params);
   if (data.token) {
     await setToken(data.token);
+    registerForPush();
   }
   return data;
 }
@@ -74,6 +78,7 @@ export async function loginWithApple(params: {
   const data: AuthResponse = await apiPost('/auth/apple', params);
   if (data.token) {
     await setToken(data.token);
+    registerForPush();
   }
   return data;
 }
@@ -86,6 +91,7 @@ export async function getMe(): Promise<{ user: User; store: Store | null }> {
 /** Logout user */
 export async function logout(): Promise<void> {
   try {
+    await unregisterPush();
     await apiPost('/auth/logout');
   } catch (err) {
     console.warn('Logout endpoint error', err);

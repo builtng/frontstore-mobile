@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Linking, Pressable, ScrollView, View } from 'react-native';
+import { Image, Linking, Pressable, ScrollView, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, Sparkles, X, Check, Truck } from 'lucide-react-native';
@@ -21,8 +21,8 @@ export default function Settings() {
   const { data: store } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
   const { data: wallet } = useQuery({ queryKey: ['seller-wallet'], queryFn: getWalletBalance });
 
-  const storeName = store?.name || me?.user?.store?.name || 'My Store';
-  const storeSlug = store?.slug || me?.user?.store?.slug || 'my-store';
+  const storeName = store?.store_name || store?.name || me?.store?.store_name || 'My Store';
+  const storeSlug = store?.username || store?.slug || me?.store?.username || 'my-store';
   const storeInitial = storeName[0] || 'S';
   const storeColor = store?.primary_color || '#0F172A';
   const productsCount = store?.products_count ?? 0;
@@ -43,7 +43,7 @@ export default function Settings() {
     { label: 'Switch to Buyer view', value: userName, href: '/switch' },
     { label: 'WhatsApp Business Number', value: userPhone },
     { label: 'Delivery & Shipping Zones', value: 'Default Zone', onPress: () => setDeliveryOpen(true) },
-    { label: 'Store Theme & Branding', value: storeColor, href: '/store-style' },
+    { label: 'Store Theme & Branding', value: storeColor, href: '/store-edit' },
     { label: 'Share Store & QR Code', value: '', href: '/share' },
   ];
 
@@ -53,14 +53,18 @@ export default function Settings() {
         <T className="font-display text-[32px] tracking-[-0.6px]">Store</T>
 
         <View className="flex-row items-center gap-3.5 rounded-[22px] border border-line bg-surface p-4">
-          <View style={{ backgroundColor: storeColor }} className="h-14 w-14 items-center justify-center rounded-2xl">
-            <T className="font-display text-[22px] text-white">{storeInitial}</T>
+          <View style={{ backgroundColor: storeColor }} className="h-14 w-14 items-center justify-center overflow-hidden rounded-2xl">
+            {store?.logo_url ? (
+              <Image source={{ uri: store.logo_url }} className="h-full w-full" resizeMode="cover" />
+            ) : (
+              <T className="font-display text-[22px] text-white">{storeInitial}</T>
+            )}
           </View>
           <View className="flex-1 gap-0.5">
             <T className="font-sans-bold text-[17px]">{storeName}</T>
             <T className="text-[13px] text-muted">{storeSlug}.frontstore.app</T>
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel="Edit store" hitSlop={4} onPress={() => router.push('/store-style')} className="h-10 justify-center rounded-full border border-line-2 px-3.5">
+          <Pressable accessibilityRole="button" accessibilityLabel="Edit store" hitSlop={4} onPress={() => router.push('/store-edit')} className="h-10 justify-center rounded-full border border-line-2 px-3.5">
             <T className="font-sans-bold text-[13px]">Edit</T>
           </Pressable>
         </View>

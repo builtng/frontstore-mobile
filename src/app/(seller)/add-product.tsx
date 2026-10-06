@@ -7,6 +7,7 @@ import { Screen, T, cx } from '@/components/ui';
 import { Sparkle, goBack } from '@/features/seller/parts';
 import { createProduct } from '@/api/products';
 import { usePhotoDraft } from '@/features/products/usePhotoDraft';
+import { ColourChips } from '@/features/products/ColourChips';
 import { formatNaira } from '@/lib/format';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
 import { useCategories } from '@/features/products/useCategories';
@@ -83,6 +84,7 @@ export default function AddProduct() {
         status: 'live',
         images: photoDraft.imageUrls,
         sizes,
+        colors,
       });
       router.dismissTo('/products');
     } catch (err: any) {
@@ -239,13 +241,7 @@ export default function AddProduct() {
 
             <View className="gap-2">
               <Label text="Colour" />
-              <View className="flex-row gap-2">
-                {colors.map((c, i) => (
-                  <View key={i} className="min-h-[40px] justify-center rounded-xl bg-ink px-3.5">
-                    <T className="font-sans-bold text-sm text-bg">{c}</T>
-                  </View>
-                ))}
-              </View>
+              <ColourChips value={colors} onChange={setColors} />
             </View>
 
             <View className="gap-2.5 rounded-2xl bg-peach p-3.5">

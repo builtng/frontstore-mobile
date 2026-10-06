@@ -33,6 +33,8 @@ export interface Store {
   country_code: string;
   payment_provider: string;
   logo_path?: string | null;
+  /** Resolved image URL for the logo */
+  logo_url?: string | null;
   banner_path?: string | null;
   store_color?: string | null;
   category_label?: string | null;
@@ -81,6 +83,7 @@ export interface Product {
   is_featured?: boolean;
   images?: string[];
   sizes?: string[];
+  colors?: string[];
   variants?: ProductVariant[];
   deleted_at?: string | null;
   // Aliases & Extended Properties

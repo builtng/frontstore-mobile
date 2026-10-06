@@ -10,6 +10,7 @@ import { getProduct, updateProduct } from '@/api/products';
 import { formatNaira } from '@/lib/format';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
 import { useCategories } from '@/features/products/useCategories';
+import { ColourChips } from '@/features/products/ColourChips';
 
 const ALL_SIZES = ['S', 'M', 'L', 'XL'];
 
@@ -29,7 +30,8 @@ export default function EditProduct() {
   const categories = useCategories();
   const [category, setCategory] = useState('');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [sizes, setSizes] = useState<string[]>(ALL_SIZES);
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [colors, setColors] = useState<string[]>([]);
   const [inStock, setInStock] = useState(true);
   const [visible, setVisible] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -43,6 +45,7 @@ export default function EditProduct() {
       setInStock(product.stock_count > 0);
       setVisible(product.status !== 'hidden');
       if (product.sizes) setSizes(product.sizes);
+      if (product.colors) setColors(product.colors);
     }
   }, [product]);
 
@@ -78,6 +81,7 @@ export default function EditProduct() {
       stock_count: !inStock ? 0 : product && product.stock_count > 0 ? product.stock_count : 10,
       status: visible ? 'live' : 'hidden',
       sizes,
+      colors,
     });
   };
 
@@ -170,6 +174,11 @@ export default function EditProduct() {
               );
             })}
           </View>
+        </View>
+
+        <View className="gap-2">
+          <T className="font-sans-bold text-sm">Colours</T>
+          <ColourChips value={colors} onChange={setColors} />
         </View>
 
         <View className="rounded-[18px] border border-line bg-surface">

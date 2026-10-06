@@ -5,6 +5,7 @@ import { T, cx } from '@/components/ui';
 import { SparkleIcon } from './parts';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
 import { useCategories } from '@/features/products/useCategories';
+import { ColourChips } from '@/features/products/ColourChips';
 import { usePhotoDraft, type PhotoStage } from '@/features/products/usePhotoDraft';
 
 export type AiStage = PhotoStage;
@@ -215,21 +216,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
 
       <View className="gap-2">
         <FieldLabel label="Colour" tag="AI" />
-        <View className="flex-row flex-wrap gap-2">
-          {p.colours.map((c) => (
-            <View key={c} className="rounded-xl bg-ink px-3.5 py-[9px]">
-              <T className="font-sans-bold text-sm text-bg">{c}</T>
-            </View>
-          ))}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Add colour"
-            // TODO: colour picker
-            className="rounded-xl border border-dashed border-[#B9B1A0] px-3.5 py-[9px]"
-          >
-            <T className="font-sans-bold text-sm text-muted">+ Add</T>
-          </Pressable>
-        </View>
+        <ColourChips value={p.colours} onChange={(colours) => update({ colours })} />
       </View>
 
       <View className="gap-2.5 rounded-2xl bg-peach p-3.5">

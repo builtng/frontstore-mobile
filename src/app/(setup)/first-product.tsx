@@ -58,6 +58,7 @@ export default function FirstProduct() {
             images: flow.photos.imageUrls,
             category_id: flow.product.categoryId || null,
             sizes: flow.product.sizes,
+            colors: flow.product.colours,
           });
         } catch (prodErr) {
           console.warn('First product creation warning:', prodErr);

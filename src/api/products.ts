@@ -13,8 +13,13 @@ function normalizeProduct(p: any): Product {
     status: p.status ?? status,
     images: p.images ?? p.image_urls ?? [],
     category: typeof p.category === 'object' ? p.category?.name ?? null : p.category ?? null,
-    sizes: p.sizes ?? (p.variants ?? []).filter((v: any) => v.size && !v.color).map((v: any) => v.size),
+    sizes: p.sizes ?? uniq((p.variants ?? []).map((v: any) => v.size)),
+    colors: p.colors ?? uniq((p.variants ?? []).map((v: any) => v.color)),
   };
+}
+
+function uniq(values: (string | null | undefined)[]): string[] {
+  return [...new Set(values.filter((v): v is string => !!v))];
 }
 
 /** Admin-managed product categories */
@@ -44,9 +49,9 @@ export async function getProduct(id: string | number): Promise<Product> {
 /**
  * The app works in kobo with images/stock_count/status; the backend takes
  * price in naira, image_urls, inventory_quantity, is_draft and stock_status.
- * Sizes become size variants (stock split across them), reusing existing
- * variant ids. Products with colour variants (set on the web) keep their
- * variants untouched, since the app can't show those.
+ * Sizes and colours become variants: one per size × colour (or per size /
+ * per colour when only one is set), stock split across them, existing
+ * variant ids reused so order history keeps pointing at the same variant.
  */
 function toBackendProduct(p: Partial<Product>, existing: ProductVariant[] = []): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -64,19 +69,21 @@ function toBackendProduct(p: Partial<Product>, existing: ProductVariant[] = []):
     if (p.status === 'preorder') out.stock_status = 'preorder';
   }
   if (p.category_id !== undefined) out.category_id = p.category_id;
-  if (p.sizes?.length && !existing.some((v) => v.color)) {
-    const sizes = p.sizes;
-    const kept = sizes.map((size) => existing.find((v) => v.size === size));
+  const sizes = p.sizes ?? [];
+  const colors = p.colors ?? [];
+  if (sizes.length || colors.length) {
+    const combos = (sizes.length ? sizes : [null]).flatMap((size) =>
+      (colors.length ? colors : [null]).map((color) => ({ size, color })),
+    );
+    const kept = combos.map((c) => existing.find((v) => (v.size ?? null) === c.size && (v.color ?? null) === c.color));
     const keptTotal = kept.reduce((sum, v) => sum + (v?.inventory_quantity ?? 0), 0);
-    // Same sizes and same total: keep each size's own count instead of re-splitting.
+    // Same variants and same total: keep each one's own count instead of re-splitting.
     const stock = kept.every(Boolean) && kept.length === existing.length && keptTotal === (p.stock_count ?? 0)
       ? kept.map((v) => v!.inventory_quantity)
-      : splitStock(p.stock_count ?? 0, sizes.length);
-    out.variants = sizes.map((size, i) => ({
-      id: existing.find((v) => v.size === size)?.id,
-      size,
-      inventory_quantity: stock[i],
-    }));
+      : splitStock(p.stock_count ?? 0, combos.length);
+    out.variants = combos.map((c, i) => ({ id: kept[i]?.id, ...c, inventory_quantity: stock[i] }));
+  } else if (p.sizes !== undefined && p.colors !== undefined && existing.length) {
+    out.variants = []; // all sizes and colours removed
   }
   return out;
 }

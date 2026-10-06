@@ -134,9 +134,9 @@ export async function apiPatch<T = any>(url: string, body?: any): Promise<T> {
   }
 }
 
-export async function apiDelete<T = any>(url: string): Promise<T> {
+export async function apiDelete<T = any>(url: string, body?: any): Promise<T> {
   try {
-    const res = await apiClient.delete(url);
+    const res = await apiClient.delete(url, body ? { data: body } : undefined);
     const json = res.data;
     if (json?.status === 'error') {
       throw new ApiError(json.message || 'Request failed', res.status, json);
