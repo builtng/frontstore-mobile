@@ -62,12 +62,7 @@
         }
       ],
       "expo-video",
-      [
-        "expo-notifications",
-        {
-          "color": "#0B6E4F"
-        }
-      ],
+      "expo-notifications",
       [
         "expo-build-properties",
         {

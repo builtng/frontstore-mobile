@@ -13,21 +13,17 @@ Notifications.setNotificationHandler({
 });
 
 /**
- * Ask for permission, get this phone's Expo push token and register it with
- * the backend for the signed-in account. Safe to call repeatedly; does
- * nothing on simulators, on web, or if the user says no.
+ * iPhone only: ask for permission, get this phone's Expo push token and
+ * register it with the backend for the signed-in account. Safe to call
+ * repeatedly; does nothing on simulators or if the user says no.
+ *
+ * Android is skipped on purpose: Android push always goes through Firebase
+ * Cloud Messaging, which we don't use. Android users get order updates on
+ * WhatsApp instead (the backend sends those for every status change).
  */
 export async function registerForPush(): Promise<void> {
   try {
-    if (Platform.OS === 'web' || !Device.isDevice) return;
-
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'Orders and updates',
-        importance: Notifications.AndroidImportance.HIGH,
-        lightColor: '#0B6E4F',
-      });
-    }
+    if (Platform.OS !== 'ios' || !Device.isDevice) return;
 
     let { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted') ({ status } = await Notifications.requestPermissionsAsync());
@@ -39,7 +35,7 @@ export async function registerForPush(): Promise<void> {
     await apiPost('/user/push-tokens', { token, device_type: Platform.OS });
     await SecureStore.setItemAsync(PUSH_TOKEN_KEY, token);
   } catch (err) {
-    // e.g. Android without Firebase set up yet; the app works without push.
+    // The app works without push.
     console.warn('Push registration skipped', err);
   }
 }

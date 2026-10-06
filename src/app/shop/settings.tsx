@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { Platform, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen } from '@/components/ui';
@@ -71,7 +71,8 @@ export default function BuyerSettings() {
       <AccountHeader title="Settings" />
       <ScrollView contentContainerClassName="gap-4 px-4 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         <Group title="Notifications">
-          {NOTES.map(([k, label, sub]) => (
+          {/* No push on Android (no Firebase), so no app-notification switch there. */}
+          {NOTES.filter(([k]) => k !== 'push' || Platform.OS === 'ios').map(([k, label, sub]) => (
             <SwitchRow key={k} label={label} sub={sub || undefined} value={notes[k]} onChange={(v) => handleToggle(k, v)} />
           ))}
         </Group>
