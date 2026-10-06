@@ -9,7 +9,7 @@ import { Toggle, goBack } from '@/features/seller/parts';
 import { getProduct, updateProduct } from '@/api/products';
 import { formatNaira } from '@/lib/format';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
-import { STORE_CATEGORIES } from '@/data/categories';
+import { useCategories } from '@/features/products/useCategories';
 
 const ALL_SIZES = ['S', 'M', 'L', 'XL'];
 
@@ -26,7 +26,8 @@ export default function EditProduct() {
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
-  const [category, setCategory] = useState('Fashion');
+  const categories = useCategories();
+  const [category, setCategory] = useState('');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [sizes, setSizes] = useState<string[]>(ALL_SIZES);
   const [inStock, setInStock] = useState(true);
@@ -38,7 +39,7 @@ export default function EditProduct() {
     if (product) {
       setName(product.name);
       setPrice(String(Math.round(product.price_kobo / 100)));
-      setCategory(product.category || 'Two-piece');
+      setCategory(product.category_id ?? '');
       setInStock(product.stock_count > 0);
       setVisible(product.status !== 'hidden');
       if (product.sizes) setSizes(product.sizes);
@@ -48,7 +49,7 @@ export default function EditProduct() {
   const toggleSize = (s: string) => setSizes((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
 
   const saveMutation = useMutation({
-    mutationFn: (payload: any) => updateProduct(id!, payload),
+    mutationFn: (payload: any) => updateProduct(id!, payload, product?.variants),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product', id] });
@@ -62,14 +63,19 @@ export default function EditProduct() {
 
   const save = () => {
     if (submitting) return;
+    const numericPriceKobo = Math.round(parseFloat(price.replace(/,/g, '')) * 100);
+    if (!name.trim() || !numericPriceKobo) {
+      setErrorMsg('Add a name and price first.');
+      return;
+    }
     setSubmitting(true);
     setErrorMsg(null);
-    const numericPriceKobo = Math.round(parseFloat(price.replace(/,/g, '')) * 100) || 1850000;
     saveMutation.mutate({
       name,
       price_kobo: numericPriceKobo,
-      category,
-      stock_count: inStock ? 10 : 0,
+      category_id: category || null,
+      // Keep the real count unless the merchant flipped in/out of stock.
+      stock_count: !inStock ? 0 : product && product.stock_count > 0 ? product.stock_count : 10,
       status: visible ? 'live' : 'hidden',
       sizes,
     });
@@ -124,11 +130,11 @@ export default function EditProduct() {
             <T className="font-sans-bold text-sm">Collection</T>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Collection, ${category}`}
+              accessibilityLabel={`Collection, ${categories.nameOf(category) || 'not set'}`}
               onPress={() => setCategoryModalOpen(true)}
               className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-3"
             >
-              <T className="text-[15px]" numberOfLines={1}>{category}</T>
+              <T className="text-[15px]" numberOfLines={1}>{categories.nameOf(category) || 'Select'}</T>
               <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
             </Pressable>
           </View>
@@ -140,12 +146,7 @@ export default function EditProduct() {
           title="Select Collection"
           subtitle="Choose collection for this product"
           placeholder="Search collections..."
-          items={STORE_CATEGORIES.map((cat) => ({
-            id: cat.id,
-            title: cat.name,
-            subtitle: cat.description,
-            badge: cat.id,
-          }))}
+          items={categories.items}
           selectedId={category}
           onSelect={(item) => setCategory(item.id)}
         />

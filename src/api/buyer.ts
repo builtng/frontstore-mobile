@@ -143,6 +143,18 @@ export async function createStoreOrder(slug: string, payload: any): Promise<any>
 }
 
 /** Initialize order payment via Paystack */
-export async function initOrderPayment(orderId: string | number): Promise<any> {
-  return apiPost<any>(`/orders/${orderId}/initialize-payment`);
+export interface OrderPaymentInfo {
+  /** Hosted checkout (Stripe / Flutterwave stores) */
+  authorization_url?: string;
+  /** Bank transfer: the store's dedicated account, confirmed automatically */
+  bank_name?: string;
+  bank_account_number?: string;
+  bank_account_name?: string;
+  amount?: number;
+  payment_instructions?: string;
+}
+
+/** How to pay for a new order; the backend picks the method per store */
+export async function initOrderPayment(orderId: string | number): Promise<OrderPaymentInfo> {
+  return apiPost<OrderPaymentInfo>(`/public/orders/${orderId}/initialize-payment`);
 }

@@ -1,58 +1,49 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Pressable, TextInput, View } from 'react-native';
+import { ActivityIndicator, Animated, Easing, Image, Pressable, TextInput, View } from 'react-native';
 import { Camera, ChevronDown, Lock } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
 import { SparkleIcon } from './parts';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
-import { STORE_CATEGORIES } from '@/data/categories';
+import { useCategories } from '@/features/products/useCategories';
+import { usePhotoDraft, type PhotoStage } from '@/features/products/usePhotoDraft';
 
-export type AiStage = 'empty' | 'reading' | 'filled';
+export type AiStage = PhotoStage;
 
-const READ_MS = 2200;
-const PHOTOS = ['#E9A23B', '#D48E2A', '#F0B861'];
+// The progress bar is decorative; the real wait is however long the AI takes.
+const READ_MS = 15000;
 const GHOST = ['Product name', 'Price', 'Category', 'Description'];
 const SIZES = ['S', 'M', 'L', 'XL'];
 
 export type AiProduct = {
-  name: string; price: string; category: string; description: string; colours: string[]; sizes: string[]; stock: string;
+  name: string; price: string; categoryId: string; description: string; colours: string[]; sizes: string[]; stock: string;
+  /** AI's price range for similar items, e.g. "₦16,000 - ₦22,000". */
+  priceRange: string;
 };
 
-const AI_RESULT: AiProduct = {
-  name: 'Àdìrẹ two-piece set',
-  price: '18,500',
-  category: 'Two-piece',
-  description: 'Hand-dyed àdìrẹ-style two-piece in warm saffron. Relaxed top with matching wide-leg trousers.',
-  colours: ['Saffron'],
-  sizes: [],
-  stock: '',
-};
+const EMPTY: AiProduct = { name: '', price: '', categoryId: '', description: '', colours: [], sizes: [], stock: '', priceRange: '' };
+const ngn = (kobo: number) => `₦${Math.round(kobo / 100).toLocaleString('en-NG')}`;
 
 /**
- * Photo-first "Nina AI" product flow: empty -> reading (auto after ~2.2s, or Skip) -> filled.
- * State lives in the parent (`useAiProduct`) so the screen can gate its bottom button.
+ * Photo-first "Nina AI" product flow: empty -> reading (photos uploaded, AI
+ * draft polling) -> filled. State lives in the parent so the screen can gate
+ * its bottom button and publish `photos.imageUrls`.
  */
-export function useAiProduct(initial: AiStage = 'empty') {
-  const [stage, setStage] = useState<AiStage>(initial);
-  const [product, setProduct] = useState<AiProduct>(AI_RESULT);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const go = (st: AiStage) => {
-    if (timer.current) clearTimeout(timer.current);
-    setStage(st);
-    if (st === 'reading') {
-      setProduct(AI_RESULT);
-      timer.current = setTimeout(() => setStage('filled'), READ_MS);
-    }
-  };
-
-  useEffect(() => {
-    if (initial === 'reading') go('reading');
-    return () => { if (timer.current) clearTimeout(timer.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+export function useAiProduct() {
+  const [product, setProduct] = useState<AiProduct>(EMPTY);
+  const photos = usePhotoDraft((d) =>
+    setProduct((p) => ({
+      ...p,
+      name: d.title ?? p.name,
+      price: d.suggested_price_kobo ? Math.round(d.suggested_price_kobo / 100).toLocaleString('en-NG') : p.price,
+      categoryId: d.category_id ?? p.categoryId,
+      priceRange: d.price_min_kobo && d.price_max_kobo ? `${ngn(d.price_min_kobo)} - ${ngn(d.price_max_kobo)}` : p.priceRange,
+      description: d.description ?? p.description,
+      colours: d.colors?.length ? d.colors : p.colours,
+    })),
+  );
 
   const update = (patch: Partial<AiProduct>) => setProduct((p) => ({ ...p, ...patch }));
-  return { stage, product, go, update };
+  return { stage: photos.stage, product, update, photos };
 }
 
 type Flow = ReturnType<typeof useAiProduct>;
@@ -92,9 +83,8 @@ function ReadingCard({ onSkip }: { onSkip: () => void }) {
       <View className="h-1.5 overflow-hidden rounded-full bg-[#33504A]">
         <Animated.View style={{ width }} className="h-1.5 rounded-full bg-leaf" />
       </View>
-      <T className="text-sm text-on-dark">✓ Two-piece: top + wide-leg trousers</T>
-      <T className="text-sm text-on-dark">✓ Àdìrẹ-style print, saffron colour</T>
-      <T className="text-sm text-on-dark-2">… Checking prices in Lagos</T>
+      <T className="text-sm text-on-dark">Looking at the item, brand and colour</T>
+      <T className="text-sm text-on-dark-2">… Checking prices in Nigeria</T>
       <Pressable
         accessibilityRole="button"
         onPress={onSkip}
@@ -129,10 +119,11 @@ function Ghost({ stage }: { stage: AiStage }) {
 
 const inputBox = 'rounded-[14px] border border-line-2 bg-surface';
 
-function FilledForm({ product: p, update, onRedo }: { product: AiProduct; update: Flow['update']; onRedo: () => void }) {
+function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduct; update: Flow['update']; onRedo: () => void; aiError: string | null }) {
   const [sizesOpen, setSizesOpen] = useState(p.sizes.length > 0);
   const [stockOpen, setStockOpen] = useState(p.stock.length > 0);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const categories = useCategories();
 
   const setPrice = (v: string) => {
     const digits = v.replace(/\D/g, '').slice(0, 9);
@@ -146,7 +137,7 @@ function FilledForm({ product: p, update, onRedo }: { product: AiProduct; update
       <View className="flex-row items-center justify-between gap-2 rounded-[14px] bg-mint px-3 py-2.5">
         <View className="shrink flex-row items-center gap-2">
           <SparkleIcon size={15} color="#0B6E4F" />
-          <T className="shrink font-sans-semibold text-[13px] text-deep">Filled in by Nina AI. Check it.</T>
+          <T className="shrink font-sans-semibold text-[13px] text-deep">{aiError ?? (p.name ? 'Filled in by Nina AI. Check it.' : 'Fill in the details.')}</T>
         </View>
         <Pressable
           accessibilityRole="button"
@@ -187,11 +178,11 @@ function FilledForm({ product: p, update, onRedo }: { product: AiProduct; update
           <FieldLabel label="Category" tag="AI" />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Category: ${p.category}`}
+            accessibilityLabel={`Category: ${categories.nameOf(p.categoryId) || 'not set'}`}
             onPress={() => setCategoryModalOpen(true)}
             className={cx(inputBox, 'h-[50px] flex-row items-center justify-between px-3')}
           >
-            <T className="text-[15px]" numberOfLines={1}>{p.category || 'Select'}</T>
+            <T className="text-[15px]" numberOfLines={1}>{categories.nameOf(p.categoryId) || 'Select'}</T>
             <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
           </Pressable>
         </View>
@@ -203,16 +194,11 @@ function FilledForm({ product: p, update, onRedo }: { product: AiProduct; update
         title="Select Category"
         subtitle="Choose the best category for this item"
         placeholder="Search categories..."
-        items={STORE_CATEGORIES.map((cat) => ({
-          id: cat.id,
-          title: cat.name,
-          subtitle: cat.description,
-          badge: cat.id,
-        }))}
-        selectedId={p.category}
-        onSelect={(item) => update({ category: item.id })}
+        items={categories.items}
+        selectedId={p.categoryId}
+        onSelect={(item) => update({ categoryId: item.id })}
       />
-      <T className="-mt-1.5 text-xs text-muted">Similar items in Lagos: ₦16,000 - ₦22,000</T>
+      {p.priceRange ? <T className="-mt-1.5 text-xs text-muted">Similar items in Nigeria: {p.priceRange}</T> : null}
 
       <View className="gap-1.5">
         <FieldLabel label="Description" tag="AI" />
@@ -302,47 +288,62 @@ function FilledForm({ product: p, update, onRedo }: { product: AiProduct; update
 
 /** The photo tile row + AI states. Render inside a ScrollView. */
 export function AiProductFlow({ flow }: { flow: Flow }) {
-  const { stage, product, go, update } = flow;
+  const { stage, product, update, photos } = flow;
   return (
     <>
-      {stage === 'empty' ? (
+      {photos.photos.length === 0 ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Take a photo or choose from gallery"
-          // TODO: open camera / gallery once an image picker is added; for now simulate an upload
-          onPress={() => go('reading')}
+          onPress={photos.pick}
+          disabled={photos.uploading}
           className="h-[210px] items-center justify-center gap-2.5 rounded-[22px] border-2 border-dashed border-[#B9B1A0] bg-surface"
         >
           <View className="h-14 w-14 items-center justify-center rounded-full bg-mint">
-            <Camera size={26} color="#0B6E4F" strokeWidth={2} />
+            {photos.uploading ? <ActivityIndicator color="#0B6E4F" /> : <Camera size={26} color="#0B6E4F" strokeWidth={2} />}
           </View>
-          <T className="font-sans-bold text-base text-[#33403A]">Take a photo or choose from gallery</T>
+          <T className="font-sans-bold text-base text-[#33403A]">{photos.uploading ? 'Uploading…' : 'Take a photo or choose from gallery'}</T>
           <T className="text-[13px] text-muted">Up to 3 photos · Nina AI fills in the rest</T>
         </Pressable>
       ) : (
         <View className="flex-row gap-2">
-          {PHOTOS.map((c, k) => (
-            <View key={c} accessibilityLabel={k === 0 ? 'Cover photo' : `Photo ${k + 1}`} style={{ backgroundColor: c }} className="h-[92px] w-[92px] rounded-2xl">
+          {photos.photos.map((ph, k) => (
+            <Pressable
+              key={ph.uri}
+              accessibilityRole="button"
+              accessibilityLabel={`${k === 0 ? 'Cover photo' : `Photo ${k + 1}`}, remove`}
+              onLongPress={() => photos.remove(ph.uri)}
+              className="h-[92px] w-[92px] overflow-hidden rounded-2xl bg-sand"
+            >
+              <Image source={{ uri: ph.uri }} className="h-full w-full" resizeMode="cover" />
               {k === 0 ? (
                 <View className="absolute bottom-1.5 left-1.5 rounded-full bg-surface px-[7px] py-0.5">
                   <T className="font-sans-bold text-[10px]">Cover</T>
                 </View>
               ) : null}
-            </View>
+            </Pressable>
           ))}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Add photo"
-            // TODO: add another photo
-            className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#B9B1A0] bg-surface"
-          >
-            <T className="text-[22px] text-muted">+</T>
-          </Pressable>
+          {photos.canAddMore ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Add photo"
+              onPress={photos.pick}
+              disabled={photos.uploading}
+              className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#B9B1A0] bg-surface"
+            >
+              {photos.uploading ? <ActivityIndicator color="#0B6E4F" /> : <T className="text-[22px] text-muted">+</T>}
+            </Pressable>
+          ) : null}
         </View>
       )}
 
-      {stage === 'reading' ? <ReadingCard onSkip={() => go('filled')} /> : null}
-      {stage === 'filled' ? <FilledForm product={product} update={update} onRedo={() => go('reading')} /> : <Ghost stage={stage} />}
+      {photos.error && stage !== 'filled' ? <T className="text-sm text-danger">{photos.error}</T> : null}
+      {stage === 'reading' ? <ReadingCard onSkip={photos.skip} /> : null}
+      {stage === 'filled' ? (
+        <FilledForm product={product} update={update} onRedo={photos.reread} aiError={photos.error} />
+      ) : (
+        <Ghost stage={stage} />
+      )}
     </>
   );
 }

@@ -88,3 +88,12 @@ export async function getStore(): Promise<Store> {
   return apiGet<Store>('/store');
 }
 
+
+/** Upload the store logo (store must exist) */
+export async function uploadStoreLogo(fileUri: string): Promise<{ url: string }> {
+  const formData = new FormData();
+  const filename = fileUri.split('/').pop() || 'logo.jpg';
+  const match = /\.(\w+)$/.exec(filename);
+  formData.append('logo', { uri: fileUri, name: filename, type: match ? `image/${match[1]}` : 'image/jpeg' } as any);
+  return apiPost<{ url: string }>('/store/upload-logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+}

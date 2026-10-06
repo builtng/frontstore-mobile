@@ -1,17 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, ChevronDown, Lock } from 'lucide-react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Screen, T, cx } from '@/components/ui';
 import { Sparkle, goBack } from '@/features/seller/parts';
-import { createProduct, uploadProductImage, createAiProductDraft, getAiProductDraftStatus } from '@/api/products';
+import { createProduct } from '@/api/products';
+import { usePhotoDraft } from '@/features/products/usePhotoDraft';
 import { formatNaira } from '@/lib/format';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
-import { STORE_CATEGORIES } from '@/data/categories';
+import { useCategories } from '@/features/products/useCategories';
 
-type Stage = 'empty' | 'reading' | 'filled';
 const ghost = ['Product name', 'Price', 'Category', 'Description'];
 
 function AiBadge({ label = 'AI' }: { label?: string }) {
@@ -41,91 +40,48 @@ function DashedChip({ label, className, onPress }: { label: string; className?: 
 
 export default function AddProduct() {
   const insets = useSafeAreaInsets();
-  const [stage, setStage] = useState<Stage>('empty');
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [jobId, setJobId] = useState<string | null>(null);
 
-  const [name, setName] = useState('Àdìrẹ two-piece set');
-  const [price, setPrice] = useState('18500');
-  const [category, setCategory] = useState('Fashion');
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [desc, setDesc] = useState('Hand-dyed àdìrẹ-style two-piece set.');
-  const [colors, setColors] = useState<string[]>(['Saffron']);
-  const [sizes, setSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
-  const [stock, setStock] = useState('10');
+  const [desc, setDesc] = useState('');
+  const [colors, setColors] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [stock, setStock] = useState('');
 
+  const categories = useCategories();
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Pick photos using expo-image-picker
-  const pickImages = async () => {
-    try {
-      const res = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsMultipleSelection: true,
-        selectionLimit: 3,
-        quality: 0.8,
-      });
-
-      if (!res.canceled && res.assets && res.assets.length > 0) {
-        const uris = res.assets.map((a) => a.uri);
-        setPhotos(uris);
-        setStage('reading');
-        setErrorMsg(null);
-
-        // Upload images and kick off AI vision draft
-        const uploadPromises = uris.map((uri) => uploadProductImage(uri).catch(() => ({ url: uri })));
-        const uploaded = await Promise.all(uploadPromises);
-        const imageUrls = uploaded.map((u) => u.url);
-
-        const draftJob = await createAiProductDraft(imageUrls);
-        setJobId(draftJob.job_id);
-      }
-    } catch (err: any) {
-      // Fallback preview mode
-      setStage('reading');
-    }
-  };
-
-  // Poll status of AI Vision Draft job
-  useEffect(() => {
-    if (stage !== 'reading' || !jobId) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const status = await getAiProductDraftStatus(jobId);
-        if (status.status === 'completed') {
-          if (status.title) setName(status.title);
-          if (status.suggested_price_kobo) setPrice(String(Math.round(status.suggested_price_kobo / 100)));
-          if (status.category) setCategory(status.category);
-          if (status.description) setDesc(status.description);
-          if (status.colors && status.colors.length > 0) setColors(status.colors);
-          setStage('filled');
-          clearInterval(interval);
-        }
-      } catch {
-        // Fallback after 2.5 seconds
-        setTimeout(() => setStage('filled'), 2500);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [stage, jobId]);
+  const photoDraft = usePhotoDraft((d) => {
+    if (d.title) setName(d.title);
+    if (d.suggested_price_kobo) setPrice(String(Math.round(d.suggested_price_kobo / 100)));
+    if (d.category_id) setCategory(d.category_id);
+    if (d.description) setDesc(d.description);
+    if (d.colors?.length) setColors(d.colors);
+  });
+  const { stage, pick: pickImages } = photoDraft;
+  const photos = photoDraft.photos.map((p) => p.uri);
 
   const onPublish = async () => {
     if (stage !== 'filled' || submitting) return;
     setSubmitting(true);
     setErrorMsg(null);
     try {
-      const numericPriceKobo = Math.round(parseFloat(price.replace(/,/g, '')) * 100) || 1850000;
+      const numericPriceKobo = Math.round(parseFloat(price.replace(/,/g, '')) * 100);
+      if (!name.trim() || !numericPriceKobo) {
+        setErrorMsg('Add a name and price first.');
+        return;
+      }
       await createProduct({
         name,
         price_kobo: numericPriceKobo,
-        category,
+        category_id: category || null,
         description: desc,
-        stock_count: parseInt(stock, 10) || 10,
+        stock_count: parseInt(stock, 10) || 1,
         status: 'live',
-        images: photos,
+        images: photoDraft.imageUrls,
         sizes,
       });
       router.dismissTo('/products');
@@ -157,6 +113,8 @@ export default function AddProduct() {
             <T className="font-sans-bold text-xs text-green">Unlimited AI</T>
           </View>
         </View>
+
+        {photoDraft.error && !filled ? <T className="text-sm text-danger">{photoDraft.error}</T> : null}
 
         {errorMsg ? (
           <View className="rounded-xl bg-red-100 p-3.5 border border-red-200">
@@ -205,10 +163,9 @@ export default function AddProduct() {
             <View className="h-1.5 overflow-hidden rounded-full bg-[#33504A]">
               <View className="h-1.5 w-[64%] rounded-full bg-leaf" />
             </View>
-            <T className="text-sm text-on-dark">✓ Two-piece: top + wide-leg trousers</T>
-            <T className="text-sm text-on-dark">✓ Àdìrẹ-style print, saffron colour</T>
-            <T className="text-sm text-on-dark-2">… Checking prices in Lagos</T>
-            <Pressable accessibilityRole="button" onPress={() => setStage('filled')} className="h-[38px] justify-center self-start rounded-full border border-[rgba(246,243,236,0.3)] px-3.5">
+            <T className="text-sm text-on-dark">Looking at the item, brand and colour</T>
+            <T className="text-sm text-on-dark-2">… Checking prices in Nigeria</T>
+            <Pressable accessibilityRole="button" onPress={photoDraft.skip} className="h-[38px] justify-center self-start rounded-full border border-[rgba(246,243,236,0.3)] px-3.5">
               <T className="font-sans-semibold text-[13px] text-bg">Skip - fill in myself</T>
             </Pressable>
           </View>
@@ -232,9 +189,9 @@ export default function AddProduct() {
             <View className="flex-row items-center justify-between gap-2 rounded-[14px] bg-mint px-3 py-2.5">
               <View className="flex-1 flex-row items-center gap-2">
                 <Sparkle size={15} />
-                <T className="font-sans-semibold text-[13px] text-deep">Filled in by Nina AI. Check it.</T>
+                <T className="flex-1 font-sans-semibold text-[13px] text-deep">{photoDraft.error ?? (name ? 'Filled in by Nina AI. Check it.' : 'Fill in the details.')}</T>
               </View>
-              <Pressable accessibilityRole="button" onPress={() => setStage('reading')} hitSlop={6} className="h-8 justify-center rounded-full border border-[#9CC7B2] bg-surface px-3">
+              <Pressable accessibilityRole="button" onPress={photoDraft.reread} hitSlop={6} className="h-8 justify-center rounded-full border border-[#9CC7B2] bg-surface px-3">
                 <T className="font-sans-bold text-xs text-green">Read again</T>
               </Pressable>
             </View>
@@ -256,11 +213,11 @@ export default function AddProduct() {
                 <Label text="Category" />
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Category, ${category}`}
+                  accessibilityLabel={`Category, ${categories.nameOf(category) || 'not set'}`}
                   onPress={() => setCategoryModalOpen(true)}
                   className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-3"
                 >
-                  <T className="text-[15px]" numberOfLines={1}>{category}</T>
+                  <T className="text-[15px]" numberOfLines={1}>{categories.nameOf(category) || 'Select'}</T>
                   <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
                 </Pressable>
               </View>
@@ -305,12 +262,7 @@ export default function AddProduct() {
         title="Select Category"
         subtitle="Choose category for this product"
         placeholder="Search category..."
-        items={STORE_CATEGORIES.map((cat) => ({
-          id: cat.id,
-          title: cat.name,
-          subtitle: cat.description,
-          badge: cat.id,
-        }))}
+        items={categories.items}
         selectedId={category}
         onSelect={(item) => setCategory(item.id)}
       />

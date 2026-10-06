@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Button, Card, Screen, T, cx } from '@/components/ui';
 import { BottomBar, Heading, Progress, StepHeader } from '@/features/setup/parts';
 import { initialOf, toSlug, updateDraft, useDraft } from '@/features/setup/draft';
@@ -9,7 +10,12 @@ const SWATCHES: Array<[string, string]> = [
 const CATS = ['Fashion', 'Food', 'Beauty', 'Gadgets', 'Home', 'Other'];
 
 export default function StoreStyle() {
-  const { name, color, category } = useDraft();
+  const { name, color, category, logo_uri } = useDraft();
+
+  const pickLogo = async () => {
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.8 });
+    if (!res.canceled && res.assets?.[0]) updateDraft({ logo_uri: res.assets[0].uri });
+  };
 
   return (
     <Screen>
@@ -21,12 +27,16 @@ export default function StoreStyle() {
         <Card className="flex-row items-end gap-3 rounded-[22px] p-4">
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Add logo"
-            // TODO: pick a logo image once an image picker is added to the project
+            accessibilityLabel={logo_uri ? 'Change logo' : 'Add logo'}
+            onPress={pickLogo}
             style={{ backgroundColor: color }}
-            className="h-16 w-16 items-center justify-center rounded-[18px] border-[3px] border-surface"
+            className="h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] border-[3px] border-surface"
           >
-            <T className="font-sans-bold text-2xl text-white">{initialOf(name)}</T>
+            {logo_uri ? (
+              <Image source={{ uri: logo_uri }} className="h-full w-full" resizeMode="cover" />
+            ) : (
+              <T className="font-sans-bold text-2xl text-white">{initialOf(name)}</T>
+            )}
           </Pressable>
           <View className="shrink pb-1">
             <T numberOfLines={1} className="font-display-x text-[17px]">{name.trim() || 'Your store'}</T>

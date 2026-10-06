@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen } from '@/components/ui';
 import { AccountHeader, Group, LinkRow, SwitchRow } from '@/features/buyer/account';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/api/buyer';
+import { PrivacyActions } from '@/features/account/PrivacyActions';
 
 type NoteKey = 'orderWa' | 'orderEmail' | 'push' | 'drops' | 'prices';
 
@@ -33,8 +34,8 @@ export default function BuyerSettings() {
   useEffect(() => {
     if (prefs) {
       setNotes({
-        orderWa: prefs.order_whatsapp ?? true,
-        orderEmail: prefs.order_email ?? true,
+        orderWa: prefs.whatsapp_order_updates ?? true,
+        orderEmail: prefs.email_notifications ?? true,
         push: prefs.push_notifications ?? true,
         drops: prefs.new_drops ?? false,
         prices: prefs.price_drops ?? true,
@@ -46,8 +47,8 @@ export default function BuyerSettings() {
     mutationFn: (updated: Partial<Record<NoteKey, boolean>>) => {
       const current = { ...notes, ...updated };
       return updateNotificationPreferences({
-        order_whatsapp: current.orderWa,
-        order_email: current.orderEmail,
+        whatsapp_order_updates: current.orderWa,
+        email_notifications: current.orderEmail,
         push_notifications: current.push,
         new_drops: current.drops,
         price_drops: current.prices,
@@ -81,8 +82,7 @@ export default function BuyerSettings() {
         </Group>
 
         <Group title="Privacy">
-          <LinkRow label="Download my data" />
-          <LinkRow label="Delete my account" danger />
+          <PrivacyActions />
         </Group>
       </ScrollView>
     </Screen>

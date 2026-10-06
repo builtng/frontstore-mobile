@@ -6,7 +6,8 @@ import { ChevronRight, Sparkles, X, Check, Truck } from 'lucide-react-native';
 import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { naira } from '@/lib/format';
-import { getMe } from '@/api/auth';
+import { getMe, logout } from '@/api/auth';
+import { PrivacyActions } from '@/features/account/PrivacyActions';
 import { getStore } from '@/api/store';
 import { getWalletBalance } from '@/api/orders';
 
@@ -123,6 +124,11 @@ export default function Settings() {
           ))}
         </View>
 
+        <T className="font-sans-bold text-xs tracking-wider text-muted uppercase">Privacy</T>
+        <View className="overflow-hidden rounded-[22px] border border-line bg-surface">
+          <PrivacyActions />
+        </View>
+
         <View className="rounded-[22px] border border-line bg-surface">
           <Pressable
             accessibilityRole="link"
@@ -132,7 +138,7 @@ export default function Settings() {
             <T className="font-sans-semibold text-[15px]">Help on WhatsApp</T>
             <ChevronRight size={16} color="#8A918D" strokeWidth={2} />
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => router.replace('/welcome')} className="min-h-[52px] justify-center px-4">
+          <Pressable accessibilityRole="button" onPress={async () => { await logout(); router.replace('/welcome'); }} className="min-h-[52px] justify-center px-4">
             <T className="font-sans-bold text-[15px] text-danger">Log out</T>
           </Pressable>
         </View>

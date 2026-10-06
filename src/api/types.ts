@@ -50,13 +50,18 @@ export interface Store {
 }
 
 export interface ProductVariant {
-  id?: number;
-  product_id?: number;
+  id?: string;
+  product_id?: string;
+  size?: string | null;
+  color?: string | null;
+  price?: number | string | null;
+  inventory_quantity: number;
+}
+
+export interface ProductCategory {
+  id: string;
   name: string;
-  color?: string;
-  size?: string;
-  stock: number;
-  price_kobo?: number;
+  slug: string;
 }
 
 export interface Product {
@@ -67,7 +72,9 @@ export interface Product {
   price_kobo: number; // Price in kobo (integer)
   compare_at_price_kobo?: number | null; // Price in kobo (integer)
   description?: string | null;
+  /** Category name (admin-managed list); send category_id to change it. */
   category?: string | null;
+  category_id?: string | null;
   color?: string | null;
   stock_count: number;
   status: 'live' | 'preorder' | 'hidden';
@@ -108,6 +115,9 @@ export interface Order {
   customer_phone: string;
   customer_email?: string | null;
   shipping_address?: any;
+  delivery_address?: string | null;
+  merchant_net_amount?: number | string | null;
+  delivery_milestone?: string | null;
   city?: string | null;
   state?: string | null;
   items_summary?: string;
@@ -233,6 +243,7 @@ export interface AiProductDraftResult {
   price_min_kobo?: number;
   price_max_kobo?: number;
   category?: string;
+  category_id?: string | null;
   description?: string;
   colors?: string[];
   tags?: string[];

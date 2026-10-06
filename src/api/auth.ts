@@ -93,3 +93,28 @@ export async function logout(): Promise<void> {
     await removeToken();
   }
 }
+
+export interface DeleteAccountPreview {
+  can_delete: boolean;
+  blockers: string[];
+  /** Paid orders are kept as records; the store is hidden and personal details wiped. */
+  keeps_orders: boolean;
+  paid_orders: number;
+  stores: { id: string; name: string; username: string }[];
+}
+
+/** What deleting this account would do, and anything to settle first */
+export async function getDeleteAccountPreview(): Promise<DeleteAccountPreview> {
+  return apiGet<DeleteAccountPreview>('/user/delete-account');
+}
+
+/** Permanently delete this account, then sign out locally */
+export async function deleteAccount(): Promise<void> {
+  await apiPost('/user/delete-account', { confirm: 'DELETE' });
+  await removeToken();
+}
+
+/** Everything Frontstore holds about this account, as JSON */
+export async function exportMyData(): Promise<Record<string, unknown>> {
+  return apiPost('/user/export-data');
+}

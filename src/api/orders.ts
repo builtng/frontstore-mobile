@@ -1,37 +1,53 @@
 import { apiGet, apiPatch, apiPost } from './client';
 import { Order, OrderStatus, WalletBalance, PayoutRecord } from './types';
 
+/**
+ * The backend keeps order_status / payment_status / delivery_milestone and
+ * amounts in naira; the screens use one fulfilment stage and kobo.
+ */
+export function orderStage(o: any): OrderStatus {
+  if (o.payment_status === 'refunded' || o.order_status === 'refunded') return 'refunded';
+  if (o.order_status === 'cancelled' || o.order_status === 'expired') return 'cancelled';
+  if (o.order_status === 'completed' || o.delivery_milestone === 'delivered') return 'delivered';
+  if (o.delivery_milestone === 'shipped') return 'shipped';
+  if (o.order_status === 'processing') return 'packed';
+  return 'paid';
+}
+
+function normalizeOrder(o: any): Order {
+  const amount = Number(o.display_amount ?? o.total_amount ?? 0);
+  return { ...o, status: orderStage(o), total_kobo: Math.round(amount * 100) };
+}
+
 /** Fetch seller orders */
 export async function getSellerOrders(params?: { status?: string }): Promise<Order[]> {
   const data = await apiGet<any>('/orders', params);
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  const list = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+  return list.map(normalizeOrder);
 }
 
 /** Fetch order detail by ID */
 export async function getOrder(id: string | number): Promise<Order> {
-  return apiGet<Order>(`/orders/${id}`);
+  return normalizeOrder(await apiGet<any>(`/orders/${id}`));
 }
 
-/** Update order status (paid -> packed -> shipped -> delivered) */
+/** Move an order to the next stage (paid -> packed -> shipped -> delivered) */
 export async function updateOrderStatus(
   id: string | number,
   status: OrderStatus,
   courierInfo?: { courier_name?: string; tracking_number?: string }
 ): Promise<Order> {
-  return apiPatch<Order>(`/orders/${id}/status`, {
-    status,
-    ...courierInfo,
-  });
+  if (status === 'shipped') {
+    return normalizeOrder(await apiPatch<any>(`/orders/${id}/shipment`, courierInfo));
+  }
+  const orderStatus = status === 'packed' ? 'processing' : status === 'delivered' ? 'completed' : null;
+  if (!orderStatus) throw new Error(`Can't move an order to "${status}" from the app.`);
+  return normalizeOrder(await apiPatch<any>(`/orders/${id}/status`, { order_status: orderStatus }));
 }
 
-/** Direct merchant order refund */
-export async function refundOrder(id: string | number, amountKobo: number, reason?: string): Promise<Order> {
-  return apiPost<Order>(`/orders/${id}/refund`, {
-    amount: amountKobo,
-    reason,
-  });
+/** Merchant refunds the whole order */
+export async function refundOrder(id: string | number, reason: string): Promise<Order> {
+  return normalizeOrder(await apiPost<any>(`/orders/${id}/refund`, { reason }));
 }
 
 /** Fetch seller wallet balance */

@@ -1,19 +1,16 @@
 import { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Progress, StepHeader } from '@/features/setup/parts';
-import { AiProductFlow, useAiProduct, type AiStage } from '@/features/setup/AiProductFlow';
+import { AiProductFlow, useAiProduct } from '@/features/setup/AiProductFlow';
 import { useDraft, toSlug } from '@/features/setup/draft';
-import { completeStoreSetup } from '@/api/store';
+import { completeStoreSetup, uploadStoreLogo } from '@/api/store';
 import { createProduct } from '@/api/products';
 
-const STAGES: AiStage[] = ['empty', 'reading', 'filled'];
-
 export default function FirstProduct() {
-  const { stage } = useLocalSearchParams<{ stage?: string }>();
   const draft = useDraft();
-  const flow = useAiProduct(STAGES.includes(stage as AiStage) ? (stage as AiStage) : 'empty');
+  const flow = useAiProduct();
   const filled = flow.stage === 'filled';
   const ready = filled && flow.product.name.trim().length > 0 && flow.product.price.length > 0;
   const [submitting, setSubmitting] = useState(false);
@@ -41,16 +38,26 @@ export default function FirstProduct() {
         account_name: draft.payout?.accountName,
       });
 
+      if (draft.logo_uri) {
+        try {
+          await uploadStoreLogo(draft.logo_uri);
+        } catch (logoErr) {
+          console.warn('Store logo upload warning:', logoErr);
+        }
+      }
+
       if (withProduct && ready) {
         try {
           const priceNum = parseFloat(flow.product.price.replace(/[^\d.]/g, '')) || 0;
           await createProduct({
             name: flow.product.name.trim(),
             price_kobo: Math.round(priceNum * 100),
-            stock_count: 10,
+            stock_count: parseInt(flow.product.stock, 10) || 1,
             status: 'live',
-            category: flow.product.category || draft.category || 'Fashion',
             description: flow.product.description || '',
+            images: flow.photos.imageUrls,
+            category_id: flow.product.categoryId || null,
+            sizes: flow.product.sizes,
           });
         } catch (prodErr) {
           console.warn('First product creation warning:', prodErr);
