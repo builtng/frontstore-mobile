@@ -30,7 +30,7 @@
         "backgroundColor": "#07261C"
       },
       "package": "app.frontstore.mobile",
-      "versionCode": 10,
+      "versionCode": 11,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.CAMERA",
