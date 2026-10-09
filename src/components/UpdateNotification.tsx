@@ -1,38 +1,50 @@
-import { useEffect, useState } from 'react';
-import { View, Modal, Pressable } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { View, Modal, Pressable, AppState, AppStateStatus } from 'react-native';
 import * as Updates from 'expo-updates';
 import { T } from './ui';
 
 export function UpdateNotification() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const isCheckingRef = useRef(false);
+
+  const checkUpdates = async () => {
+    if (__DEV__ || isCheckingRef.current || updateAvailable) return;
+    try {
+      isCheckingRef.current = true;
+      const check = await Updates.checkForUpdateAsync();
+      if (check.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        setUpdateAvailable(true);
+      }
+    } catch {
+      // Silently catch network or update check errors
+    } finally {
+      isCheckingRef.current = false;
+    }
+  };
 
   useEffect(() => {
-    // Only check in non-dev environments
     if (__DEV__) return;
 
-    let isMounted = true;
-
-    async function checkUpdates() {
-      try {
-        const check = await Updates.checkForUpdateAsync();
-        if (check.isAvailable) {
-          await Updates.fetchUpdateAsync();
-          if (isMounted) {
-            setUpdateAvailable(true);
-          }
-        }
-      } catch {
-        // Silently catch network or update check errors
-      }
-    }
-
+    // Check immediately on mount
     checkUpdates();
 
+    // Check whenever app comes to foreground
+    const sub = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (nextState === 'active') {
+        checkUpdates();
+      }
+    });
+
+    // Check every 10 minutes while app is open
+    const interval = setInterval(checkUpdates, 10 * 60 * 1000);
+
     return () => {
-      isMounted = false;
+      sub.remove();
+      clearInterval(interval);
     };
-  }, []);
+  }, [updateAvailable]);
 
   const handleRestart = async () => {
     try {
