@@ -30,7 +30,7 @@
         "backgroundColor": "#07261C"
       },
       "package": "app.frontstore.mobile",
-      "versionCode": 9,
+      "versionCode": 10,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
