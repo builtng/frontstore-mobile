@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#128C7E"
+      "backgroundColor": "#07261C"
     },
     "ios": {
       "supportsTablet": true,
@@ -27,7 +27,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#128C7E"
+        "backgroundColor": "#07261C"
       },
       "package": "app.frontstore.mobile",
       "versionCode": 7,
