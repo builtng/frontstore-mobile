@@ -3,7 +3,7 @@
     "name": "FrontStore",
     "slug": "front-store",
     "newArchEnabled": true,
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ng.frontstore.mobile",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow FrontStore to access your photos to add product images.",
         "NSPhotoLibraryAddUsageDescription": "Allow FrontStore to save QR codes and images to your photo library.",
@@ -30,7 +30,7 @@
         "backgroundColor": "#07261C"
       },
       "package": "app.frontstore.mobile",
-      "versionCode": 8,
+      "versionCode": 9,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
