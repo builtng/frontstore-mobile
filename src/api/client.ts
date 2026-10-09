@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 export const API_BASE_URL = (
   process.env.EXPO_PUBLIC_API_BASE_URL ||
   process.env.EXPO_PUBLIC_API_URL ||
-  'https://api.frontstore.ng/api/v1'
+  'https://frontstore.app/api/v1'
 ).replace(/\/+$/, '');
 
 export const apiClient = axios.create({
