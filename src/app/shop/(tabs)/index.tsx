@@ -22,7 +22,7 @@ export default function BuyerHome() {
   const activeOrder = orders.find((o) => o.order_status === 'paid' || o.order_status === 'shipped');
 
   const user = me?.user;
-  const userName = user?.name ? user.name.split(' ')[0] : 'Customer';
+  const userName = user?.name ? user.name.split(' ')[0] : 'Shopper';
   const userInitials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() : 'FS';
 
   const filteredStores = liveStores.filter((s) => cat === 'For you' || s.category === cat || s.category_label === cat);
@@ -35,14 +35,22 @@ export default function BuyerHome() {
             <T className="text-[13px] text-muted">Delivering to Nigeria</T>
             <T className="font-display-x text-[26px] tracking-[-0.5px]">Hi {userName}</T>
           </View>
-          <Link href="/switch?from=shop" asChild>
-            <Pressable accessibilityRole="button" accessibilityLabel="Switch account" className="h-11 flex-row items-center gap-1.5 rounded-full border border-line bg-surface pl-1 pr-1.5">
-              <View className="h-[34px] w-[34px] items-center justify-center rounded-full bg-ink">
-                <T className="font-sans-bold text-xs text-white">{userInitials}</T>
-              </View>
-              <ChevronDown size={14} color="#4A524E" strokeWidth={2} />
-            </Pressable>
-          </Link>
+          {user ? (
+            <Link href="/switch?from=shop" asChild>
+              <Pressable accessibilityRole="button" accessibilityLabel="Switch account" className="h-11 flex-row items-center gap-1.5 rounded-full border border-line bg-surface pl-1 pr-1.5">
+                <View className="h-[34px] w-[34px] items-center justify-center rounded-full bg-ink">
+                  <T className="font-sans-bold text-xs text-white">{userInitials}</T>
+                </View>
+                <ChevronDown size={14} color="#4A524E" strokeWidth={2} />
+              </Pressable>
+            </Link>
+          ) : (
+            <Link href="/login" asChild>
+              <Pressable accessibilityRole="button" accessibilityLabel="Sign in" className="h-10 items-center justify-center rounded-full bg-ink px-4">
+                <T className="font-sans-bold text-xs text-white">Sign in</T>
+              </Pressable>
+            </Link>
+          )}
         </View>
 
         <Link href="/shop/search" asChild>

@@ -1,5 +1,6 @@
 import { apiGet, apiPost, apiPut, apiDelete, apiPatch } from './client';
 import { Store, Product, Order, Address, SavedCard, Review, NotificationPreferences } from './types';
+import { getToken } from './authStore';
 
 /** Discover public marketplace stores */
 export async function getMarketplaceStores(params?: { category?: string; search?: string }): Promise<Store[]> {
@@ -21,10 +22,16 @@ export async function getPublicStore(slug: string): Promise<{ store: Store; prod
 
 /** Fetch buyer's orders */
 export async function getBuyerOrders(): Promise<Order[]> {
-  const data = await apiGet<any>('/buyer/auth/orders');
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  const token = await getToken();
+  if (!token) return [];
+  try {
+    const data = await apiGet<any>('/buyer/auth/orders', undefined, { skipAuthRedirect: true });
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 /** Track order by ID */
@@ -39,10 +46,16 @@ export async function confirmOrderDelivery(orderId: string | number): Promise<Or
 
 /** Fetch buyer addresses */
 export async function getAddresses(): Promise<Address[]> {
-  const data = await apiGet<any>('/buyer/addresses');
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  const token = await getToken();
+  if (!token) return [];
+  try {
+    const data = await apiGet<any>('/buyer/addresses', undefined, { skipAuthRedirect: true });
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 /** Add delivery address */
@@ -67,10 +80,16 @@ export async function setDefaultAddress(id: number): Promise<void> {
 
 /** Fetch saved card tokens */
 export async function getSavedCards(): Promise<SavedCard[]> {
-  const data = await apiGet<any>('/buyer/cards');
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  const token = await getToken();
+  if (!token) return [];
+  try {
+    const data = await apiGet<any>('/buyer/cards', undefined, { skipAuthRedirect: true });
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 /** Delete saved card token */
@@ -95,10 +114,16 @@ export async function toggleFollowStore(storeId: number): Promise<{ followed: bo
 
 /** Fetch followed stores */
 export async function getFollowedStores(): Promise<Store[]> {
-  const data = await apiGet<any>('/buyer/follows');
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  const token = await getToken();
+  if (!token) return [];
+  try {
+    const data = await apiGet<any>('/buyer/follows', undefined, { skipAuthRedirect: true });
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 /** Save / unsave product */
@@ -108,18 +133,30 @@ export async function toggleSaveProduct(productId: number | string): Promise<{ s
 
 /** Fetch saved products */
 export async function getSavedProducts(): Promise<Product[]> {
-  const data = await apiGet<any>('/buyer/saved-products');
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  const token = await getToken();
+  if (!token) return [];
+  try {
+    const data = await apiGet<any>('/buyer/saved-products', undefined, { skipAuthRedirect: true });
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 /** Fetch buyer reviews */
 export async function getBuyerReviews(): Promise<Review[]> {
-  const data = await apiGet<any>('/buyer/reviews');
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  const token = await getToken();
+  if (!token) return [];
+  try {
+    const data = await apiGet<any>('/buyer/reviews', undefined, { skipAuthRedirect: true });
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 /** Submit review for delivered order */
@@ -129,7 +166,20 @@ export async function submitOrderReview(orderId: number | string, rating: number
 
 /** Fetch buyer notification preferences */
 export async function getNotificationPreferences(): Promise<NotificationPreferences> {
-  return apiGet<NotificationPreferences>('/buyer/notification-preferences');
+  const token = await getToken();
+  const fallback: NotificationPreferences = {
+    whatsapp_order_updates: false,
+    email_notifications: false,
+    push_notifications: false,
+    new_drops: false,
+    price_drops: false,
+  };
+  if (!token) return fallback;
+  try {
+    return await apiGet<NotificationPreferences>('/buyer/notification-preferences', undefined, { skipAuthRedirect: true });
+  } catch {
+    return fallback;
+  }
 }
 
 /** Update buyer notification preferences */

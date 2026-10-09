@@ -5,6 +5,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomBar, Heading } from '@/features/setup/parts';
 import { setUserMode } from '@/api/authStore';
+import { updateDraft } from '@/features/setup/draft';
 
 type Mode = 'shop' | 'sell';
 
@@ -22,7 +23,10 @@ export default function ChooseMode() {
     if (mode === 'shop') {
       router.replace('/shop');
     } else {
-      router.push({
+      if (setup_token) {
+        updateDraft({ setup_token });
+      }
+      router.replace({
         pathname: '/store-name',
         params: setup_token ? { setup_token } : undefined,
       });

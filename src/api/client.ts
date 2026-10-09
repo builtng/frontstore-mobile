@@ -42,8 +42,10 @@ apiClient.interceptors.response.use(
         url.includes('/auth/login') ||
         url.includes('/auth/signup') ||
         url.includes('/auth/verify') ||
+        url.includes('/auth/me') ||
         url.includes('/meta/') ||
-        url.includes('/public/');
+        url.includes('/public/') ||
+        url.includes('/buyer/');
 
       const shouldSkip = (error.config as any)?.skipAuthRedirect || isPublicOrVerification;
 
@@ -74,9 +76,9 @@ export class ApiError extends Error {
 }
 
 /** Wrapper helper methods matching expected API call patterns */
-export async function apiGet<T = any>(url: string, params?: Record<string, any>): Promise<T> {
+export async function apiGet<T = any>(url: string, params?: Record<string, any>, config?: any): Promise<T> {
   try {
-    const res = await apiClient.get(url, { params });
+    const res = await apiClient.get(url, { params, ...config });
     const json = res.data;
     if (json?.status === 'error') {
       throw new ApiError(json.message || 'Request failed', res.status, json);

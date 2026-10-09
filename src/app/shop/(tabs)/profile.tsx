@@ -49,8 +49,8 @@ export default function BuyerProfile() {
             <T className="font-sans-bold text-xl text-white">{initials}</T>
           </View>
           <View className="flex-1">
-            <T className="font-display text-[22px]">{user?.name ?? 'Frontstore Customer'}</T>
-            <T className="text-[13px] text-muted">{user?.email ?? user?.phone_number ?? 'Signed in'}</T>
+            <T className="font-display text-[22px]">{user?.name ?? 'Guest Shopper'}</T>
+            <T className="text-[13px] text-muted">{user?.email ?? user?.phone_number ?? 'Browse stores & track orders'}</T>
           </View>
         </View>
 
@@ -106,9 +106,15 @@ export default function BuyerProfile() {
           ))}
         </View>
 
-        <Pressable accessibilityRole="button" onPress={handleLogout} className="h-11 items-center justify-center">
-          <T className="font-sans-bold text-[15px] text-danger">Log out</T>
-        </Pressable>
+        {user ? (
+          <Pressable accessibilityRole="button" onPress={handleLogout} className="h-11 items-center justify-center">
+            <T className="font-sans-bold text-[15px] text-danger">Log out</T>
+          </Pressable>
+        ) : (
+          <Pressable accessibilityRole="button" onPress={() => router.push('/login')} className="h-12 items-center justify-center rounded-[16px] bg-ink">
+            <T className="font-sans-bold text-[15px] text-white">Log in or Sign up</T>
+          </Pressable>
+        )}
       </ScrollView>
     </Screen>
   );

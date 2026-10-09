@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from './client';
-import { setToken, removeToken, setUserMode } from './authStore';
+import { getToken, setToken, removeToken, setUserMode } from './authStore';
 import { User, Store } from './types';
 import { registerForPush, unregisterPush } from '@/lib/push';
 
@@ -84,8 +84,14 @@ export async function loginWithApple(params: {
 }
 
 /** Fetch authenticated user profile */
-export async function getMe(): Promise<{ user: User; store: Store | null }> {
-  return apiGet<{ user: User; store: Store | null }>('/auth/me');
+export async function getMe(): Promise<{ user: User; store: Store | null } | null> {
+  const token = await getToken();
+  if (!token) return null;
+  try {
+    return await apiGet<{ user: User; store: Store | null }>('/auth/me', undefined, { skipAuthRedirect: true });
+  } catch {
+    return null;
+  }
 }
 
 /** Logout user */
