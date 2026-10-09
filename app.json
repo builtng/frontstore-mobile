@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FrontStore",
-    "slug": "frontstore-mobile",
+    "slug": "front-store",
     "newArchEnabled": true,
     "version": "1.0.0",
     "orientation": "portrait",
@@ -35,7 +35,9 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_MEDIA_IMAGES"
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_MEDIA_LOCATION"
       ]
     },
     "web": {
@@ -82,15 +84,15 @@
         "origin": false
       },
       "eas": {
-        "projectId": "1f907163-c09b-41b4-86b3-51b2014700ad"
+        "projectId": "0eb8a437-3228-410d-8012-65751488977e"
       }
     },
-    "owner": "charlestechy0",
+    "owner": "built-different-team",
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/1f907163-c09b-41b4-86b3-51b2014700ad"
+      "url": "https://u.expo.dev/0eb8a437-3228-410d-8012-65751488977e"
     }
   }
 }

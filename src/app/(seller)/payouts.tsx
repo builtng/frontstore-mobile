@@ -35,7 +35,7 @@ export default function Payouts() {
   });
 
   const withdrawMutation = useMutation({
-    mutationFn: () => requestWithdrawal(wallet?.available_balance_kobo || 18640000, otpCode),
+    mutationFn: () => requestWithdrawal(availKobo, otpCode),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
       queryClient.invalidateQueries({ queryKey: ['payout-history'] });
@@ -65,11 +65,11 @@ export default function Payouts() {
     withdrawMutation.mutate();
   };
 
-  const availKobo = wallet?.available_balance_kobo ?? 18640000;
-  const pendingKobo = wallet?.pending_balance_kobo ?? 9050000;
-  const bankName = wallet?.bank_name || 'GTBank';
-  const accNo = wallet?.account_number || '••••6789';
-  const accHolder = wallet?.account_name || 'CHARLES ALOAYE';
+  const availKobo = wallet?.available_balance_kobo ?? 0;
+  const pendingKobo = wallet?.pending_balance_kobo ?? 0;
+  const bankName = wallet?.bank_name || 'Bank account';
+  const accNo = wallet?.account_number ? `••••${wallet.account_number.slice(-4)}` : 'Not linked';
+  const accHolder = wallet?.account_name || 'Payout Account';
 
   return (
     <Screen>
