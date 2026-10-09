@@ -65,3 +65,30 @@ export async function setUserMode(mode: 'seller' | 'buyer'): Promise<void> {
     console.warn('Failed to set user mode', err);
   }
 }
+
+const ONBOARDING_SEEN_KEY = 'frontstore_has_seen_onboarding';
+
+export async function hasSeenOnboarding(): Promise<boolean> {
+  try {
+    if (Platform.OS === 'web') {
+      return typeof localStorage !== 'undefined' ? localStorage.getItem(ONBOARDING_SEEN_KEY) === 'true' : false;
+    }
+    const val = await SecureStore.getItemAsync(ONBOARDING_SEEN_KEY);
+    return val === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export async function setHasSeenOnboarding(seen: boolean = true): Promise<void> {
+  try {
+    if (Platform.OS === 'web') {
+      if (typeof localStorage !== 'undefined') localStorage.setItem(ONBOARDING_SEEN_KEY, seen ? 'true' : 'false');
+      return;
+    }
+    await SecureStore.setItemAsync(ONBOARDING_SEEN_KEY, seen ? 'true' : 'false');
+  } catch (err) {
+    console.warn('Failed to set onboarding seen', err);
+  }
+}
+
