@@ -60,7 +60,7 @@ export function UpdateNotification() {
           <View className="mt-6 flex-col gap-3">
             <Pressable
               onPress={handleRestart}
-              className="h-12 w-full items-center justify-center rounded-full bg-green active:opacity-80"
+              className="h-12 w-full items-center justify-center rounded-full bg-deep active:opacity-80"
             >
               <T className="font-sans-bold text-base text-white">Restart & Apply Update</T>
             </Pressable>

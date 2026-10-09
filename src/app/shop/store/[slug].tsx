@@ -218,7 +218,7 @@ export default function BuyerStore() {
                 setOrderError(null);
                 setCheckoutOpen(true);
               }}
-              className="h-[46px] justify-center rounded-full bg-green px-5"
+              className="h-[46px] justify-center rounded-full bg-deep px-5"
             >
               <T className="font-sans-bold text-[15px] text-white">Checkout</T>
             </Pressable>
@@ -343,7 +343,7 @@ export default function BuyerStore() {
             </View>
 
             {isSubmitting ? (
-              <View className="h-[52px] items-center justify-center rounded-full bg-green">
+              <View className="h-[52px] items-center justify-center rounded-full bg-deep">
                 <ActivityIndicator color="#fff" />
               </View>
             ) : (

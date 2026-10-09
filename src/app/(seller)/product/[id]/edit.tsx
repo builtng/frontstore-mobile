@@ -202,7 +202,7 @@ export default function EditProduct() {
         >
           <Trash2 size={22} color="#A8321E" strokeWidth={2} />
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={save} disabled={submitting} className="h-[54px] flex-1 flex-row items-center justify-center gap-2 rounded-full bg-green">
+        <Pressable accessibilityRole="button" onPress={save} disabled={submitting} className="h-[54px] flex-1 flex-row items-center justify-center gap-2 rounded-full bg-deep">
           {submitting ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
           <T className="font-sans-bold text-[17px] text-white">{submitting ? 'Saving...' : 'Save changes'}</T>
         </Pressable>

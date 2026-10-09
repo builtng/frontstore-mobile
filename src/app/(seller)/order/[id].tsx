@@ -187,7 +187,7 @@ export default function OrderDetail() {
             <T className="font-sans-bold text-base text-deep">{isRefunded ? `Refunded ${formatNaira(totalAmountKobo / 100)}` : currentStatus === 'cancelled' ? 'Cancelled' : 'Delivered - nice work'}</T>
           </View>
         ) : (
-          <Pressable accessibilityRole="button" onPress={advanceStatus} disabled={statusMutation.isPending} className="h-14 flex-row items-center justify-center gap-2 rounded-full bg-green">
+          <Pressable accessibilityRole="button" onPress={advanceStatus} disabled={statusMutation.isPending} className="h-14 flex-row items-center justify-center gap-2 rounded-full bg-deep">
             {statusMutation.isPending ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
             <T className="font-sans-bold text-[17px] text-white">{NEXT_LABELS[currentStatus] || 'Update Status'}</T>
           </Pressable>
@@ -209,7 +209,7 @@ export default function OrderDetail() {
               <T className="font-sans-bold text-sm">Tracking Number (optional)</T>
               <TextInput value={trackingNumber} onChangeText={setTrackingNumber} placeholder="GIG-44810273" className="h-12 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base" />
             </View>
-            <Pressable accessibilityRole="button" onPress={confirmShipment} disabled={!courierName.trim()} className={cx('h-[54px] items-center justify-center rounded-full bg-green', !courierName.trim() && 'opacity-40')}>
+            <Pressable accessibilityRole="button" onPress={confirmShipment} disabled={!courierName.trim()} className={cx('h-[54px] items-center justify-center rounded-full bg-deep', !courierName.trim() && 'opacity-40')}>
               <T className="font-sans-bold text-base text-white">Confirm Shipped</T>
             </Pressable>
           </View>

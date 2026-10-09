@@ -269,7 +269,7 @@ export default function AddProduct() {
           accessibilityState={{ disabled: !filled || submitting }}
           disabled={!filled || submitting}
           onPress={onPublish}
-          className={cx('h-[54px] flex-row items-center justify-center gap-2 rounded-full', filled ? 'bg-green' : 'bg-[#BFD3C8]')}
+          className={cx('h-[54px] flex-row items-center justify-center gap-2 rounded-full', filled ? 'bg-deep' : 'bg-[#BFD3C8]')}
         >
           {submitting ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
           <T className="font-sans-bold text-[17px] text-white">{submitting ? 'Publishing...' : 'Save and publish'}</T>
