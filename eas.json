@@ -15,6 +15,12 @@
       "android": {
         "buildType": "apk"
       },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.frontstore.ng/api/v1",
+        "EXPO_PUBLIC_API_URL": "https://api.frontstore.ng/api/v1",
+        "EXPO_PUBLIC_STORE_DOMAIN": "frontstore.ng",
+        "EXPO_PUBLIC_APP_NAME": "FrontStore"
+      },
       "ios": {
         "image": "macos-sequoia-15.6-xcode-26.2"
       }
@@ -24,11 +30,23 @@
       "channel": "production",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.frontstore.ng/api/v1",
+        "EXPO_PUBLIC_API_URL": "https://api.frontstore.ng/api/v1",
+        "EXPO_PUBLIC_STORE_DOMAIN": "frontstore.ng",
+        "EXPO_PUBLIC_APP_NAME": "FrontStore"
       }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.frontstore.ng/api/v1",
+        "EXPO_PUBLIC_API_URL": "https://api.frontstore.ng/api/v1",
+        "EXPO_PUBLIC_STORE_DOMAIN": "frontstore.ng",
+        "EXPO_PUBLIC_APP_NAME": "FrontStore"
+      },
       "ios": {
         "image": "macos-sequoia-15.6-xcode-26.2"
       }

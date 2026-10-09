@@ -2,11 +2,11 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { getToken, removeToken } from './authStore';
 import { router } from 'expo-router';
 
-// Default API Base URL. Uses process.env.EXPO_PUBLIC_API_BASE_URL or process.env.EXPO_PUBLIC_API_URL or defaults to localhost Laravel API.
+// Default API Base URL. Uses process.env.EXPO_PUBLIC_API_BASE_URL or process.env.EXPO_PUBLIC_API_URL or defaults to production FrontStore API.
 export const API_BASE_URL = (
   process.env.EXPO_PUBLIC_API_BASE_URL ||
   process.env.EXPO_PUBLIC_API_URL ||
-  'http://localhost:8000/api/v1'
+  'https://api.frontstore.ng/api/v1'
 ).replace(/\/+$/, '');
 
 export const apiClient = axios.create({
