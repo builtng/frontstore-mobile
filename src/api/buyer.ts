@@ -2,22 +2,107 @@ import { apiGet, apiPost, apiPut, apiDelete, apiPatch } from './client';
 import { Store, Product, Order, Address, SavedCard, Review, NotificationPreferences } from './types';
 import { getToken } from './authStore';
 
+export function normalizeStore(s: any): Store {
+  if (!s) return s;
+  return {
+    ...s,
+    id: s.id,
+    store_name: s.store_name || s.name || 'Store',
+    name: s.store_name || s.name || 'Store',
+    username: s.username || s.slug || '',
+    slug: s.username || s.slug || '',
+    primary_color: s.primary_color || s.store_color || '#0B6E4F',
+    store_color: s.store_color || s.primary_color || '#0B6E4F',
+    store_bio: s.store_bio || s.bio || '',
+    category_label: s.category_label || s.category || '',
+    category: s.category_label || s.category || '',
+    location: s.location || 'Nigeria',
+    logo_url: s.logo_url || null,
+    whatsapp_phone: s.whatsapp_phone || s.phone || null,
+    is_active: s.is_active ?? true,
+  };
+}
+
+export function normalizeOrder(o: any): Order {
+  if (!o) return o;
+  return {
+    ...o,
+    store: o.store ? normalizeStore(o.store) : o.store,
+  };
+}
+
+export function normalizeProduct(p: any): Product {
+  if (!p) return p;
+  return {
+    ...p,
+    store: p.store ? normalizeStore(p.store) : p.store,
+  };
+}
+
+export interface PaginatedStoresResponse {
+  stores: Store[];
+  currentPage: number;
+  lastPage: number;
+  hasMore: boolean;
+  total: number;
+}
+
 /** Discover public marketplace stores */
-export async function getMarketplaceStores(params?: { category?: string; search?: string }): Promise<Store[]> {
+export async function getMarketplaceStores(params?: { category?: string; search?: string; filter?: string; page?: number; per_page?: number }): Promise<Store[]> {
   const data = await apiGet<any>('/public/stores', params);
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  let rawList: any[] = [];
+  if (Array.isArray(data)) rawList = data;
+  else if (data && Array.isArray(data.data)) rawList = data.data;
+  else if (data && Array.isArray(data.items)) rawList = data.items;
+  return rawList.map(normalizeStore);
+}
+
+/** Paginated store list for infinite scrolling */
+export async function getMarketplaceStoresPaginated(params?: { category?: string; search?: string; filter?: string; page?: number; per_page?: number }): Promise<PaginatedStoresResponse> {
+  const data = await apiGet<any>('/public/stores', { per_page: 15, ...params });
+  let rawList: any[] = [];
+  if (Array.isArray(data)) {
+    rawList = data;
+    return {
+      stores: rawList.map(normalizeStore),
+      currentPage: params?.page || 1,
+      lastPage: 1,
+      hasMore: false,
+      total: rawList.length,
+    };
+  }
+
+  if (data && Array.isArray(data.data)) {
+    rawList = data.data;
+  }
+
+  return {
+    stores: rawList.map(normalizeStore),
+    currentPage: data?.current_page || params?.page || 1,
+    lastPage: data?.last_page || 1,
+    hasMore: Boolean(data?.has_more),
+    total: data?.total ?? rawList.length,
+  };
 }
 
 /** Search products and stores */
 export async function searchMarketplace(query: string): Promise<{ stores: Store[]; products: Product[] }> {
-  return apiGet<{ stores: Store[]; products: Product[] }>('/public/marketplace', { q: query });
+  const res = await apiGet<any>('/public/marketplace', { q: query });
+  const payload = res?.data || res || {};
+  return {
+    stores: (payload.stores || []).map(normalizeStore),
+    products: (payload.products || []).map(normalizeProduct),
+  };
 }
 
 /** Get public store details by slug */
 export async function getPublicStore(slug: string): Promise<{ store: Store; products: Product[]; reviews: Review[] }> {
-  return apiGet<{ store: Store; products: Product[]; reviews: Review[] }>(`/public/store/${slug}`);
+  const res = await apiGet<{ store: any; products: any[]; reviews: any[] }>(`/public/store/${slug}`);
+  return {
+    store: normalizeStore(res.store || { slug, name: slug }),
+    products: (res.products || []).map(normalizeProduct),
+    reviews: res.reviews || [],
+  };
 }
 
 /** Fetch buyer's orders */
@@ -26,9 +111,17 @@ export async function getBuyerOrders(): Promise<Order[]> {
   if (!token) return [];
   try {
     const data = await apiGet<any>('/buyer/auth/orders', undefined, { skipAuthRedirect: true });
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.data)) return data.data;
-    return [];
+    let ordersList: any[] = [];
+    if (Array.isArray(data)) {
+      ordersList = data;
+    } else if (data && Array.isArray(data.data)) {
+      ordersList = data.data;
+    } else if (data && data.data && Array.isArray(data.data.orders)) {
+      ordersList = data.data.orders;
+    } else if (data && Array.isArray(data.orders)) {
+      ordersList = data.orders;
+    }
+    return ordersList.map(normalizeOrder);
   } catch {
     return [];
   }
@@ -118,9 +211,10 @@ export async function getFollowedStores(): Promise<Store[]> {
   if (!token) return [];
   try {
     const data = await apiGet<any>('/buyer/follows', undefined, { skipAuthRedirect: true });
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.data)) return data.data;
-    return [];
+    let rawList: any[] = [];
+    if (Array.isArray(data)) rawList = data;
+    else if (data && Array.isArray(data.data)) rawList = data.data;
+    return rawList.map(normalizeStore);
   } catch {
     return [];
   }
@@ -137,9 +231,10 @@ export async function getSavedProducts(): Promise<Product[]> {
   if (!token) return [];
   try {
     const data = await apiGet<any>('/buyer/saved-products', undefined, { skipAuthRedirect: true });
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.data)) return data.data;
-    return [];
+    let rawList: any[] = [];
+    if (Array.isArray(data)) rawList = data;
+    else if (data && Array.isArray(data.data)) rawList = data.data;
+    return rawList.map(normalizeProduct);
   } catch {
     return [];
   }

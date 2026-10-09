@@ -38,6 +38,20 @@ export async function verifyOtp(params: {
   return data;
 }
 
+/** Complete setup for a buyer / shopper */
+export async function completeBuyerSetup(params: {
+  setup_token: string;
+  name?: string;
+}): Promise<AuthResponse> {
+  const data: AuthResponse = await apiPost('/auth/complete-buyer-setup', params);
+  if (data.token) {
+    await setToken(data.token);
+    await setUserMode('buyer');
+    registerForPush();
+  }
+  return data;
+}
+
 /** Password-based login */
 export async function loginWithPassword(loginIdentifier: string, password: string): Promise<AuthResponse> {
   const data: AuthResponse = await apiPost('/auth/login', {

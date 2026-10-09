@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { Link, router, type Href } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronRight } from 'lucide-react-native';
@@ -17,10 +18,20 @@ const ROWS: { label: string; value: string; href?: Href }[] = [
 
 export default function BuyerProfile() {
   const queryClient = useQueryClient();
-  const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
-  const { data: orders = [] } = useQuery({ queryKey: ['buyer-orders'], queryFn: getBuyerOrders });
-  const { data: saved = [] } = useQuery({ queryKey: ['saved-products'], queryFn: getSavedProducts });
-  const { data: follows = [] } = useQuery({ queryKey: ['followed-stores'], queryFn: getFollowedStores });
+  const [refreshing, setRefreshing] = useState(false);
+  const { data: me, refetch: refetchMe } = useQuery({ queryKey: ['me'], queryFn: getMe });
+  const { data: orders = [], refetch: refetchOrders } = useQuery({ queryKey: ['buyer-orders'], queryFn: getBuyerOrders });
+  const { data: saved = [], refetch: refetchSaved } = useQuery({ queryKey: ['saved-products'], queryFn: getSavedProducts });
+  const { data: follows = [], refetch: refetchFollows } = useQuery({ queryKey: ['followed-stores'], queryFn: getFollowedStores });
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchMe(), refetchOrders(), refetchSaved(), refetchFollows()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const user = me?.user;
   const sellerStore = me?.store;
@@ -32,7 +43,7 @@ export default function BuyerProfile() {
   const handleLogout = async () => {
     await logout();
     queryClient.clear();
-    router.replace('/welcome');
+    router.replace('/login');
   };
 
   const stats = [
@@ -43,7 +54,10 @@ export default function BuyerProfile() {
 
   return (
     <Screen>
-      <ScrollView contentContainerClassName="gap-3.5 px-4 pb-6 pt-3">
+      <ScrollView
+        contentContainerClassName="gap-3.5 px-4 pb-6 pt-3"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#0B6E4F" />}
+      >
         <View className="flex-row items-center gap-3.5">
           <View className="h-[60px] w-[60px] items-center justify-center rounded-full bg-ink">
             <T className="font-sans-bold text-xl text-white">{initials}</T>

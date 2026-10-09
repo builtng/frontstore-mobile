@@ -49,7 +49,7 @@ export default function Login() {
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-        <StepHeader fallback="/welcome" />
+        <StepHeader fallback="/welcome" hideBack />
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-[18px] px-5 pt-5 pb-6">
           <Heading title="Welcome back" sub="Log in with your email or WhatsApp number." />
           {errorMsg ? (

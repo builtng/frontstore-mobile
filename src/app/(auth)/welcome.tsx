@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View, useWindowDimensions, type NativeScrollEvent, type NativeSyntheticEvent, type ViewStyle } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowRight, Check } from 'lucide-react-native';
@@ -125,6 +125,10 @@ export default function Welcome() {
   const [i, setI] = useState(0);
   const scroller = useRef<ScrollView>(null);
 
+  useEffect(() => {
+    setHasSeenOnboarding(true);
+  }, []);
+
   const go = (k: number) => {
     setI(k);
     scroller.current?.scrollTo({ x: k * width, animated: true });
@@ -142,12 +146,12 @@ export default function Welcome() {
 
   const handleLogin = async () => {
     await setHasSeenOnboarding(true);
-    router.push('/login');
+    router.replace('/login');
   };
 
   const handleSignup = async () => {
     await setHasSeenOnboarding(true);
-    router.push('/signup');
+    router.replace('/signup');
   };
 
   return (

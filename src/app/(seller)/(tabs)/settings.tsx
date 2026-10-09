@@ -142,7 +142,7 @@ export default function Settings() {
             <T className="font-sans-semibold text-[15px]">Help on WhatsApp</T>
             <ChevronRight size={16} color="#8A918D" strokeWidth={2} />
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={async () => { await logout(); router.replace('/welcome'); }} className="min-h-[52px] justify-center px-4">
+          <Pressable accessibilityRole="button" onPress={async () => { await logout(); router.replace('/login'); }} className="min-h-[52px] justify-center px-4">
             <T className="font-sans-bold text-[15px] text-danger">Log out</T>
           </Pressable>
         </View>

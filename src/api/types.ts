@@ -82,6 +82,8 @@ export interface Product {
   status: 'live' | 'preorder' | 'hidden';
   is_featured?: boolean;
   images?: string[];
+  image_url?: string | null;
+  thumbnail_url?: string | null;
   sizes?: string[];
   colors?: string[];
   variants?: ProductVariant[];
