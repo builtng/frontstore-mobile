@@ -6,7 +6,7 @@ import { Screen } from '@/components/ui';
 import { AccountHeader, Group, LinkRow, SwitchRow } from '@/features/buyer/account';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/api/buyer';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
-import { getMe } from '@/api/auth';
+import { PasswordLogin } from '@/features/account/PasswordLogin';
 
 type NoteKey = 'orderWa' | 'orderEmail' | 'push' | 'drops' | 'prices';
 
@@ -65,7 +65,6 @@ export default function BuyerSettings() {
     updateMutation.mutate({ [k]: val });
   };
 
-  const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
 
   return (
     <Screen>
@@ -80,8 +79,7 @@ export default function BuyerSettings() {
 
         <Group title="Login & security">
           <LinkRow label="Login codes" value="Email" />
-          {/* Read-only: the API has no switch for password login */}
-          <LinkRow label="Password" value={me?.user ? (me.user.has_password ? 'Set' : 'Not set') : ''} />
+          <PasswordLogin />
         </Group>
 
         <Group title="Privacy">

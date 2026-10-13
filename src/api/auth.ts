@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiPost, apiPostRaw } from './client';
+import { ApiError, apiGet, apiPatch, apiPost, apiPostRaw } from './client';
 import { getToken, setToken, removeToken, setUserMode } from './authStore';
 import { User, Store } from './types';
 import { registerForPush, unregisterPush } from '@/lib/push';
@@ -123,6 +123,20 @@ export async function checkSession(): Promise<'valid' | 'invalid' | 'offline'> {
     }
     return 'offline';
   }
+}
+
+/** Turn password login on or off (off = one-time codes only) */
+export async function setPasswordLogin(enabled: boolean): Promise<void> {
+  await apiPatch('/user/password-login', { enabled });
+}
+
+/** Set a password (or change it; current_password is needed once one exists) */
+export async function changePassword(params: {
+  new_password: string;
+  new_password_confirmation: string;
+  current_password?: string;
+}): Promise<void> {
+  await apiPost('/auth/change-password', params);
 }
 
 /** Logout user */

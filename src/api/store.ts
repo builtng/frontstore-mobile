@@ -1,5 +1,5 @@
 import { apiGet, apiPost, apiPostRaw, apiPut } from './client';
-import { Store, Bank, Country, Currency } from './types';
+import { Store, Bank, Country, Currency, StoreNotification } from './types';
 import { setToken, setUserMode } from './authStore';
 import { registerForPush } from '@/lib/push';
 
@@ -108,6 +108,17 @@ export async function getPlans(): Promise<PlanGroup[]> {
   return Array.isArray(data) ? data : [];
 }
 
+/** Paid orders, payout results and reviews from the last 30 days */
+export async function getNotifications(): Promise<{ items: StoreNotification[]; unread: number }> {
+  const data = await apiGet<any>('/store/notifications');
+  return { items: Array.isArray(data?.items) ? data.items : [], unread: Number(data?.unread ?? 0) };
+}
+
+/** Mark the feed read up to now */
+export async function markNotificationsRead(): Promise<void> {
+  await apiPost('/store/notifications/read');
+}
+
 /** Upload the store logo (store must exist) */
 export async function uploadStoreLogo(fileUri: string): Promise<{ url: string }> {
   const formData = new FormData();
@@ -125,6 +136,7 @@ export async function updateStore(payload: {
   shipping_type?: Store['shipping_type'];
   /** Naira */
   shipping_flat_fee?: number;
+  nina_enabled?: boolean;
 }): Promise<Store> {
   return apiPut<Store>('/store', payload);
 }

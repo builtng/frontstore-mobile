@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Bell, CheckCircle, Package, Share, Wallet, X } from 'lucide-react-native';
+import { Bell, CheckCircle, Package, Share, Sparkles, Star, Wallet, X } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomSheet } from '@/features/buyer/account';
 import { getMe } from '@/api/auth';
 import { getSellerOrders, getWalletBalance } from '@/api/orders';
+import { getNotifications, getStore, markNotificationsRead } from '@/api/store';
+import type { StoreNotification } from '@/api/types';
+import { NINA_LABEL, NinaSheet, ninaState } from '@/features/seller/NinaSheet';
 import { formatNaira } from '@/lib/format';
 
 function Stat({ label, value, delta, dark }: { label: string; value: string; delta: string; dark?: boolean }) {
@@ -26,9 +29,35 @@ function greeting(hour = new Date().getHours()) {
   return 'Good evening';
 }
 
+function timeAgo(iso: string | null) {
+  if (!iso) return '';
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  return days === 1 ? 'Yesterday' : `${days} days ago`;
+}
+
+const NOTICE_ICON = {
+  order: { Icon: CheckCircle, bg: 'bg-[#F3E3C7]', color: '#6B4210' },
+  payout: { Icon: Wallet, bg: 'bg-mint', color: '#0B6E4F' },
+  review: { Icon: Star, bg: 'bg-[#DCE7F3]', color: '#1F3F66' },
+} as const;
+
 export default function Home() {
   const [copied, setCopied] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [ninaOpen, setNinaOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: sellerStore } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
+  const { data: feed } = useQuery({ queryKey: ['notifications'], queryFn: getNotifications });
+  const markRead = useMutation({
+    mutationFn: markNotificationsRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
 
   const { data: authData } = useQuery({
     queryKey: ['me'],
@@ -56,24 +85,20 @@ export default function Home() {
   const toShipOrders = ordersData ? ordersData.filter((o) => o.status === 'paid' || o.status === 'packed') : [];
   const balanceKobo = walletData?.available_balance_kobo ?? 0;
 
-  // Built from what the account actually has; there is no notifications feed yet
-  const notices: Array<{ key: string; title: string; body: string; icon: 'orders' | 'payout' }> = [];
-  if (toShipOrders.length > 0) {
-    notices.push({
-      key: 'ship',
-      title: `${toShipOrders.length} ${toShipOrders.length === 1 ? 'order' : 'orders'} to ship`,
-      body: 'Pack and send these so the buyer gets them on time.',
-      icon: 'orders',
-    });
-  }
-  if (walletData?.payout_state === 'processing') {
-    notices.push({ key: 'payout', title: 'Payout on its way', body: 'Your latest withdrawal is being sent to your bank.', icon: 'payout' });
-  } else if (walletData?.payout_state === 'under_review') {
-    notices.push({ key: 'payout', title: 'Payout under review', body: 'Some order money is being checked before it can be paid out.', icon: 'payout' });
-  }
-  if (!walletData?.account_number && walletData) {
-    notices.push({ key: 'bank', title: 'Add a payout account', body: 'Add your bank account so you can withdraw your sales.', icon: 'payout' });
-  }
+  const notices: StoreNotification[] = feed?.items ?? [];
+  const unread = feed?.unread ?? 0;
+  const needsBank = !!walletData && !walletData.account_number;
+  const nina = ninaState(sellerStore);
+
+  const openNotifications = () => {
+    setNotificationsOpen(true);
+    if (unread > 0) markRead.mutate();
+  };
+  const openNotice = (n: StoreNotification) => {
+    if (!n.url) return;
+    setNotificationsOpen(false);
+    router.push(n.url as any);
+  };
 
   const copy = async () => {
     await Clipboard.setStringAsync(`https://${link}`);
@@ -93,11 +118,11 @@ export default function Home() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Notifications"
-              onPress={() => setNotificationsOpen(true)}
+              onPress={openNotifications}
               className="h-11 w-11 items-center justify-center rounded-full border border-line bg-surface"
             >
               <Bell size={20} color="#0E1A15" strokeWidth={2} />
-              {notices.length > 0 ? <View className="absolute right-[10px] top-[9px] h-2 w-2 rounded-full bg-[#C8553D]" /> : null}
+              {unread > 0 || needsBank ? <View className="absolute right-[10px] top-[9px] h-2 w-2 rounded-full bg-[#C8553D]" /> : null}
             </Pressable>
             <Link href="/switch" asChild>
               <Pressable accessibilityRole="button" accessibilityLabel="Switch account" className="h-11 w-11 items-center justify-center rounded-full bg-[#C8553D]">
@@ -138,6 +163,29 @@ export default function Home() {
           <Stat label="To Ship" value={String(toShipOrders.length)} delta={`${toShipOrders.length} pending`} dark />
           <Stat label="Available" value={formatNaira(balanceKobo / 100)} delta="Paystack" />
         </View>
+
+        {nina ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Nina AI, ${NINA_LABEL[nina]}`}
+            onPress={() => setNinaOpen(true)}
+            className="flex-row items-center gap-3 rounded-[20px] border border-line bg-surface p-4"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-xl bg-mint">
+              <Sparkles size={20} color="#0B6E4F" />
+            </View>
+            <View className="flex-1 gap-0.5">
+              <T className="font-sans-bold text-[15px]">Nina AI · {NINA_LABEL[nina]}</T>
+              <T className="text-xs text-muted-2">
+                {nina === 'on'
+                  ? 'Answering customers on your WhatsApp'
+                  : nina === 'off'
+                    ? 'Customers get your catalog link instead'
+                    : 'Upgrade to let Nina answer customers'}
+              </T>
+            </View>
+          </Pressable>
+        ) : null}
 
         <View className="flex-row items-baseline justify-between">
           <T className="font-sans-bold text-lg">To ship</T>
@@ -191,34 +239,62 @@ export default function Home() {
             </Pressable>
           </View>
           <View className="gap-2.5 pt-1">
-            {notices.length > 0 ? (
-              notices.map((n) => (
-                <View key={n.key} className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
-                  <View className={cx('h-9 w-9 items-center justify-center rounded-xl', n.icon === 'orders' ? 'bg-[#F3E3C7]' : 'bg-mint')}>
-                    {n.icon === 'orders' ? <CheckCircle size={18} color="#6B4210" /> : <Wallet size={18} color="#0B6E4F" />}
+            {needsBank ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setNotificationsOpen(false);
+                  router.push('/payout');
+                }}
+                className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5"
+              >
+                <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint">
+                  <Wallet size={18} color="#0B6E4F" />
+                </View>
+                <View className="flex-1 gap-0.5">
+                  <T className="font-sans-bold text-sm">Add a payout account</T>
+                  <T className="text-xs text-muted-2">Add your bank account so you can withdraw your sales.</T>
+                </View>
+              </Pressable>
+            ) : null}
+            {notices.map((n) => {
+              const { Icon, bg, color } = NOTICE_ICON[n.type] ?? NOTICE_ICON.order;
+              return (
+                <Pressable
+                  key={n.id}
+                  accessibilityRole={n.url ? 'button' : undefined}
+                  disabled={!n.url}
+                  onPress={() => openNotice(n)}
+                  className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5"
+                >
+                  <View className={cx('h-9 w-9 items-center justify-center rounded-xl', bg)}>
+                    <Icon size={18} color={color} />
                   </View>
                   <View className="flex-1 gap-0.5">
                     <T className="font-sans-bold text-sm">{n.title}</T>
                     <T className="text-xs text-muted-2">{n.body}</T>
+                    <T className="text-[11px] text-muted">{timeAgo(n.created_at)}</T>
                   </View>
-                </View>
-              ))
-            ) : (
+                </Pressable>
+              );
+            })}
+            {!needsBank && notices.length === 0 ? (
               <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
                 <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint">
                   <Package size={18} color="#0B6E4F" />
                 </View>
                 <View className="flex-1 gap-0.5">
                   <T className="font-sans-bold text-sm">You’re all caught up</T>
-                  <T className="text-xs text-muted-2">New orders and payouts will show here.</T>
+                  <T className="text-xs text-muted-2">New orders, payouts and reviews will show here.</T>
                 </View>
               </View>
-            )}
+            ) : null}
           </View>
           <Button title="Close" className="mt-2 h-11" onPress={() => setNotificationsOpen(false)} />
         </View>
       </BottomSheet>
 
+      <NinaSheet store={sellerStore} visible={ninaOpen} onClose={() => setNinaOpen(false)} />
     </Screen>
   );
 }

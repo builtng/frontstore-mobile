@@ -40,6 +40,10 @@ export interface Store {
   category_label?: string | null;
   is_active: boolean;
   custom_domain?: string | null;
+  /** Merchant's switch for Nina answering customers on WhatsApp */
+  nina_enabled?: boolean;
+  /** Nina needs Pro or above */
+  nina_available?: boolean;
   shipping_type?: 'customer_pays' | 'free' | 'free_above_threshold' | 'flat_rate' | 'custom' | null;
   /** Naira */
   shipping_flat_fee?: number | string | null;
@@ -158,6 +162,16 @@ export interface WalletBalance {
   /** under_review | processing | scheduled | paid */
   payout_state: string | null;
   next_payout_at: string | null;
+}
+
+export interface StoreNotification {
+  id: string;
+  type: 'order' | 'payout' | 'review';
+  title: string;
+  body: string;
+  /** App route to open, if any */
+  url: string | null;
+  created_at: string | null;
 }
 
 export interface PayoutRecord {

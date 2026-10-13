@@ -8,6 +8,8 @@ import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { naira } from '@/lib/format';
 import { getMe, logout } from '@/api/auth';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
+import { PasswordLogin } from '@/features/account/PasswordLogin';
+import { NINA_LABEL, NinaSheet, ninaState } from '@/features/seller/NinaSheet';
 import { getPlans, getStore, updateStore } from '@/api/store';
 import { getProducts } from '@/api/products';
 import { getWalletBalance } from '@/api/orders';
@@ -16,6 +18,7 @@ export default function Settings() {
   const [planOpen, setPlanOpen] = useState(false);
   const [suiteDetail, setSuiteDetail] = useState<{ title: string; desc: string } | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
+  const [ninaOpen, setNinaOpen] = useState(false);
   const [flatFee, setFlatFee] = useState('');
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -63,8 +66,9 @@ export default function Settings() {
   };
 
   // What each tool does; their settings live on the web dashboard
-  const suiteRows: Array<{ label: string; value: string; href?: Href; detail?: string }> = [
-    { label: 'Frontstore Nina AI Agent', value: '', detail: 'Answers customer questions, checks stock and takes orders on your WhatsApp business line.' },
+  const nina = ninaState(store);
+  const suiteRows: Array<{ label: string; value: string; href?: Href; detail?: string; onPress?: () => void }> = [
+    { label: 'Frontstore Nina AI Agent', value: nina ? NINA_LABEL[nina] : '', onPress: () => setNinaOpen(true) },
     { label: 'Frontstore Flow (Chat Store)', value: '', detail: 'Turns your WhatsApp catalog into a conversational checkout where customers can browse and pay.' },
     { label: 'Frontstore Pay (Escrow)', value: walletBalance, href: '/payouts' },
     { label: 'Frontstore Reach (Broadcasts)', value: '', detail: 'Send announcements, new drop alerts and promo codes to opted-in WhatsApp buyers.' },
@@ -124,6 +128,8 @@ export default function Settings() {
               onPress={() => {
                 if (r.href) {
                   router.push(r.href as Href);
+                } else if (r.onPress) {
+                  r.onPress();
                 } else {
                   setSuiteDetail({ title: r.label, desc: r.detail || '' });
                 }
@@ -157,6 +163,11 @@ export default function Settings() {
               <ChevronRight size={16} color="#8A918D" strokeWidth={2} />
             </Pressable>
           ))}
+        </View>
+
+        <T className="font-sans-bold text-xs tracking-wider text-muted uppercase">Login & security</T>
+        <View className="overflow-hidden rounded-[22px] border border-line bg-surface">
+          <PasswordLogin />
         </View>
 
         <T className="font-sans-bold text-xs tracking-wider text-muted uppercase">Privacy</T>
@@ -224,6 +235,8 @@ export default function Settings() {
           </View>
         </View>
       </BottomSheet>
+
+      <NinaSheet store={store} visible={ninaOpen} onClose={() => setNinaOpen(false)} />
 
       {/* Suite Detail BottomSheet */}
       <BottomSheet visible={!!suiteDetail} onClose={() => setSuiteDetail(null)}>
