@@ -50,6 +50,7 @@ export default function AddProduct() {
   const [colors, setColors] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [stock, setStock] = useState('');
+  const [priceRange, setPriceRange] = useState('');
 
   const categories = useCategories();
   const [submitting, setSubmitting] = useState(false);
@@ -61,6 +62,9 @@ export default function AddProduct() {
     if (d.category_id) setCategory(d.category_id);
     if (d.description) setDesc(d.description);
     if (d.colors?.length) setColors(d.colors);
+    if (d.price_min_kobo && d.price_max_kobo) {
+      setPriceRange(`${formatNaira(d.price_min_kobo / 100)} - ${formatNaira(d.price_max_kobo / 100)}`);
+    }
   });
   const { stage, pick: pickImages } = photoDraft;
   const photos = photoDraft.photos.map((p) => p.uri);
@@ -224,7 +228,7 @@ export default function AddProduct() {
                 </Pressable>
               </View>
             </View>
-            <T className="-mt-1.5 text-xs text-muted">Similar items in Lagos: ₦16,000 - ₦22,000</T>
+            {priceRange ? <T className="-mt-1.5 text-xs text-muted">Similar items in Nigeria: {priceRange}</T> : null}
 
             <View className="gap-1.5">
               <Label text="Description" />

@@ -99,15 +99,11 @@ export async function loginWithApple(params: {
   return authPost('/auth/apple', params);
 }
 
-/** Fetch authenticated user profile */
+/** Fetch authenticated user profile (null when signed out; errors surface so screens can retry) */
 export async function getMe(): Promise<{ user: User; store: Store | null } | null> {
   const token = await getToken();
   if (!token) return null;
-  try {
-    return await apiGet<{ user: User; store: Store | null }>('/auth/me', undefined, { skipAuthRedirect: true });
-  } catch {
-    return null;
-  }
+  return apiGet<{ user: User; store: Store | null }>('/auth/me', undefined, { skipAuthRedirect: true });
 }
 
 /**

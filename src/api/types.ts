@@ -40,6 +40,9 @@ export interface Store {
   category_label?: string | null;
   is_active: boolean;
   custom_domain?: string | null;
+  shipping_type?: 'customer_pays' | 'free' | 'free_above_threshold' | 'flat_rate' | 'custom' | null;
+  /** Naira */
+  shipping_flat_fee?: number | string | null;
   // Aliases & Extended Properties
   name?: string;
   slug?: string;
@@ -149,12 +152,12 @@ export interface Order {
 export interface WalletBalance {
   available_balance_kobo: number;
   pending_balance_kobo: number;
-  total_earned_kobo: number;
-  currency: string;
-  bank_name?: string | null;
-  account_number?: string | null;
-  account_name?: string | null;
-  balance?: number;
+  bank_name: string | null;
+  account_number: string | null;
+  account_name: string | null;
+  /** under_review | processing | scheduled | paid */
+  payout_state: string | null;
+  next_payout_at: string | null;
 }
 
 export interface PayoutRecord {

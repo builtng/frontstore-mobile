@@ -93,6 +93,21 @@ export async function getStore(): Promise<Store> {
 }
 
 
+export interface PlanGroup {
+  key: string;
+  name: string;
+  tagline?: string | null;
+  tier_rank: number;
+  benefits: string[];
+  plans: { key: string; billing_label: string; price: number }[];
+}
+
+/** Merchant plans as the admin has set them up */
+export async function getPlans(): Promise<PlanGroup[]> {
+  const data = await apiGet<any>('/public/plans');
+  return Array.isArray(data) ? data : [];
+}
+
 /** Upload the store logo (store must exist) */
 export async function uploadStoreLogo(fileUri: string): Promise<{ url: string }> {
   const formData = new FormData();
@@ -103,6 +118,13 @@ export async function uploadStoreLogo(fileUri: string): Promise<{ url: string }>
 }
 
 /** Update store profile (name, bio, brand colour) */
-export async function updateStore(payload: { store_name?: string; store_bio?: string | null; primary_color?: string }): Promise<Store> {
+export async function updateStore(payload: {
+  store_name?: string;
+  store_bio?: string | null;
+  primary_color?: string;
+  shipping_type?: Store['shipping_type'];
+  /** Naira */
+  shipping_flat_fee?: number;
+}): Promise<Store> {
   return apiPut<Store>('/store', payload);
 }

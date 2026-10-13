@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Switch, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Bell, CheckCircle, Package, Share, Sparkles, X } from 'lucide-react-native';
+import { Bell, CheckCircle, Package, Share, Wallet, X } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Screen, T, cx } from '@/components/ui';
@@ -20,13 +20,17 @@ function Stat({ label, value, delta, dark }: { label: string; value: string; del
   );
 }
 
+function greeting(hour = new Date().getHours()) {
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export default function Home() {
   const [copied, setCopied] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [ninaOpen, setNinaOpen] = useState(false);
-  const [ninaActive, setNinaActive] = useState(true);
 
-  const { data: authData, isLoading: authLoading } = useQuery({
+  const { data: authData } = useQuery({
     queryKey: ['me'],
     queryFn: getMe,
   });
@@ -44,12 +48,32 @@ export default function Home() {
   const user = authData?.user;
   const store = authData?.store;
   const storeName = store?.store_name || store?.name || 'My Store';
-  const username = store?.username || store?.slug || 'mystore';
-  const link = `${username}.frontstore.app`;
-  const ownerName = user?.name ? user.name.split(' ')[0] : 'Merchant';
+  const username = store?.username || store?.slug || '';
+  const link = username ? `${username}.frontstore.app` : '';
+  const ownerName = user?.name ? user.name.split(' ')[0] : '';
+  const live = store?.is_active !== false;
 
   const toShipOrders = ordersData ? ordersData.filter((o) => o.status === 'paid' || o.status === 'packed') : [];
   const balanceKobo = walletData?.available_balance_kobo ?? 0;
+
+  // Built from what the account actually has; there is no notifications feed yet
+  const notices: Array<{ key: string; title: string; body: string; icon: 'orders' | 'payout' }> = [];
+  if (toShipOrders.length > 0) {
+    notices.push({
+      key: 'ship',
+      title: `${toShipOrders.length} ${toShipOrders.length === 1 ? 'order' : 'orders'} to ship`,
+      body: 'Pack and send these so the buyer gets them on time.',
+      icon: 'orders',
+    });
+  }
+  if (walletData?.payout_state === 'processing') {
+    notices.push({ key: 'payout', title: 'Payout on its way', body: 'Your latest withdrawal is being sent to your bank.', icon: 'payout' });
+  } else if (walletData?.payout_state === 'under_review') {
+    notices.push({ key: 'payout', title: 'Payout under review', body: 'Some order money is being checked before it can be paid out.', icon: 'payout' });
+  }
+  if (!walletData?.account_number && walletData) {
+    notices.push({ key: 'bank', title: 'Add a payout account', body: 'Add your bank account so you can withdraw your sales.', icon: 'payout' });
+  }
 
   const copy = async () => {
     await Clipboard.setStringAsync(`https://${link}`);
@@ -62,8 +86,8 @@ export default function Home() {
       <ScrollView contentContainerClassName="gap-[18px] px-5 pb-8 pt-3">
         <View className="flex-row items-center justify-between">
           <View className="gap-0.5">
-            <T className="text-sm text-muted">Good morning</T>
-            <T className="font-display text-[28px] tracking-[-0.5px]">{ownerName}</T>
+            <T className="text-sm text-muted">{greeting()}</T>
+            <T className="font-display text-[28px] tracking-[-0.5px]">{ownerName || ' '}</T>
           </View>
           <View className="flex-row gap-2">
             <Pressable
@@ -73,11 +97,11 @@ export default function Home() {
               className="h-11 w-11 items-center justify-center rounded-full border border-line bg-surface"
             >
               <Bell size={20} color="#0E1A15" strokeWidth={2} />
-              <View className="absolute right-[10px] top-[9px] h-2 w-2 rounded-full bg-[#C8553D]" />
+              {notices.length > 0 ? <View className="absolute right-[10px] top-[9px] h-2 w-2 rounded-full bg-[#C8553D]" /> : null}
             </Pressable>
             <Link href="/switch" asChild>
               <Pressable accessibilityRole="button" accessibilityLabel="Switch account" className="h-11 w-11 items-center justify-center rounded-full bg-[#C8553D]">
-                <T className="font-sans-bold text-white">{ownerName.slice(0, 2).toUpperCase()}</T>
+                <T className="font-sans-bold text-white">{(ownerName || storeName).slice(0, 2).toUpperCase()}</T>
               </Pressable>
             </Link>
           </View>
@@ -86,10 +110,10 @@ export default function Home() {
         <View className="gap-4 rounded-[24px] bg-deep p-5">
           <View className="gap-0.5">
             <View className="flex-row items-center gap-1.5">
-              <View className="h-[7px] w-[7px] rounded-full bg-leaf" />
-              <T className="text-[13px] text-on-dark-2">Store is live</T>
+              <View className={cx('h-[7px] w-[7px] rounded-full', live ? 'bg-leaf' : 'bg-muted')} />
+              <T className="text-[13px] text-on-dark-2">{live ? 'Store is live' : 'Store is offline'}</T>
             </View>
-            <T className="font-sans-bold text-[17px] text-bg">{link}</T>
+            <T className="font-sans-bold text-[17px] text-bg">{link || storeName}</T>
           </View>
           <View className="flex-row gap-2">
             <Link href="/share" asChild>
@@ -101,9 +125,11 @@ export default function Home() {
             <Pressable accessibilityRole="button" onPress={copy} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
               <T className="font-sans-semibold text-sm text-bg">{copied ? 'Copied' : 'Copy'}</T>
             </Pressable>
-            <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug: username } })} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
-              <T className="font-sans-semibold text-sm text-bg">Preview</T>
-            </Pressable>
+            {username ? (
+              <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug: username } })} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
+                <T className="font-sans-semibold text-sm text-bg">Preview</T>
+              </Pressable>
+            ) : null}
           </View>
         </View>
 
@@ -112,32 +138,6 @@ export default function Home() {
           <Stat label="To Ship" value={String(toShipOrders.length)} delta={`${toShipOrders.length} pending`} dark />
           <Stat label="Available" value={formatNaira(balanceKobo / 100)} delta="Paystack" />
         </View>
-
-        {/* Nina AI Status Banner */}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Open Nina AI Agent settings"
-          onPress={() => setNinaOpen(true)}
-          className="flex-row items-center justify-between rounded-[20px] border border-teal/30 bg-deep p-4"
-        >
-          <View className="flex-1 gap-1">
-            <View className="flex-row items-center gap-2">
-              <View className={cx('h-2 w-2 rounded-full', ninaActive ? 'bg-[#64FFDA]' : 'bg-muted')} />
-              <T className="font-sans-bold text-xs tracking-wider text-[#64FFDA] uppercase">
-                {ninaActive ? 'Frontstore Nina AI Active' : 'Frontstore Nina AI Paused'}
-              </T>
-            </View>
-            <T className="font-sans-bold text-sm text-white">
-              {ninaActive ? 'Monitoring WhatsApp negotiations 24/7' : 'Nina AI is currently paused'}
-            </T>
-            <T className="text-xs text-on-dark-2">
-              {ninaActive ? 'Auto-closing deals and answering product questions' : 'Tap to enable automatic order taking'}
-            </T>
-          </View>
-          <View className="h-10 w-10 items-center justify-center rounded-xl bg-teal/10">
-            <T className="text-lg">⚡</T>
-          </View>
-        </Pressable>
 
         <View className="flex-row items-baseline justify-between">
           <T className="font-sans-bold text-lg">To ship</T>
@@ -191,87 +191,34 @@ export default function Home() {
             </Pressable>
           </View>
           <View className="gap-2.5 pt-1">
-            <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
-              <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint">
-                <Package size={18} color="#0B6E4F" />
-              </View>
-              <View className="flex-1 gap-0.5">
-                <T className="font-sans-bold text-sm">Store is Live & Active</T>
-                <T className="text-xs text-muted-2">Your storefront {link} is accepting orders and connected to WhatsApp.</T>
-                <T className="text-[11px] text-muted">Just now</T>
-              </View>
-            </View>
-
-            {toShipOrders.length > 0 ? (
+            {notices.length > 0 ? (
+              notices.map((n) => (
+                <View key={n.key} className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
+                  <View className={cx('h-9 w-9 items-center justify-center rounded-xl', n.icon === 'orders' ? 'bg-[#F3E3C7]' : 'bg-mint')}>
+                    {n.icon === 'orders' ? <CheckCircle size={18} color="#6B4210" /> : <Wallet size={18} color="#0B6E4F" />}
+                  </View>
+                  <View className="flex-1 gap-0.5">
+                    <T className="font-sans-bold text-sm">{n.title}</T>
+                    <T className="text-xs text-muted-2">{n.body}</T>
+                  </View>
+                </View>
+              ))
+            ) : (
               <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
-                <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#F3E3C7]">
-                  <CheckCircle size={18} color="#6B4210" />
+                <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint">
+                  <Package size={18} color="#0B6E4F" />
                 </View>
                 <View className="flex-1 gap-0.5">
-                  <T className="font-sans-bold text-sm">{toShipOrders.length} Orders Ready to Ship</T>
-                  <T className="text-xs text-muted-2">Orders need courier dispatch or fulfillment packaging.</T>
-                  <T className="text-[11px] text-muted">Today</T>
+                  <T className="font-sans-bold text-sm">You’re all caught up</T>
+                  <T className="text-xs text-muted-2">New orders and payouts will show here.</T>
                 </View>
               </View>
-            ) : null}
-
-            <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
-              <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#DCE7F3]">
-                <Sparkles size={18} color="#1F3F66" />
-              </View>
-              <View className="flex-1 gap-0.5">
-                <T className="font-sans-bold text-sm">Nina AI Assistant Active</T>
-                <T className="text-xs text-muted-2">Answering buyer inquiries and closing transactions on WhatsApp 24/7.</T>
-                <T className="text-[11px] text-muted">Yesterday</T>
-              </View>
-            </View>
+            )}
           </View>
           <Button title="Close" className="mt-2 h-11" onPress={() => setNotificationsOpen(false)} />
         </View>
       </BottomSheet>
 
-      {/* Nina AI Controls BottomSheet */}
-      <BottomSheet visible={ninaOpen} onClose={() => setNinaOpen(false)}>
-        <View className="gap-3 py-1">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <Sparkles size={20} color="#0B6E4F" />
-              <T className="font-display text-xl">Nina AI Assistant</T>
-            </View>
-            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setNinaOpen(false)}>
-              <X size={20} color="#0E1A15" />
-            </Pressable>
-          </View>
-          <T className="text-sm leading-[21px] text-muted-2">
-            Nina handles WhatsApp chats, checks product stock, answers customer questions, and closes orders automatically.
-          </T>
-
-          <View className="flex-row items-center justify-between rounded-2xl border border-line bg-surface p-4">
-            <View className="flex-1 pr-3">
-              <T className="font-sans-bold text-[15px]">Automated Sales Agent</T>
-              <T className="text-xs text-muted-2">Allow Nina to negotiate deals and send payment links</T>
-            </View>
-            <Switch
-              value={ninaActive}
-              onValueChange={setNinaActive}
-              trackColor={{ false: '#D9D9D9', true: '#22A35A' }}
-            />
-          </View>
-
-          <View className="rounded-2xl border border-line bg-surface p-4 gap-2">
-            <T className="font-sans-bold text-[13px] text-muted uppercase">Capabilities Active</T>
-            <T className="text-xs text-deep">✓ 24/7 WhatsApp customer reply</T>
-            <T className="text-xs text-deep">✓ Real-time inventory queries</T>
-            <T className="text-xs text-deep">✓ Instant order generation &amp; bank transfer instructions</T>
-          </View>
-
-          <Button
-            title="Save & Done"
-            className="mt-1 h-[50px]"
-            onPress={() => setNinaOpen(false)}
-          />
-        </View>
-      </BottomSheet>
     </Screen>
   );
 }

@@ -8,7 +8,8 @@ import { Avatar, ChipRow } from '@/features/buyer/parts';
 import { getMarketplaceStoresPaginated } from '@/api/buyer';
 import { Store } from '@/api/types';
 
-const FILTERS = ['All', 'Stores', 'Fashion', 'Food', 'Beauty', 'Gadgets', 'Lagos', 'Under ₦20k'];
+// Category filters only: /public/stores has no location or price filter
+const FILTERS = ['All', 'Stores', 'Fashion', 'Food', 'Beauty', 'Gadgets'];
 
 export default function BuyerSearch() {
   const params = useLocalSearchParams<{ filter?: string; q?: string }>();
@@ -30,11 +31,7 @@ export default function BuyerSearch() {
     queryFn: ({ pageParam = 1 }) =>
       getMarketplaceStoresPaginated({
         search: q.trim() || undefined,
-        filter: filter === 'All' || filter === 'Stores' ? undefined : filter,
-        category:
-          filter !== 'All' && filter !== 'Stores' && filter !== 'Under ₦20k' && filter !== 'Lagos'
-            ? filter
-            : undefined,
+        category: filter === 'All' || filter === 'Stores' ? undefined : filter,
         page: pageParam,
         per_page: 15,
       }),

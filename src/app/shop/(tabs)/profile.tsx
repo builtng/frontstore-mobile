@@ -11,7 +11,7 @@ import { getBuyerOrders, getSavedProducts, getFollowedStores } from '@/api/buyer
 const ROWS: { label: string; value: string; href?: Href }[] = [
   { label: 'Delivery addresses', value: 'Saved addresses', href: '/shop/addresses' },
   { label: 'Payment cards', value: 'Cards & tokens', href: '/shop/cards' },
-  { label: 'Notifications', value: 'WhatsApp, push', href: '/shop/settings' },
+  { label: 'Notifications', value: 'Choose channels', href: '/shop/settings' },
   { label: 'My reviews', value: 'Reviews', href: '/shop/reviews' },
   { label: 'Settings', value: 'Login, privacy', href: '/shop/settings' },
 ];

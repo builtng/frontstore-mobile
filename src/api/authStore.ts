@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { queryClient } from '@/lib/queryClient';
 
 const TOKEN_KEY = 'frontstore_auth_token';
 const USER_MODE_KEY = 'frontstore_user_mode'; // 'seller' | 'buyer'
@@ -29,6 +30,8 @@ export async function getToken(): Promise<string | null> {
 }
 
 export async function setToken(token: string): Promise<void> {
+  // Anything cached was fetched for the previous account (or none)
+  queryClient.clear();
   try {
     if (Platform.OS === 'web') {
       if (typeof localStorage !== 'undefined') localStorage.setItem(TOKEN_KEY, token);
@@ -45,6 +48,7 @@ export async function setToken(token: string): Promise<void> {
 }
 
 export async function removeToken(): Promise<void> {
+  queryClient.clear();
   try {
     if (Platform.OS === 'web') {
       if (typeof localStorage !== 'undefined') localStorage.removeItem(TOKEN_KEY);

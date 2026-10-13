@@ -35,13 +35,14 @@ function OrderCard({ o }: { o: any }) {
   const itemsText = o.items?.map((i: any) => `${i.product_name || i.product?.name || i.name || 'Item'} (x${i.quantity})`).join(', ') || '1 item';
   const storeSlug = o.store?.slug || o.store?.username;
 
-  const second: { label: string; href?: Href } = active
-    ? { label: 'Help' }
+  const storePhone = o.store?.whatsapp_phone || o.store?.phone;
+  const second: { label: string; href?: Href } | null = active
+    ? storePhone ? { label: 'Help' } : null
     : { label: 'Buy again', href: storeSlug ? `/shop/store/${storeSlug}` : '/shop' };
 
   const handleHelp = () => {
-    const rawPhone = o.store?.whatsapp_phone || o.store?.phone || '2348000000000';
-    const cleanPhone = rawPhone.replace(/\D/g, '');
+    if (!storePhone) return;
+    const cleanPhone = storePhone.replace(/\D/g, '');
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello, I need help with my Frontstore order #${orderId}`)}`;
     Linking.openURL(url).catch(() => {});
   };
@@ -52,7 +53,7 @@ function OrderCard({ o }: { o: any }) {
       onPress={active ? handleHelp : undefined}
       className="h-10 justify-center rounded-full border border-line-2 px-3.5"
     >
-      <T className="font-sans-bold text-[13px]">{second.label}</T>
+      <T className="font-sans-bold text-[13px]">{second?.label}</T>
     </Pressable>
   );
 
@@ -72,7 +73,7 @@ function OrderCard({ o }: { o: any }) {
           <T style={{ color: st.fg }} className="font-sans-bold text-xs">{st.label}</T>
         </View>
         <View className="flex-row gap-2">
-          {second.href ? <Link href={second.href} asChild>{secondBtn}</Link> : secondBtn}
+          {second?.href ? <Link href={second.href} asChild>{secondBtn}</Link> : second ? secondBtn : null}
           <Link href={`/shop/track/${orderId}`} asChild>
             <Pressable accessibilityRole="button" accessibilityLabel={`${active ? 'Track' : 'Details for'} order ${orderId}`} className="h-10 justify-center rounded-full bg-ink px-3.5">
               <T className="font-sans-bold text-[13px] text-white">{active ? 'Track' : 'Details'}</T>

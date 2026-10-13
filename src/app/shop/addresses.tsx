@@ -8,7 +8,7 @@ import { AccountHeader, BottomSheet, DashedAdd, SheetField } from '@/features/bu
 import { getAddresses, addAddress, deleteAddress, setDefaultAddress } from '@/api/buyer';
 import { Address } from '@/api/types';
 
-const EMPTY = { label: 'Home', recipient_name: 'Customer', street: '', city: '', state: 'Lagos', phone_number: '', landmark: '' };
+const EMPTY = { label: 'Home', recipient_name: '', street: '', city: '', state: '', phone_number: '', landmark: '' };
 
 export default function BuyerAddresses() {
   const insets = useSafeAreaInsets();
@@ -44,14 +44,18 @@ export default function BuyerAddresses() {
 
   const close = () => { setOpen(false); setForm(EMPTY); };
 
+  // A rider needs all of these; don't invent any of them
+  const complete = ['recipient_name', 'street', 'city', 'state', 'phone_number'].every((k) => form[k as keyof typeof EMPTY].trim());
+
   const save = () => {
+    if (!complete) return;
     addMutation.mutate({
-      label: form.label || 'Home',
-      recipient_name: form.recipient_name || 'Customer',
+      label: form.label.trim() || 'Home',
+      recipient_name: form.recipient_name.trim(),
       street: form.street.trim(),
-      city: form.city.trim() || 'Lagos',
-      state: form.state.trim() || 'Lagos',
-      phone_number: form.phone_number.trim() || '08000000000',
+      city: form.city.trim(),
+      state: form.state.trim(),
+      phone_number: form.phone_number.trim(),
       landmark: form.landmark.trim(),
       is_default: false,
     });
@@ -110,11 +114,18 @@ export default function BuyerAddresses() {
         <SheetField label="Street address" placeholder="House number and street" value={form.street} onChangeText={set('street')} autoComplete="street-address" />
         <View className="flex-row gap-2.5">
           <SheetField className="flex-1" label="City" placeholder="e.g. Yaba" value={form.city} onChangeText={set('city')} />
-          <SheetField className="flex-1" label="State" value={form.state} onChangeText={set('state')} />
+          <SheetField className="flex-1" label="State" placeholder="e.g. Lagos" value={form.state} onChangeText={set('state')} />
         </View>
         <SheetField label="Phone for the rider" placeholder="0803 000 0000" keyboardType="phone-pad" value={form.phone_number} onChangeText={set('phone_number')} />
         <SheetField label="Landmark (optional)" placeholder="Helps the rider find you" value={form.landmark} onChangeText={set('landmark')} />
-        <Button title="Save address" className="h-[54px]" textClassName="text-base" disabled={!form.street.trim()} onPress={save} />
+        {addMutation.error ? <T className="text-sm text-danger">{(addMutation.error as Error).message}</T> : null}
+        <Button
+          title={addMutation.isPending ? 'Saving...' : 'Save address'}
+          className="h-[54px]"
+          textClassName="text-base"
+          disabled={!complete || addMutation.isPending}
+          onPress={save}
+        />
       </BottomSheet>
     </Screen>
   );

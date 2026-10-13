@@ -2,7 +2,7 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import { apiClient } from '../client';
 import { checkSession, completeBuyerSetup, loginWithPassword, verifyOtp } from '../auth';
 import { completeStoreSetup } from '../store';
-import { getPayoutHistory } from '../orders';
+import { getPayoutHistory, getWalletBalance } from '../orders';
 import * as authStore from '../authStore';
 
 jest.mock('../authStore', () => ({
@@ -106,6 +106,32 @@ describe('checkSession', () => {
     respond('get', { status: 'success', data: { user: { id: 1 }, store: null } });
 
     await expect(checkSession()).resolves.toBe('valid');
+  });
+});
+
+describe('getWalletBalance', () => {
+  it('reads the wallet in naira and the bank_* fields the API sends', async () => {
+    respond('get', {
+      status: 'success',
+      data: {
+        withdrawable_balance: 12500.5,
+        pending_balance: 3000,
+        bank_name: 'GTBank',
+        bank_account_number: '0123456789',
+        bank_account_name: 'ADA OBI',
+        payout_status: { state: 'scheduled', next_payout_at: '2026-10-14T09:00:00Z' },
+      },
+    });
+
+    await expect(getWalletBalance()).resolves.toEqual({
+      available_balance_kobo: 1250050,
+      pending_balance_kobo: 300000,
+      bank_name: 'GTBank',
+      account_number: '0123456789',
+      account_name: 'ADA OBI',
+      payout_state: 'scheduled',
+      next_payout_at: '2026-10-14T09:00:00Z',
+    });
   });
 });
 

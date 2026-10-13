@@ -51,9 +51,18 @@ export async function refundOrder(id: string | number, reason: string): Promise<
   return normalizeOrder(await apiPost<any>(`/orders/${id}/refund`, { reason }));
 }
 
-/** Fetch seller wallet balance */
+/** Fetch seller wallet balance (the backend sends naira and bank_* names) */
 export async function getWalletBalance(): Promise<WalletBalance> {
-  return apiGet<WalletBalance>('/store/wallet');
+  const w = await apiGet<any>('/store/wallet');
+  return {
+    available_balance_kobo: Math.round(Number(w?.withdrawable_balance ?? 0) * 100),
+    pending_balance_kobo: Math.round(Number(w?.pending_balance ?? 0) * 100),
+    bank_name: w?.bank_name ?? null,
+    account_number: w?.bank_account_number ?? null,
+    account_name: w?.bank_account_name ?? null,
+    payout_state: w?.payout_status?.state ?? null,
+    next_payout_at: w?.payout_status?.next_payout_at ?? null,
+  };
 }
 
 /** Fetch seller payout history (the wallet endpoint lists the store's withdrawals, amounts in naira) */

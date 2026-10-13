@@ -374,10 +374,10 @@ export default function BuyerStore() {
                     <T className="font-sans-bold text-sm">{r.customer_name || r.buyer_name || 'Verified Buyer'}</T>
                     <View className="flex-row items-center gap-0.5">
                       <Star size={14} color="#E9A23B" fill="#E9A23B" />
-                      <T className="font-sans-bold text-xs">{r.rating ?? 5}.0</T>
+                      <T className="font-sans-bold text-xs">{r.rating != null ? Number(r.rating).toFixed(1) : '–'}</T>
                     </View>
                   </View>
-                  <T className="text-[13px] text-muted-2">{r.comment || 'Great product and quick delivery!'}</T>
+                  {r.comment ? <T className="text-[13px] text-muted-2">{r.comment}</T> : null}
                   {r.created_at ? (
                     <T className="text-[11px] text-muted">{new Date(r.created_at).toLocaleDateString()}</T>
                   ) : null}

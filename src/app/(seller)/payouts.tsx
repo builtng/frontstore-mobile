@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen, T, cx } from '@/components/ui';
 import { BackHeader, Grip, Tag } from '@/features/seller/parts';
 import { getWalletBalance, getPayoutHistory, requestWithdrawal, sendWithdrawalOtp } from '@/api/orders';
+import { format } from 'date-fns';
 import { formatNaira } from '@/lib/format';
 
 const payoutStyle: Record<string, [string, string, string]> = {
@@ -67,9 +68,14 @@ export default function Payouts() {
 
   const availKobo = wallet?.available_balance_kobo ?? 0;
   const pendingKobo = wallet?.pending_balance_kobo ?? 0;
-  const bankName = wallet?.bank_name || 'Bank account';
-  const accNo = wallet?.account_number ? `••••${wallet.account_number.slice(-4)}` : 'Not linked';
-  const accHolder = wallet?.account_name || 'Payout Account';
+  const bankName = wallet?.bank_name || '';
+  const accNo = wallet?.account_number ? `••••${wallet.account_number.slice(-4)}` : '';
+  const accHolder = wallet?.account_name || (wallet?.account_number ? '' : 'No payout account yet');
+  const payoutNote =
+    wallet?.payout_state === 'processing' ? 'Payout on its way'
+    : wallet?.payout_state === 'under_review' ? 'Some payments under review'
+    : wallet?.next_payout_at ? `Released ${format(new Date(wallet.next_payout_at), 'd MMM, h:mma')}`
+    : null;
 
   return (
     <Screen>
@@ -78,7 +84,7 @@ export default function Payouts() {
         <View className="gap-2 rounded-[24px] bg-ink p-[22px]">
           <T className="text-[13px] text-on-dark-2">Available to pay out</T>
           <T className="font-display-x text-[38px] tracking-[-0.8px] text-bg">{formatNaira(availKobo / 100)}</T>
-          <T className="text-[13px] text-on-dark">Pending {formatNaira(pendingKobo / 100)} · Auto payout next 10:00am</T>
+          <T className="text-[13px] text-on-dark">Pending {formatNaira(pendingKobo / 100)}{payoutNote ? ` · ${payoutNote}` : ''}</T>
           <Pressable accessibilityRole="button" onPress={handlePayOutNow} className="mt-2 h-12 items-center justify-center rounded-full bg-gold">
             <T className="font-sans-bold text-base text-[#2A1B05]">Pay out now</T>
           </Pressable>
@@ -89,8 +95,8 @@ export default function Payouts() {
             <Landmark size={20} color="#0B6E4F" strokeWidth={2} />
           </View>
           <View className="flex-1">
-            <T className="font-sans-bold text-[15px]">{accHolder}</T>
-            <T className="text-[13px] text-muted-2">{bankName} · {accNo}</T>
+            {accHolder ? <T className="font-sans-bold text-[15px]">{accHolder}</T> : null}
+            {accNo ? <T className="text-[13px] text-muted-2">{[bankName, accNo].filter(Boolean).join(' · ')}</T> : null}
           </View>
           <Link href="/payout" asChild>
             <Pressable accessibilityRole="button" accessibilityLabel="Change payout account" hitSlop={4} className="h-10 justify-center rounded-full border border-line-2 px-3">

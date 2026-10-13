@@ -172,10 +172,9 @@ export default function OrderDetail() {
           {customerPhone ? <View className="flex-row gap-2">
             <ContactButton label="Call" onPress={() => Linking.openURL(`tel:${customerPhone}`)} />
             <ContactButton label="WhatsApp" onPress={() => Linking.openURL(`https://wa.me/${customerPhone.replace(/\D/g, '')}`)} />
-            <ContactButton
-              label="Maps"
-              onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(address || 'Lagos')}`)}
-            />
+            {address ? (
+              <ContactButton label="Maps" onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(address)}`)} />
+            ) : null}
           </View> : null}
         </View>
       </ScrollView>

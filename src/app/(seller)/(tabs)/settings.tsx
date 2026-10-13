@@ -1,48 +1,80 @@
 import { useState } from 'react';
 import { Image, Linking, Pressable, ScrollView, View } from 'react-native';
 import { router, type Href } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { ChevronRight, Sparkles, X, Check, Truck } from 'lucide-react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ChevronRight, Sparkles, X, Truck } from 'lucide-react-native';
 import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { naira } from '@/lib/format';
 import { getMe, logout } from '@/api/auth';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
-import { getStore } from '@/api/store';
+import { getPlans, getStore, updateStore } from '@/api/store';
+import { getProducts } from '@/api/products';
 import { getWalletBalance } from '@/api/orders';
 
 export default function Settings() {
   const [planOpen, setPlanOpen] = useState(false);
-  const [suiteDetail, setSuiteDetail] = useState<{ title: string; desc: string; tag?: string } | null>(null);
+  const [suiteDetail, setSuiteDetail] = useState<{ title: string; desc: string } | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
-  const [flatFee, setFlatFee] = useState('2500');
+  const [flatFee, setFlatFee] = useState('');
+  const [deliveryError, setDeliveryError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
   const { data: store } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
   const { data: wallet } = useQuery({ queryKey: ['seller-wallet'], queryFn: getWalletBalance });
+  const { data: products } = useQuery({ queryKey: ['products'], queryFn: () => getProducts() });
+  const { data: planGroups = [] } = useQuery({ queryKey: ['plans'], queryFn: getPlans, staleTime: 1000 * 60 * 60 });
+
+  const saveDelivery = useMutation({
+    mutationFn: (fee: number) => updateStore({ shipping_type: fee > 0 ? 'flat_rate' : 'free', shipping_flat_fee: fee }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seller-store'] });
+      setDeliveryOpen(false);
+    },
+    onError: (err: any) => setDeliveryError(err.message || 'Could not save your delivery fee.'),
+  });
 
   const storeName = store?.store_name || store?.name || me?.store?.store_name || 'My Store';
-  const storeSlug = store?.username || store?.slug || me?.store?.username || 'my-store';
+  const storeSlug = store?.username || store?.slug || me?.store?.username || '';
   const storeInitial = storeName[0] || 'S';
   const storeColor = store?.primary_color || '#0F172A';
-  const productsCount = store?.products_count ?? 0;
+  const productsCount = products?.length;
 
-  const walletBalance = wallet ? naira(wallet.balance) : '₦0';
-  const userName = me?.user?.name || 'Seller';
-  const userPhone = me?.user?.phone || 'Not set';
+  const walletBalance = wallet ? naira(wallet.available_balance_kobo / 100) : '';
+  const userName = me?.user?.name || '';
+  const userPhone = store?.whatsapp_phone || me?.user?.phone_number || 'Not set';
 
-  const suiteRows: Array<{ label: string; value: string; tag?: string; href?: Href; detail?: string }> = [
-    { label: 'Frontstore Nina AI Agent', value: 'Active', tag: 'AI 24/7', detail: 'Automates customer responses, inventory questions, and sales order closing 24 hours a day on your WhatsApp business line.' },
-    { label: 'Frontstore Flow (Chat Store)', value: 'WhatsApp Connected', detail: 'Turns your WhatsApp catalog into an interactive conversational checkout where customers can browse and pay.' },
+  // The account's plan key (e.g. "pro_monthly") belongs to one admin-defined plan group
+  const planKey = me?.user?.plan;
+  const currentGroup = planGroups.find((g) => g.plans.some((p) => p.key === planKey));
+  const planName = currentGroup?.name ?? 'Free';
+
+  const savedFee = Number(store?.shipping_flat_fee ?? 0);
+  const deliveryValue =
+    store?.shipping_type === 'flat_rate' ? naira(savedFee)
+    : store?.shipping_type === 'free' ? 'Free'
+    : store?.shipping_type ? 'Set on web'
+    : 'Not set';
+  const openDelivery = () => {
+    setFlatFee(store?.shipping_type === 'flat_rate' && savedFee ? String(savedFee) : '');
+    setDeliveryError(null);
+    setDeliveryOpen(true);
+  };
+
+  // What each tool does; their settings live on the web dashboard
+  const suiteRows: Array<{ label: string; value: string; href?: Href; detail?: string }> = [
+    { label: 'Frontstore Nina AI Agent', value: '', detail: 'Answers customer questions, checks stock and takes orders on your WhatsApp business line.' },
+    { label: 'Frontstore Flow (Chat Store)', value: '', detail: 'Turns your WhatsApp catalog into a conversational checkout where customers can browse and pay.' },
     { label: 'Frontstore Pay (Escrow)', value: walletBalance, href: '/payouts' },
-    { label: 'Frontstore Reach (Broadcasts)', value: 'Active', detail: 'Broadcast announcements, new drop alerts, and promo codes directly to opted-in WhatsApp buyers.' },
-    { label: 'Frontstore Pulse (Analytics)', value: 'Weekly Ready', detail: 'Real-time sales velocity, top customer retention rates, and WhatsApp traffic metrics.' },
+    { label: 'Frontstore Reach (Broadcasts)', value: '', detail: 'Send announcements, new drop alerts and promo codes to opted-in WhatsApp buyers.' },
+    { label: 'Frontstore Pulse (Analytics)', value: '', detail: 'Sales, repeat customers and traffic for your store.' },
   ];
 
   const generalRows: Array<{ label: string; value: string; href?: Href; onPress?: () => void }> = [
     { label: 'Switch to Buyer view', value: userName, href: '/switch' },
     { label: 'WhatsApp Business Number', value: userPhone },
-    { label: 'Delivery & Shipping Zones', value: 'Default Zone', onPress: () => setDeliveryOpen(true) },
+    { label: 'Delivery fee', value: deliveryValue, onPress: openDelivery },
     { label: 'Store Theme & Branding', value: storeColor, href: '/store-edit' },
     { label: 'Share Store & QR Code', value: '', href: '/share' },
   ];
@@ -62,7 +94,7 @@ export default function Settings() {
           </View>
           <View className="flex-1 gap-0.5">
             <T className="font-sans-bold text-[17px]">{storeName}</T>
-            <T className="text-[13px] text-muted">{storeSlug}.frontstore.app</T>
+            {storeSlug ? <T className="text-[13px] text-muted">{storeSlug}.frontstore.app</T> : null}
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel="Edit store" hitSlop={4} onPress={() => router.push('/store-edit')} className="h-10 justify-center rounded-full border border-line-2 px-3.5">
             <T className="font-sans-bold text-[13px]">Edit</T>
@@ -71,8 +103,12 @@ export default function Settings() {
 
         <View className="flex-row items-center justify-between rounded-[22px] bg-deep p-4">
           <View className="gap-0.5">
-            <T className="font-sans-bold text-bg">Starter plan</T>
-            <T className="text-[13px] text-on-dark">{productsCount} products created</T>
+            <T className="font-sans-bold text-bg">{planName} plan</T>
+            {productsCount !== undefined ? (
+              <T className="text-[13px] text-on-dark">
+                {productsCount} {productsCount === 1 ? 'product' : 'products'}
+              </T>
+            ) : null}
           </View>
           <Pressable accessibilityRole="button" hitSlop={4} onPress={() => setPlanOpen(true)} className="h-10 justify-center rounded-full bg-saffron px-3.5">
             <T className="font-sans-bold text-[13px] text-deep">Change Plan</T>
@@ -89,17 +125,12 @@ export default function Settings() {
                 if (r.href) {
                   router.push(r.href as Href);
                 } else {
-                  setSuiteDetail({ title: r.label, desc: r.detail || '', tag: r.tag });
+                  setSuiteDetail({ title: r.label, desc: r.detail || '' });
                 }
               }}
               className={cx('min-h-[52px] flex-row items-center gap-3.5 px-4', i < suiteRows.length - 1 && 'border-b border-[#F0ECE3]')}
             >
               <T className="flex-1 font-sans-semibold text-[15px]">{r.label}</T>
-              {r.tag ? (
-                <View className="rounded-full bg-teal/15 px-2 py-0.5">
-                  <T className="font-sans-bold text-[11px] text-green">{r.tag}</T>
-                </View>
-              ) : null}
               {r.value ? <T className="text-sm text-muted">{r.value}</T> : null}
               <ChevronRight size={16} color="#8A918D" strokeWidth={2} />
             </Pressable>
@@ -136,10 +167,10 @@ export default function Settings() {
         <View className="rounded-[22px] border border-line bg-surface">
           <Pressable
             accessibilityRole="link"
-            onPress={() => Linking.openURL('https://wa.me/')}
+            onPress={() => Linking.openURL('mailto:hello@frontstore.ng?subject=Help%20with%20my%20store')}
             className="min-h-[52px] flex-row items-center justify-between border-b border-[#F0ECE3] px-4"
           >
-            <T className="font-sans-semibold text-[15px]">Help on WhatsApp</T>
+            <T className="font-sans-semibold text-[15px]">Email support</T>
             <ChevronRight size={16} color="#8A918D" strokeWidth={2} />
           </Pressable>
           <Pressable accessibilityRole="button" onPress={async () => { await logout(); router.replace('/login'); }} className="min-h-[52px] justify-center px-4">
@@ -158,30 +189,38 @@ export default function Settings() {
             </Pressable>
           </View>
           <View className="gap-2.5">
-            <View className="rounded-2xl border border-line bg-surface p-4 gap-1">
-              <View className="flex-row items-center justify-between">
-                <T className="font-sans-bold text-base">Starter (Active)</T>
-                <T className="font-sans-bold text-sm text-muted">Free</T>
-              </View>
-              <T className="text-xs text-muted-2">Up to 15 products · 1 WhatsApp line · Standard payouts</T>
-            </View>
-
-            <View className="rounded-2xl border border-green bg-mint p-4 gap-2">
-              <View className="flex-row items-center justify-between">
-                <T className="font-sans-bold text-base text-deep">Growth Plan</T>
-                <T className="font-sans-bold text-sm text-green">₦4,500/mo</T>
-              </View>
-              <T className="text-xs text-deep">Unlimited products · 24/7 Nina AI sales assistant · Next-day escrow payouts · Custom domain</T>
-              <Button title="Upgrade to Growth" className="h-10 mt-1" onPress={() => setPlanOpen(false)} />
-            </View>
-
-            <View className="rounded-2xl border border-line bg-surface p-4 gap-1">
-              <View className="flex-row items-center justify-between">
-                <T className="font-sans-bold text-base">Scale Plan</T>
-                <T className="font-sans-bold text-sm text-ink">₦12,000/mo</T>
-              </View>
-              <T className="text-xs text-muted-2">Multiple team logins · Broadcast campaigns · Dedicated account manager</T>
-            </View>
+            {planGroups.length > 0 ? (
+              planGroups.map((g) => {
+                const current = g.key === currentGroup?.key || (!currentGroup && g.plans.every((p) => !p.price));
+                const cheapest = g.plans.reduce<{ price: number; billing_label: string } | null>(
+                  (min, p) => (min === null || p.price < min.price ? p : min),
+                  null,
+                );
+                return (
+                  <View key={g.key} className={cx('gap-1 rounded-2xl border p-4', current ? 'border-green bg-mint' : 'border-line bg-surface')}>
+                    <View className="flex-row items-center justify-between">
+                      <T className="font-sans-bold text-base">{g.name}{current ? ' (current)' : ''}</T>
+                      {cheapest ? (
+                        <T className="font-sans-bold text-sm text-green">
+                          {cheapest.price ? `${naira(cheapest.price)} ${cheapest.billing_label}` : 'Free'}
+                        </T>
+                      ) : null}
+                    </View>
+                    {g.benefits.length ? <T className="text-xs text-muted-2">{g.benefits.join(' · ')}</T> : null}
+                  </View>
+                );
+              })
+            ) : (
+              <T className="text-sm text-muted-2">Plans couldn’t be loaded. See them on frontstore.app.</T>
+            )}
+            <Button
+              title="Change plan on the web"
+              className="mt-1 h-11"
+              onPress={() => {
+                setPlanOpen(false);
+                Linking.openURL('https://frontstore.app/pricing');
+              }}
+            />
           </View>
         </View>
       </BottomSheet>
@@ -200,11 +239,15 @@ export default function Settings() {
               </Pressable>
             </View>
             <T className="text-[15px] leading-[22px] text-muted-2">{suiteDetail.desc}</T>
-            <View className="rounded-2xl bg-surface p-4 border border-line">
-              <T className="font-sans-bold text-sm text-green">Status: Live &amp; Configured</T>
-              <T className="text-xs text-muted-2 mt-0.5">Automations run in the background for your storefront.</T>
-            </View>
-            <Button title="Done" className="h-11" onPress={() => setSuiteDetail(null)} />
+            <T className="text-sm text-muted-2">Set this up and check its status in your dashboard on frontstore.app.</T>
+            <Button
+              title="Open dashboard"
+              className="h-11"
+              onPress={() => {
+                setSuiteDetail(null);
+                Linking.openURL('https://frontstore.app/dashboard');
+              }}
+            />
           </View>
         ) : null}
       </BottomSheet>
@@ -221,20 +264,26 @@ export default function Settings() {
               <X size={20} color="#0E1A15" />
             </Pressable>
           </View>
-          <T className="text-sm text-muted-2">Set your standard delivery fee charged to buyers at checkout.</T>
+          <T className="text-sm text-muted-2">
+            One delivery fee added to every order at checkout. Leave it at 0 for free delivery. Zones and other rules are set on the web dashboard.
+          </T>
+          {deliveryError ? <T className="text-sm text-danger">{deliveryError}</T> : null}
           <SheetField
-            label="Standard Flat Rate (₦)"
+            label="Delivery fee (₦)"
             keyboardType="numeric"
             value={flatFee}
             onChangeText={setFlatFee}
-            placeholder="2500"
+            placeholder="0"
           />
-          <View className="rounded-2xl border border-line bg-surface p-3.5 gap-1">
-            <T className="font-sans-bold text-xs text-muted uppercase">Active Zones</T>
-            <T className="text-xs text-deep">Lagos Mainland &amp; Island: {naira(Number(flatFee) || 2500)}</T>
-            <T className="text-xs text-deep">Interstate Dispatch: Standard Logistics Rider</T>
-          </View>
-          <Button title="Save Delivery Fees" className="h-[50px]" onPress={() => setDeliveryOpen(false)} />
+          <Button
+            title={saveDelivery.isPending ? 'Saving...' : 'Save delivery fee'}
+            className="h-[50px]"
+            disabled={saveDelivery.isPending}
+            onPress={() => {
+              setDeliveryError(null);
+              saveDelivery.mutate(Math.max(0, Number(flatFee.replace(/[^\d.]/g, '')) || 0));
+            }}
+          />
         </View>
       </BottomSheet>
     </Screen>
