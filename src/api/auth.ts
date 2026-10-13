@@ -117,7 +117,8 @@ export async function checkSession(): Promise<'valid' | 'invalid' | 'offline'> {
     await apiGet('/auth/me', undefined, { skipAuthRedirect: true, timeout: 10000 });
     return 'valid';
   } catch (err) {
-    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+    // Only a 401 means the token is gone; anything else keeps the user signed in
+    if (err instanceof ApiError && err.status === 401) {
       await removeToken();
       return 'invalid';
     }

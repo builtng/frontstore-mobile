@@ -47,20 +47,45 @@ apiClient.interceptors.response.use(
         url.includes('/public/');
 
       const shouldSkip = (error.config as any)?.skipAuthRedirect || isPublicOrVerification;
+      const sentToken = String(error.config?.headers?.Authorization ?? '').replace(/^Bearer /, '');
 
-      if (!shouldSkip) {
-        await removeToken();
-        // Navigate to login if unauthenticated
-        try {
-          router.replace('/login');
-        } catch (navErr) {
-          console.warn('Redirect to login failed', navErr);
+      // One endpoint saying 401 isn't proof the session is gone; only sign out
+      // if the server rejects this token on /auth/me as well
+      if (!shouldSkip && sentToken && (await sessionRejected(sentToken))) {
+        // Skip if the user signed in again while this request was in flight
+        if ((await getToken()) === sentToken) {
+          await removeToken();
+          try {
+            router.replace('/login');
+          } catch (navErr) {
+            console.warn('Redirect to login failed', navErr);
+          }
         }
       }
     }
     return Promise.reject(error);
   }
 );
+
+// Several screens can get a 401 at once; check each token with the server only once
+const sessionChecks = new Map<string, Promise<boolean>>();
+
+function sessionRejected(token: string): Promise<boolean> {
+  let check = sessionChecks.get(token);
+  if (!check) {
+    check = axios
+      .get(`${API_BASE_URL}/auth/me`, {
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+        timeout: 10000,
+      })
+      .then(() => false)
+      // Offline or a server error: keep the user signed in
+      .catch((err: AxiosError) => err.response?.status === 401)
+      .finally(() => setTimeout(() => sessionChecks.delete(token), 30000));
+    sessionChecks.set(token, check);
+  }
+  return check;
+}
 
 export class ApiError extends Error {
   status: number;
