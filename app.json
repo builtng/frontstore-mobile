@@ -36,7 +36,9 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_IMAGES"
+      ],
+      "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.ACCESS_MEDIA_LOCATION"
       ]
@@ -53,7 +55,8 @@
         "expo-image-picker",
         {
           "photosPermission": "Allow FrontStore to access your photos.",
-          "cameraPermission": "Allow FrontStore to use your camera."
+          "cameraPermission": "Allow FrontStore to use your camera.",
+          "microphonePermission": false
         }
       ],
       [
@@ -61,7 +64,7 @@
         {
           "photosPermission": "Allow FrontStore to save QR codes to your photo library.",
           "savePhotosPermission": "Allow FrontStore to save QR codes to your photo library.",
-          "isAccessMediaLocationEnabled": true
+          "isAccessMediaLocationEnabled": false
         }
       ],
       "expo-video",

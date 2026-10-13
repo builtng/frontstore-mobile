@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from './client';
+import { ApiError, apiGet, apiPost, apiPostRaw } from './client';
 import { getToken, setToken, removeToken, setUserMode } from './authStore';
 import { User, Store } from './types';
 import { registerForPush, unregisterPush } from '@/lib/push';
@@ -12,14 +12,44 @@ export interface AuthResponse {
   message?: string;
 }
 
+/**
+ * POST to an endpoint that may issue a Sanctum token. Laravel returns
+ * `{ token, is_new_user, setup_token, data: { user, store } }`, so flatten it,
+ * save the token and set the mode to match the account.
+ */
+async function authPost(url: string, body?: any): Promise<AuthResponse> {
+  const json = await apiPostRaw<any>(url, body);
+  const res: AuthResponse = { ...json, ...(json?.data ?? {}) };
+  res.token = json?.token ?? json?.data?.token;
+
+  if (res.token) {
+    await setToken(res.token);
+    if (res.user) await setUserMode(res.store ? 'seller' : 'buyer');
+    registerForPush();
+  }
+  return res;
+}
+
 /** Request an email OTP verification code */
 export async function sendEmailOtp(email: string, name?: string): Promise<any> {
   return apiPost('/auth/send-email-otp', { email, name });
 }
 
-/** Request a WhatsApp OTP verification code */
-export async function sendWhatsAppOtp(phoneNumber: string): Promise<any> {
-  return apiPost('/auth/send-otp', { phone_number: phoneNumber });
+export interface PhoneOtpResponse {
+  /** No email on file for this number; ask for one and call again with it. */
+  needs_email?: boolean;
+  is_new_user?: boolean;
+  /** Where the code was emailed. */
+  email?: string;
+  message?: string;
+}
+
+/**
+ * Request a login code for a phone number. The backend emails the code to the
+ * address on that account, or to `email` when the account has none yet.
+ */
+export async function sendPhoneOtp(phoneNumber: string, email?: string): Promise<PhoneOtpResponse> {
+  return apiPost('/auth/send-otp', { phone_number: phoneNumber, email });
 }
 
 /** Verify OTP code (email or phone) */
@@ -29,13 +59,7 @@ export async function verifyOtp(params: {
   otp: string;
 }): Promise<AuthResponse> {
   const endpoint = params.email ? '/auth/verify-email-otp' : '/auth/verify-otp';
-  const data: AuthResponse = await apiPost(endpoint, params);
-
-  if (data.token) {
-    await setToken(data.token);
-    registerForPush();
-  }
-  return data;
+  return authPost(endpoint, params);
 }
 
 /** Complete setup for a buyer / shopper */
@@ -43,27 +67,15 @@ export async function completeBuyerSetup(params: {
   setup_token: string;
   name?: string;
 }): Promise<AuthResponse> {
-  const data: AuthResponse = await apiPost('/auth/complete-buyer-setup', params);
-  if (data.token) {
-    await setToken(data.token);
-    await setUserMode('buyer');
-    registerForPush();
-  }
-  return data;
+  return authPost('/auth/complete-buyer-setup', params);
 }
 
 /** Password-based login */
 export async function loginWithPassword(loginIdentifier: string, password: string): Promise<AuthResponse> {
-  const data: AuthResponse = await apiPost('/auth/login', {
+  return authPost('/auth/login', {
     login_identifier: loginIdentifier,
     password,
   });
-
-  if (data.token) {
-    await setToken(data.token);
-    registerForPush();
-  }
-  return data;
 }
 
 /** Google OAuth login */
@@ -74,12 +86,7 @@ export async function loginWithGoogle(params: {
   avatar_url?: string;
   id_token?: string;
 }): Promise<AuthResponse> {
-  const data: AuthResponse = await apiPost('/auth/google', params);
-  if (data.token) {
-    await setToken(data.token);
-    registerForPush();
-  }
-  return data;
+  return authPost('/auth/google', params);
 }
 
 /** Apple OAuth login */
@@ -89,12 +96,7 @@ export async function loginWithApple(params: {
   apple_id?: string;
   identity_token?: string;
 }): Promise<AuthResponse> {
-  const data: AuthResponse = await apiPost('/auth/apple', params);
-  if (data.token) {
-    await setToken(data.token);
-    registerForPush();
-  }
-  return data;
+  return authPost('/auth/apple', params);
 }
 
 /** Fetch authenticated user profile */
@@ -105,6 +107,25 @@ export async function getMe(): Promise<{ user: User; store: Store | null } | nul
     return await apiGet<{ user: User; store: Store | null }>('/auth/me', undefined, { skipAuthRedirect: true });
   } catch {
     return null;
+  }
+}
+
+/**
+ * Check the saved token with the server. A rejected token is removed; if the
+ * server can't be reached the token is kept so the app still opens offline.
+ */
+export async function checkSession(): Promise<'valid' | 'invalid' | 'offline'> {
+  const token = await getToken();
+  if (!token) return 'invalid';
+  try {
+    await apiGet('/auth/me', undefined, { skipAuthRedirect: true, timeout: 10000 });
+    return 'valid';
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      await removeToken();
+      return 'invalid';
+    }
+    return 'offline';
   }
 }
 

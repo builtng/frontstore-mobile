@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Progress, StepHeader } from '@/features/setup/parts';
 import { AiProductFlow, useAiProduct } from '@/features/setup/AiProductFlow';
-import { useDraft, toSlug } from '@/features/setup/draft';
+import { finishDraft, useDraft, toSlug } from '@/features/setup/draft';
 import { completeStoreSetup, uploadStoreLogo } from '@/api/store';
 import { createProduct } from '@/api/products';
 
@@ -21,7 +21,7 @@ export default function FirstProduct() {
     setSubmitting(true);
     setErrorMsg(null);
     try {
-      await completeStoreSetup({
+      const { store } = await completeStoreSetup({
         setup_token: draft.setup_token,
         name: draft.owner_name || draft.name || 'Frontstore Merchant',
         store_name: draft.name || 'My Store',
@@ -37,6 +37,7 @@ export default function FirstProduct() {
         account_number: draft.payout?.account,
         account_name: draft.payout?.accountName,
       });
+      finishDraft({ username: store?.username });
 
       if (draft.logo_uri) {
         try {

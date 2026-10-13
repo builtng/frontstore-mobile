@@ -5,6 +5,7 @@ import { Mail } from 'lucide-react-native';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Labelled, Progress, RingInput, StepHeader } from '@/features/setup/parts';
 import { sendEmailOtp } from '@/api/auth';
+import { updateDraft } from '@/features/setup/draft';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -20,6 +21,8 @@ export default function Signup() {
     setErrorMsg(null);
     try {
       await sendEmailOtp(email.trim(), name.trim());
+      // The backend doesn't keep the name with the code, so carry it to setup ourselves
+      updateDraft({ owner_name: name.trim() || undefined, email: email.trim() });
       router.push({ pathname: '/verify', params: { flow: 'signup', channel: 'email', to: email.trim() } });
     } catch (err: any) {
       setErrorMsg(err.message || 'Could not send verification code. Please check your email.');

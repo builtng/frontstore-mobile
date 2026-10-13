@@ -78,7 +78,7 @@ export default function BuyerSettings() {
         </Group>
 
         <Group title="Login & security">
-          <LinkRow label="Login codes" value="Email or WhatsApp" />
+          <LinkRow label="Login codes" value="Email" />
           <SwitchRow label="Log in with a password" sub="Off: we send a one-time code instead" value={pw} onChange={setPw} />
         </Group>
 

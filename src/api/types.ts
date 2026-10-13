@@ -162,7 +162,6 @@ export interface PayoutRecord {
   amount_kobo: number;
   status: 'paid' | 'processing' | 'failed';
   date: string;
-  orders_count: number;
   bank_name: string;
   account_number: string;
 }

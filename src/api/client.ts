@@ -44,8 +44,7 @@ apiClient.interceptors.response.use(
         url.includes('/auth/verify') ||
         url.includes('/auth/me') ||
         url.includes('/meta/') ||
-        url.includes('/public/') ||
-        url.includes('/buyer/');
+        url.includes('/public/');
 
       const shouldSkip = (error.config as any)?.skipAuthRedirect || isPublicOrVerification;
 
@@ -99,6 +98,22 @@ export async function apiPost<T = any>(url: string, body?: any, config?: any): P
       throw new ApiError(json.message || 'Request failed', res.status, json);
     }
     return json?.data !== undefined ? json.data : json;
+  } catch (err: any) {
+    if (err instanceof ApiError) throw err;
+    const message = err.response?.data?.message || err.message || 'Network request failed';
+    throw new ApiError(message, err.response?.status || 500, err.response?.data);
+  }
+}
+
+/** POST that returns the whole response body. Auth endpoints put `token` beside `data`, which apiPost would drop. */
+export async function apiPostRaw<T = any>(url: string, body?: any, config?: any): Promise<T> {
+  try {
+    const res = await apiClient.post(url, body, config);
+    const json = res.data;
+    if (json?.status === 'error') {
+      throw new ApiError(json.message || 'Request failed', res.status, json);
+    }
+    return json;
   } catch (err: any) {
     if (err instanceof ApiError) throw err;
     const message = err.response?.data?.message || err.message || 'Network request failed';

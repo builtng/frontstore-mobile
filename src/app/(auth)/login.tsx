@@ -4,7 +4,9 @@ import { Link, router } from 'expo-router';
 import { Mail } from 'lucide-react-native';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Labelled, RingInput, StepHeader, WhatsAppIcon } from '@/features/setup/parts';
-import { loginWithPassword, sendEmailOtp, sendWhatsAppOtp } from '@/api/auth';
+import { loginWithPassword, sendEmailOtp, sendPhoneOtp } from '@/api/auth';
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
   const [raw, setRaw] = useState('');
@@ -12,16 +14,27 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // Phone accounts with no email on file: codes go by email, so ask for one
+  const [askEmail, setAskEmail] = useState(false);
+  const [email, setEmail] = useState('');
 
   const v = raw.trim();
-  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  const isEmail = EMAIL.test(v);
   const isPhone = !isEmail && /^\d{10,14}$/.test(v.replace(/[\s+()-]/g, ''));
+  const emailOk = EMAIL.test(email.trim());
 
   let hint = 'Enter the email or WhatsApp number on your store.';
   if (isEmail && !pw) hint = `We’ll email a 6-digit code to ${v}.`;
-  if (isPhone && !pw) hint = `We’ll send a 6-digit code on WhatsApp to ${v}.`;
-  const cta = pw ? 'Log in' : isEmail ? 'Email me a code' : isPhone ? 'Send code on WhatsApp' : 'Continue';
-  const ready = pw ? (isEmail || isPhone) && password.length > 0 : isEmail || isPhone;
+  if (isPhone && !pw) hint = 'We’ll email a 6-digit code to the address on this account.';
+  const cta = pw ? 'Log in' : isEmail || isPhone ? 'Email me a code' : 'Continue';
+  const ready = pw
+    ? (isEmail || isPhone) && password.length > 0
+    : isEmail || (isPhone && (!askEmail || emailOk));
+
+  const onChangeId = (text: string) => {
+    setRaw(text);
+    setAskEmail(false);
+  };
 
   const submit = async () => {
     if (!ready || loading) return;
@@ -29,15 +42,28 @@ export default function Login() {
     setErrorMsg(null);
     try {
       if (pw) {
-        await loginWithPassword(v, password);
-        router.replace('/home');
+        const res = await loginWithPassword(v, password);
+        router.replace(res.store ? '/home' : '/shop');
       } else {
         if (isEmail) {
           await sendEmailOtp(v);
+          router.push({ pathname: '/login-code', params: { channel: 'email', to: v } });
         } else {
-          await sendWhatsAppOtp(v);
+          const sent = await sendPhoneOtp(v, askEmail ? email.trim() : undefined);
+          if (sent?.needs_email) {
+            // Nothing was sent: new numbers sign up, existing ones need an email for the code
+            if (sent.is_new_user) {
+              setErrorMsg('No store uses this number yet. Log in with your email, or create a store.');
+            } else {
+              setAskEmail(true);
+            }
+            return;
+          }
+          router.push({
+            pathname: '/login-code',
+            params: { channel: 'phone', to: v, sent_to: sent?.email ?? '', email: askEmail ? email.trim() : '' },
+          });
         }
-        router.push({ pathname: '/login-code', params: { channel: isEmail ? 'email' : 'whatsapp', to: v } });
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Login failed. Please check your credentials and try again.');
@@ -61,7 +87,7 @@ export default function Login() {
             <RingInput
               autoFocus
               value={raw}
-              onChangeText={setRaw}
+              onChangeText={onChangeId}
               placeholder="you@email.com or 0803…"
               autoCapitalize="none"
               autoCorrect={false}
@@ -75,12 +101,42 @@ export default function Login() {
             />
             <T className="text-sm leading-5 text-muted-2" accessibilityLiveRegion="polite">{hint}</T>
           </Labelled>
+          {askEmail && !pw ? (
+            <Labelled label="Email for your login code">
+              <RingInput
+                autoFocus
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@example.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                textContentType="emailAddress"
+                accessibilityLabel="Email for your login code"
+                returnKeyType="go"
+                onSubmitEditing={submit}
+                left={<Mail size={18} color="#0B6E4F" strokeWidth={2} />}
+              />
+              <T className="text-sm leading-5 text-muted-2">
+                This account has no email yet. We’ll send the code there and save it to your account.
+              </T>
+            </Labelled>
+          ) : null}
           {pw ? (
             <Labelled
               label={
                 <View className="flex-row items-center justify-between">
                   <T className="font-sans-bold text-sm">Password</T>
-                  <Pressable accessibilityRole="link" hitSlop={12}>
+                  <Pressable
+                    accessibilityRole="link"
+                    hitSlop={12}
+                    onPress={() => {
+                      // A one-time code is the way back in without a password
+                      setPw(false);
+                      setPassword('');
+                      setErrorMsg(null);
+                    }}
+                  >
                     <T className="font-sans-semibold text-sm text-green">Forgot?</T>
                   </Pressable>
                 </View>

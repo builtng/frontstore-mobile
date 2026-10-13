@@ -1,4 +1,5 @@
 import { apiGet, apiPatch, apiPost } from './client';
+import { format } from 'date-fns';
 import { Order, OrderStatus, WalletBalance, PayoutRecord } from './types';
 
 /**
@@ -55,12 +56,18 @@ export async function getWalletBalance(): Promise<WalletBalance> {
   return apiGet<WalletBalance>('/store/wallet');
 }
 
-/** Fetch seller payout history */
+/** Fetch seller payout history (the wallet endpoint lists the store's withdrawals, amounts in naira) */
 export async function getPayoutHistory(): Promise<PayoutRecord[]> {
-  const data = await apiGet<any>('/withdrawals');
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  const wallet = await apiGet<any>('/store/wallet');
+  const rows: any[] = Array.isArray(wallet?.withdrawals) ? wallet.withdrawals : [];
+  return rows.map((w) => ({
+    id: w.id,
+    amount_kobo: Math.round(Number(w.amount || 0) * 100),
+    status: w.status === 'completed' ? 'paid' : w.status === 'failed' || w.status === 'rejected' ? 'failed' : 'processing',
+    date: format(new Date(w.requested_at || w.created_at), 'd MMM yyyy'),
+    bank_name: w.bank_name || '',
+    account_number: w.account_number || '',
+  }));
 }
 
 /** Request withdrawal payout */

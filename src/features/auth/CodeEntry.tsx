@@ -3,11 +3,12 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { router } from 'expo-router';
 import { Mail } from 'lucide-react-native';
 import { Button, Screen, T, cx } from '@/components/ui';
-import { BottomBar, Heading, Progress, StepHeader, WhatsAppIcon, goBack } from '@/features/setup/parts';
-import { verifyOtp, sendEmailOtp, sendWhatsAppOtp } from '@/api/auth';
+import { BottomBar, Heading, Progress, StepHeader, goBack } from '@/features/setup/parts';
+import { verifyOtp, sendEmailOtp, sendPhoneOtp } from '@/api/auth';
 
 export type Flow = 'signup' | 'login';
-export type Channel = 'email' | 'whatsapp';
+/** How the account is identified. Codes always arrive by email. */
+export type Channel = 'email' | 'phone';
 
 const LEN = 6;
 const RESEND_SECONDS = 60;
@@ -20,10 +21,32 @@ function maskPhone(raw: string) {
   return `+234 ${local.slice(0, 3)} *** ${local.slice(-4)}`;
 }
 
-/** "Check your email / WhatsApp" 6-digit code screen, shared by /verify (signup) and /login-code. */
-export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; channel: Channel; to?: string }) {
+/** Mask an email like "ch***@gmail.com". */
+function maskEmail(raw: string) {
+  const [user, domain] = raw.split('@');
+  if (!domain) return raw;
+  return `${user.slice(0, 2)}***@${domain}`;
+}
+
+/**
+ * "Check your email" 6-digit code screen, shared by /verify (signup) and /login-code.
+ * For phone logins the backend emails the code to the account's address (`sentTo`),
+ * or to `email` when the account had none.
+ */
+export function CodeEntry({
+  flow,
+  channel,
+  to,
+  sentTo,
+  email,
+}: {
+  flow: Flow;
+  channel: Channel;
+  to?: string;
+  sentTo?: string;
+  email?: string;
+}) {
   const signup = flow === 'signup';
-  const [channel, setChannel] = useState<Channel>(initialChannel);
   const [code, setCode] = useState('');
   const [focused, setFocused] = useState(true);
   const [left, setLeft] = useState(RESEND_SECONDS);
@@ -45,9 +68,9 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
     return () => clearTimeout(t);
   }, [left]);
 
-  const phone = channel === 'whatsapp';
+  const phone = channel === 'phone';
   const targetIdentifier = to || '';
-  const dest = phone ? (targetIdentifier.includes('@') ? targetIdentifier : maskPhone(targetIdentifier)) : targetIdentifier;
+  const inbox = sentTo || email;
   const alt = phone ? 'Wrong phone number? Change it' : 'Wrong email? Change it';
 
   const onResend = async () => {
@@ -56,9 +79,9 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
     setErrorMsg(null);
     try {
       if (phone) {
-        await sendWhatsAppOtp(to || dest);
+        await sendPhoneOtp(targetIdentifier, email);
       } else {
-        await sendEmailOtp(to || dest);
+        await sendEmailOtp(targetIdentifier);
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Could not resend code. Please try again.');
@@ -74,7 +97,6 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
     setLoading(true);
     setErrorMsg(null);
     try {
-      const targetIdentifier = to || dest;
       const res = await verifyOtp({
         [phone ? 'phone_number' : 'email']: targetIdentifier,
         otp: code,
@@ -111,14 +133,22 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
         {signup ? <Progress pct={20} /> : null}
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-6 px-5 pt-8 pb-6">
           <View className="h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-green">
-            {phone ? <WhatsAppIcon size={28} color="#FFFFFF" strokeWidth={1.9} /> : <Mail size={28} color="#FFFFFF" strokeWidth={1.9} />}
+            <Mail size={28} color="#FFFFFF" strokeWidth={1.9} />
           </View>
           <Heading
-            title={phone ? 'Check your WhatsApp' : 'Check your email'}
+            title="Check your email"
             sub={
-              <T className="text-[15px] leading-[22px] text-muted-2">
-                Enter the 6-digit code we sent to <T className="font-sans-bold text-[15px]">{dest}</T>
-              </T>
+              phone ? (
+                <T className="text-[15px] leading-[22px] text-muted-2">
+                  Enter the 6-digit code we emailed to{' '}
+                  <T className="font-sans-bold text-[15px]">{inbox ? maskEmail(inbox) : 'the address on your account'}</T>
+                  {' '}for <T className="font-sans-bold text-[15px]">{maskPhone(targetIdentifier)}</T>
+                </T>
+              ) : (
+                <T className="text-[15px] leading-[22px] text-muted-2">
+                  Enter the 6-digit code we sent to <T className="font-sans-bold text-[15px]">{targetIdentifier}</T>
+                </T>
+              )
             }
           />
 

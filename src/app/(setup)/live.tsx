@@ -21,9 +21,9 @@ function QrIcon({ color }: { color: string }) {
 }
 
 export default function Live() {
-  const { name } = useDraft();
+  const { name, username } = useDraft();
   const [copied, setCopied] = useState(false);
-  const slug = toSlug(name) || 'mamav';
+  const slug = username || toSlug(name);
   const link = `${slug}.frontstore.app`;
   const fullUrl = `https://${link}`;
 

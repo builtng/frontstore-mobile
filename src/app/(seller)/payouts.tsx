@@ -12,7 +12,7 @@ import { formatNaira } from '@/lib/format';
 const payoutStyle: Record<string, [string, string, string]> = {
   paid: ['Paid', '#CFE8DC', '#07261C'],
   processing: ['Processing', '#F3E3C7', '#6B4210'],
-  failed: ['Failed - retrying', '#FBE7E2', '#A8321E'],
+  failed: ['Failed', '#FBE7E2', '#A8321E'],
 };
 
 export default function Payouts() {
@@ -108,10 +108,10 @@ export default function Payouts() {
             history.map((r, i) => {
               const [label, bg, fg] = payoutStyle[r.status] || payoutStyle.paid;
               return (
-                <View key={i} className={cx('flex-row items-center justify-between px-4 py-3.5', i < history.length - 1 && 'border-b border-[#F0ECE3]')}>
+                <View key={r.id} className={cx('flex-row items-center justify-between px-4 py-3.5', i < history.length - 1 && 'border-b border-[#F0ECE3]')}>
                   <View className="gap-0.5">
                     <T className="font-sans-bold text-[15px]">{formatNaira(r.amount_kobo / 100)}</T>
-                    <T className="text-xs text-muted">{r.date} · {r.orders_count} orders</T>
+                    <T className="text-xs text-muted">{r.date}{r.bank_name ? ` · ${r.bank_name}` : ''}</T>
                   </View>
                   <Tag label={label} bg={bg} fg={fg} />
                 </View>

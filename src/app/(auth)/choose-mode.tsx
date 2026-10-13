@@ -6,7 +6,7 @@ import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomBar, Heading } from '@/features/setup/parts';
 import { setUserMode } from '@/api/authStore';
 import { completeBuyerSetup } from '@/api/auth';
-import { updateDraft, useDraft } from '@/features/setup/draft';
+import { finishDraft, updateDraft, useDraft } from '@/features/setup/draft';
 
 type Mode = 'shop' | 'sell';
 
@@ -22,6 +22,7 @@ export default function ChooseMode() {
 
   const [mode, setMode] = useState<Mode>(params.initial_mode === 'shop' ? 'shop' : 'sell');
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeToken) {
@@ -31,15 +32,13 @@ export default function ChooseMode() {
 
   const onContinue = async () => {
     setLoading(true);
+    setErrorMsg(null);
     try {
       await setUserMode(mode === 'shop' ? 'buyer' : 'seller');
       if (mode === 'shop') {
         if (activeToken) {
-          try {
-            await completeBuyerSetup({ setup_token: activeToken });
-          } catch (setupErr) {
-            console.warn('completeBuyerSetup warning:', setupErr);
-          }
+          await completeBuyerSetup({ setup_token: activeToken, name: draft.owner_name });
+          finishDraft();
         }
         router.replace({
           pathname: '/shop',
@@ -57,6 +56,8 @@ export default function ChooseMode() {
           params: activeToken ? { setup_token: activeToken } : undefined,
         });
       }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Could not set up your account. Please verify your email again.');
     } finally {
       setLoading(false);
     }
@@ -66,6 +67,11 @@ export default function ChooseMode() {
     <Screen>
       <ScrollView contentContainerClassName="gap-5 px-5 pt-8 pb-4">
         <Heading title="What brings you to Frontstore?" sub="One account for both. You can switch any time from your profile." />
+        {errorMsg ? (
+          <View className="rounded-xl bg-red-100 p-3.5 border border-red-200">
+            <T className="text-sm font-sans-medium text-red-800">{errorMsg}</T>
+          </View>
+        ) : null}
         <View accessibilityRole="radiogroup" className="gap-5">
           {OPTIONS.map((o) => {
             const on = o.id === mode;
@@ -98,7 +104,12 @@ export default function ChooseMode() {
         </View>
       </ScrollView>
       <BottomBar>
-        <Button title="Continue" onPress={onContinue} />
+        <Button
+          title={loading ? 'Please wait...' : 'Continue'}
+          disabled={loading}
+          onPress={onContinue}
+          left={loading ? <ActivityIndicator color="#FFFFFF" size="small" /> : undefined}
+        />
       </BottomBar>
     </Screen>
   );
