@@ -182,7 +182,7 @@ export default function Home() {
                   ? 'Answering customers on your WhatsApp'
                   : nina === 'off'
                     ? 'Customers get your catalog link instead'
-                    : 'Upgrade to let Nina answer customers'}
+                    : 'Not included in your current plan'}
               </T>
             </View>
           </Pressable>

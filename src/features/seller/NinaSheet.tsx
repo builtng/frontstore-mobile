@@ -1,4 +1,4 @@
-import { Linking, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Sparkles, X } from 'lucide-react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, T } from '@/components/ui';
@@ -15,7 +15,7 @@ export function ninaState(store?: Store | null): NinaState | null {
   return store.nina_enabled === false ? 'off' : 'on';
 }
 
-export const NINA_LABEL: Record<NinaState, string> = { on: 'On', off: 'Off', needs_plan: 'Pro plan' };
+export const NINA_LABEL: Record<NinaState, string> = { on: 'On', off: 'Off', needs_plan: 'Not in plan' };
 
 export function NinaSheet({ store, visible, onClose }: { store?: Store | null; visible: boolean; onClose: () => void }) {
   const queryClient = useQueryClient();
@@ -43,17 +43,7 @@ export function NinaSheet({ store, visible, onClose }: { store?: Store | null; v
         </T>
 
         {state === 'needs_plan' ? (
-          <>
-            <T className="text-sm text-muted-2">Nina is part of the Pro and Business plans. Customers get your catalog link until you upgrade.</T>
-            <Button
-              title="See plans"
-              className="h-11"
-              onPress={() => {
-                onClose();
-                Linking.openURL('https://frontstore.app/pricing');
-              }}
-            />
-          </>
+          <T className="text-sm text-muted-2">Nina isn’t included in your current plan, so customers get your catalog link instead.</T>
         ) : state ? (
           <View className="overflow-hidden rounded-2xl border border-line bg-surface">
             <SwitchRow

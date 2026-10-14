@@ -16,7 +16,6 @@ import { getProducts } from '@/api/products';
 import { getWalletBalance } from '@/api/orders';
 
 export default function Settings() {
-  const [planOpen, setPlanOpen] = useState(false);
   const [suiteDetail, setSuiteDetail] = useState<{ title: string; desc: string } | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
   const [ninaOpen, setNinaOpen] = useState(false);
@@ -115,9 +114,8 @@ export default function Settings() {
               </T>
             ) : null}
           </View>
-          <Pressable accessibilityRole="button" hitSlop={4} onPress={() => setPlanOpen(true)} className="h-10 justify-center rounded-full bg-saffron px-3.5">
-            <T className="font-sans-bold text-[13px] text-deep">Change Plan</T>
-          </Pressable>
+          {/* No upgrade link or prices: plans are digital subscriptions, and app stores
+              don't allow steering people to buy those outside the app */}
         </View>
 
         <T className="font-sans-bold text-xs tracking-wider text-muted uppercase">Frontstore Suite</T>
@@ -190,52 +188,6 @@ export default function Settings() {
           </Pressable>
         </View>
       </ScrollView>
-
-      {/* Plan Upgrade BottomSheet */}
-      <BottomSheet visible={planOpen} onClose={() => setPlanOpen(false)}>
-        <View className="gap-3 py-1">
-          <View className="flex-row items-center justify-between">
-            <T className="font-display text-xl">Merchant Plans</T>
-            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setPlanOpen(false)}>
-              <X size={20} color="#0E1A15" />
-            </Pressable>
-          </View>
-          <View className="gap-2.5">
-            {planGroups.length > 0 ? (
-              planGroups.map((g) => {
-                const current = g.key === currentGroup?.key || (!currentGroup && g.plans.every((p) => !p.price));
-                const cheapest = g.plans.reduce<{ price: number; billing_label: string } | null>(
-                  (min, p) => (min === null || p.price < min.price ? p : min),
-                  null,
-                );
-                return (
-                  <View key={g.key} className={cx('gap-1 rounded-2xl border p-4', current ? 'border-green bg-mint' : 'border-line bg-surface')}>
-                    <View className="flex-row items-center justify-between">
-                      <T className="font-sans-bold text-base">{g.name}{current ? ' (current)' : ''}</T>
-                      {cheapest ? (
-                        <T className="font-sans-bold text-sm text-green">
-                          {cheapest.price ? `${naira(cheapest.price)} ${cheapest.billing_label}` : 'Free'}
-                        </T>
-                      ) : null}
-                    </View>
-                    {g.benefits.length ? <T className="text-xs text-muted-2">{g.benefits.join(' · ')}</T> : null}
-                  </View>
-                );
-              })
-            ) : (
-              <T className="text-sm text-muted-2">Plans couldn’t be loaded. See them on frontstore.app.</T>
-            )}
-            <Button
-              title="Change plan on the web"
-              className="mt-1 h-11"
-              onPress={() => {
-                setPlanOpen(false);
-                Linking.openURL('https://frontstore.app/pricing');
-              }}
-            />
-          </View>
-        </View>
-      </BottomSheet>
 
       <NinaSheet store={store} visible={ninaOpen} onClose={() => setNinaOpen(false)} />
 
