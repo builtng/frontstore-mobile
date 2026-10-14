@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Camera, ChevronDown, ChevronRight, Trash2 } from 'lucide-react-native';
+import { Camera, ChevronDown, Trash2 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, T, cx } from '@/components/ui';
 import { Toggle, goBack } from '@/features/seller/parts';
 import { getProduct, updateProduct } from '@/api/products';
-import { formatNaira } from '@/lib/format';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
 import { useCategories } from '@/features/products/useCategories';
 import { ColourChips } from '@/features/products/ColourChips';
@@ -19,7 +18,7 @@ export default function EditProduct() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
-  const { data: product, isLoading } = useQuery({
+  const { data: product } = useQuery({
     queryKey: ['product', id],
     queryFn: () => getProduct(id!),
     enabled: !!id,

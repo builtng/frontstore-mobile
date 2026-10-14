@@ -3,10 +3,9 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { Star } from 'lucide-react-native';
-import { Screen, Swatch, T, cx } from '@/components/ui';
+import { Screen, T, cx } from '@/components/ui';
 import { AccountHeader } from '@/features/buyer/account';
 import { getBuyerReviews } from '@/api/buyer';
-import { Review } from '@/api/types';
 
 type Tab = 'to' | 'written';
 

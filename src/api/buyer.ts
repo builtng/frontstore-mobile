@@ -1,5 +1,5 @@
 import { apiGet, apiPost, apiPut, apiDelete, apiPatch } from './client';
-import { Store, Product, Order, Address, SavedCard, Review, NotificationPreferences } from './types';
+import { Store, Product, Order, Address, Review, NotificationPreferences } from './types';
 import { getToken } from './authStore';
 
 export function normalizeStore(s: any): Store {

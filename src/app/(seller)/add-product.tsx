@@ -31,13 +31,7 @@ function Label({ text, badge }: { text: string; badge?: string }) {
   );
 }
 
-function DashedChip({ label, className, onPress }: { label: string; className?: string; onPress?: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" onPress={onPress} className={cx('min-h-[40px] justify-center rounded-xl border border-dashed border-[#C9A56A] bg-surface px-3', className)}>
-      <T className="font-sans-bold text-sm text-[#3D2608]">{label}</T>
-    </Pressable>
-  );
-}
+const ALL_SIZES = ['S', 'M', 'L', 'XL'];
 
 export default function AddProduct() {
   const insets = useSafeAreaInsets();
@@ -241,6 +235,27 @@ export default function AddProduct() {
                 accessibilityLabel="Description"
                 className="min-h-[88px] rounded-[14px] border border-line-2 bg-surface px-3.5 py-2.5 font-sans text-[15px] leading-[22px] text-ink"
               />
+            </View>
+
+            <View className="gap-2">
+              <Label text="Sizes" />
+              <View className="flex-row flex-wrap gap-2">
+                {ALL_SIZES.map((s) => {
+                  const on = sizes.includes(s);
+                  return (
+                    <Pressable
+                      key={s}
+                      accessibilityRole="checkbox"
+                      accessibilityLabel={`Size ${s}`}
+                      accessibilityState={{ checked: on }}
+                      onPress={() => setSizes((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))}
+                      className={cx('min-h-[44px] min-w-[44px] items-center justify-center rounded-xl px-3.5', on ? 'bg-ink' : 'border border-line-2 bg-surface')}
+                    >
+                      <T className={cx('font-sans-bold text-sm', on ? 'text-bg' : 'text-muted')}>{s}</T>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
 
             <View className="gap-2">

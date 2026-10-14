@@ -67,7 +67,7 @@ export default function Settings() {
 
   // What each tool does; their settings live on the web dashboard
   const nina = ninaState(store);
-  const suiteRows: Array<{ label: string; value: string; href?: Href; detail?: string; onPress?: () => void }> = [
+  const suiteRows: { label: string; value: string; href?: Href; detail?: string; onPress?: () => void }[] = [
     { label: 'Frontstore Nina AI Agent', value: nina ? NINA_LABEL[nina] : '', onPress: () => setNinaOpen(true) },
     { label: 'Frontstore Flow (Chat Store)', value: '', detail: 'Turns your WhatsApp catalog into a conversational checkout where customers can browse and pay.' },
     { label: 'Frontstore Pay (Escrow)', value: walletBalance, href: '/payouts' },
@@ -75,7 +75,7 @@ export default function Settings() {
     { label: 'Frontstore Pulse (Analytics)', value: '', detail: 'Sales, repeat customers and traffic for your store.' },
   ];
 
-  const generalRows: Array<{ label: string; value: string; href?: Href; onPress?: () => void }> = [
+  const generalRows: { label: string; value: string; href?: Href; onPress?: () => void }[] = [
     { label: 'Switch to Buyer view', value: userName, href: '/switch' },
     { label: 'WhatsApp Business Number', value: userPhone },
     { label: 'Delivery fee', value: deliveryValue, onPress: openDelivery },

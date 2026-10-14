@@ -7,7 +7,6 @@ import { Screen, T } from '@/components/ui';
 import { naira } from '@/lib/format';
 import { Avatar, Segmented } from '@/features/buyer/parts';
 import { getBuyerOrders } from '@/api/buyer';
-import { Order } from '@/api/types';
 
 const STATUS = {
   out: { label: 'Out for delivery', bg: '#DCE7F3', fg: '#1F3F66' },

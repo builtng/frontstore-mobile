@@ -2,9 +2,8 @@ import { forwardRef } from 'react';
 import { Image, Pressable, Text, TextInput, View, type PressableProps, type TextInputProps, type TextProps, type ViewProps } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { Link, type Href } from 'expo-router';
-import Svg, { Path } from 'react-native-svg';
 
-const cx = (...c: Array<string | false | null | undefined>) => c.filter(Boolean).join(' ');
+const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(' ');
 
 /**
  * Text with the Frontstore defaults (Instrument Sans, ink colour).

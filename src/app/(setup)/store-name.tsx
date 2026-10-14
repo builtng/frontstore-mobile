@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Check, ChevronDown, Globe, X } from 'lucide-react-native';
+import { Check, ChevronDown, X } from 'lucide-react-native';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Labelled, Progress, RingInput, StepHeader } from '@/features/setup/parts';
 import { toSlug, updateDraft, useDraft } from '@/features/setup/draft';

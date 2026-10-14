@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, BackHandler, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { Button, Screen, T, cx } from '@/components/ui';
@@ -10,7 +10,7 @@ import { finishDraft, updateDraft, useDraft } from '@/features/setup/draft';
 
 type Mode = 'shop' | 'sell';
 
-const OPTIONS: Array<{ id: Mode; title: string; body: string; color: string; icon: string }> = [
+const OPTIONS: { id: Mode; title: string; body: string; color: string; icon: string }[] = [
   { id: 'shop', title: 'I want to shop', body: 'Discover Nigerian stores, pay safely and track every order in one place.', color: '#C8553D', icon: 'M6 3h12l1 18H5zM9 7a3 3 0 0 0 6 0' },
   { id: 'sell', title: 'I want to sell', body: 'Open your store in minutes, get paid online and manage orders from your phone.', color: '#0B6E4F', icon: 'M3 9l1.5-5h15L21 9M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M5 12v8h14v-8' },
 ];

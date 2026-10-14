@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Keyboard, Pressable, TextInput, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Check, Search, ShieldCheck, Star } from 'lucide-react-native';
+import { Check, Search, Star } from 'lucide-react-native';
 import { Screen, T, cx } from '@/components/ui';
 import { Avatar, ChipRow } from '@/features/buyer/parts';
 import { getMarketplaceStoresPaginated } from '@/api/buyer';

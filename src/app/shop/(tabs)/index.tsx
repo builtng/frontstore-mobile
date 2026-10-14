@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { BackHandler, Pressable, ScrollView, View } from 'react-native';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ChevronDown, RefreshCw, Search } from 'lucide-react-native';
+import { ChevronDown, RefreshCw, Search } from 'lucide-react-native';
 import { Screen, T, cx } from '@/components/ui';
-import { naira } from '@/lib/format';
-import { Avatar, ChipRow, useTileWidth } from '@/features/buyer/parts';
+import { Avatar, ChipRow } from '@/features/buyer/parts';
 import { getMe } from '@/api/auth';
 import { getMarketplaceStores, getBuyerOrders } from '@/api/buyer';
 import { openStore } from '@/lib/storefront';
@@ -14,7 +13,6 @@ const CATS = ['For you', 'Fashion', 'Food', 'Beauty', 'Gadgets'];
 
 export default function BuyerHome() {
   const [cat, setCat] = useState('For you');
-  const tile = useTileWidth();
   const { from_onboarding, setup_token } = useLocalSearchParams<{ from_onboarding?: string; setup_token?: string }>();
   const isFromOnboarding = from_onboarding === '1' || !!setup_token;
 

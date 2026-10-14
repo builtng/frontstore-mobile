@@ -9,7 +9,7 @@ import { getStore, updateStore, uploadStoreLogo } from '@/api/store';
 import { initialOf } from '@/features/setup/draft';
 
 // Same brand colours as store setup.
-const SWATCHES: Array<[string, string]> = [
+const SWATCHES: [string, string][] = [
   ['Terracotta', '#C8553D'], ['Forest', '#0B6E4F'], ['Indigo', '#2F5D8A'], ['Plum', '#7B3F61'], ['Ochre', '#8A5A12'], ['Ink', '#0E1A15'],
 ];
 

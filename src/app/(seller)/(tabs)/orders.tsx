@@ -8,7 +8,7 @@ import { getSellerOrders } from '@/api/orders';
 import { formatNaira } from '@/lib/format';
 
 type OrderTab = 'paid' | 'shipped' | 'delivered';
-const orderTabs: Array<[OrderTab, string]> = [
+const orderTabs: [OrderTab, string][] = [
   ['paid', 'To ship'],
   ['shipped', 'Shipped'],
   ['delivered', 'Delivered'],
