@@ -23,7 +23,7 @@ export default function Switch() {
   const buyerName = user?.name || 'Customer';
   const buyerInitials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() : 'FS';
 
-  const sellerName = sellerStore?.store_name || sellerStore?.name || 'My Store';
+  const sellerName = sellerStore?.store_name || sellerStore?.name || 'Open a store';
   const sellerInitial = (sellerName || 'S')[0].toUpperCase();
   const sellerColor = sellerStore?.primary_color || sellerStore?.store_color || '#0B6E4F';
 
@@ -35,6 +35,11 @@ export default function Switch() {
   const close = () => (router.canGoBack() ? router.back() : router.replace(current === 'shop' ? '/shop' : '/home'));
 
   const go = async () => {
+    // Selling without a store yet: set one up first (safe, there's nothing to overwrite)
+    if (sel === 'sell' && me && !sellerStore) {
+      router.replace('/store-name');
+      return;
+    }
     await setUserMode(sel === 'shop' ? 'buyer' : 'seller');
     if (sel === current) return close();
     router.dismissTo(sel === 'shop' ? '/shop' : '/home');
@@ -42,6 +47,7 @@ export default function Switch() {
 
   const goLabel = sel === 'shop'
     ? (current === 'shop' ? 'Stay in shopping' : 'Switch to shopping')
+    : me && !sellerStore ? 'Set up my store'
     : (current === 'sell' ? 'Stay in selling' : 'Switch to selling');
 
   return (
