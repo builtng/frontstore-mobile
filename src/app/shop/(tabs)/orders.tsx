@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
-import { Link, type Href } from 'expo-router';
+import { Link } from 'expo-router';
+import { openStore } from '@/lib/storefront';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, T } from '@/components/ui';
 import { naira } from '@/lib/format';
@@ -36,9 +37,9 @@ function OrderCard({ o }: { o: any }) {
   const storeSlug = o.store?.slug || o.store?.username;
 
   const storePhone = o.store?.whatsapp_phone || o.store?.phone;
-  const second: { label: string; href?: Href } | null = active
-    ? storePhone ? { label: 'Help' } : null
-    : { label: 'Buy again', href: storeSlug ? `/shop/store/${storeSlug}` : '/shop' };
+  const second: { label: string; onPress: () => void } | null = active
+    ? storePhone ? { label: 'Help', onPress: () => handleHelp() } : null
+    : storeSlug ? { label: 'Buy again', onPress: () => openStore(storeSlug) } : null;
 
   const handleHelp = () => {
     if (!storePhone) return;
@@ -50,7 +51,7 @@ function OrderCard({ o }: { o: any }) {
   const secondBtn = (
     <Pressable
       accessibilityRole="button"
-      onPress={active ? handleHelp : undefined}
+      onPress={second?.onPress}
       className="h-10 justify-center rounded-full border border-line-2 px-3.5"
     >
       <T className="font-sans-bold text-[13px]">{second?.label}</T>
@@ -73,7 +74,7 @@ function OrderCard({ o }: { o: any }) {
           <T style={{ color: st.fg }} className="font-sans-bold text-xs">{st.label}</T>
         </View>
         <View className="flex-row gap-2">
-          {second?.href ? <Link href={second.href} asChild>{secondBtn}</Link> : second ? secondBtn : null}
+          {second ? secondBtn : null}
           <Link href={`/shop/track/${orderId}`} asChild>
             <Pressable accessibilityRole="button" accessibilityLabel={`${active ? 'Track' : 'Details for'} order ${orderId}`} className="h-10 justify-center rounded-full bg-ink px-3.5">
               <T className="font-sans-bold text-[13px] text-white">{active ? 'Track' : 'Details'}</T>

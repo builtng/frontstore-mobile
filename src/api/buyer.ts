@@ -95,16 +95,6 @@ export async function searchMarketplace(query: string): Promise<{ stores: Store[
   };
 }
 
-/** Get public store details by slug */
-export async function getPublicStore(slug: string): Promise<{ store: Store; products: Product[]; reviews: Review[] }> {
-  const res = await apiGet<{ store: any; products: any[]; reviews: any[] }>(`/public/store/${slug}`);
-  return {
-    store: normalizeStore(res.store || { slug, name: slug }),
-    products: (res.products || []).map(normalizeProduct),
-    reviews: res.reviews || [],
-  };
-}
-
 /** Fetch buyer's orders */
 export async function getBuyerOrders(): Promise<Order[]> {
   const token = await getToken();
@@ -169,35 +159,6 @@ export async function deleteAddress(id: number): Promise<void> {
 /** Set default address */
 export async function setDefaultAddress(id: number): Promise<void> {
   return apiPatch(`/buyer/addresses/${id}/default`);
-}
-
-/** Fetch saved card tokens */
-export async function getSavedCards(): Promise<SavedCard[]> {
-  const token = await getToken();
-  if (!token) return [];
-  try {
-    const data = await apiGet<any>('/buyer/cards', undefined, { skipAuthRedirect: true });
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.data)) return data.data;
-    return [];
-  } catch {
-    return [];
-  }
-}
-
-/** Delete saved card token */
-export async function deleteSavedCard(id: number): Promise<void> {
-  return apiDelete(`/buyer/cards/${id}`);
-}
-
-/** Set default saved card */
-export async function setDefaultSavedCard(id: number): Promise<void> {
-  return apiPatch(`/buyer/cards/${id}/default`);
-}
-
-/** Initialize Paystack tokenization charge */
-export async function initializeCardTokenization(): Promise<{ authorization_url: string; reference: string }> {
-  return apiPost('/buyer/cards/initialize');
 }
 
 /** Follow / unfollow store */
@@ -280,26 +241,4 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
 /** Update buyer notification preferences */
 export async function updateNotificationPreferences(preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
   return apiPut<NotificationPreferences>('/buyer/notification-preferences', preferences);
-}
-
-/** Place public store order */
-export async function createStoreOrder(slug: string, payload: any): Promise<any> {
-  return apiPost<any>(`/public/store/${slug}/orders`, payload);
-}
-
-/** Initialize order payment via Paystack */
-export interface OrderPaymentInfo {
-  /** Hosted checkout (Stripe / Flutterwave stores) */
-  authorization_url?: string;
-  /** Bank transfer: the store's dedicated account, confirmed automatically */
-  bank_name?: string;
-  bank_account_number?: string;
-  bank_account_name?: string;
-  amount?: number;
-  payment_instructions?: string;
-}
-
-/** How to pay for a new order; the backend picks the method per store */
-export async function initOrderPayment(orderId: string | number): Promise<OrderPaymentInfo> {
-  return apiPost<OrderPaymentInfo>(`/public/orders/${orderId}/initialize-payment`);
 }

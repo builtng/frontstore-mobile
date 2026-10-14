@@ -1,12 +1,14 @@
 import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Keyboard, Pressable, TextInput, View } from 'react-native';
-import { Link, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Check, Search, ShieldCheck, Star } from 'lucide-react-native';
 import { Screen, T, cx } from '@/components/ui';
 import { Avatar, ChipRow } from '@/features/buyer/parts';
 import { getMarketplaceStoresPaginated } from '@/api/buyer';
 import { Store } from '@/api/types';
+import { FollowButton } from '@/features/buyer/FollowButton';
+import { openStore } from '@/lib/storefront';
 
 // Category filters only: /public/stores has no location or price filter
 const FILTERS = ['All', 'Stores', 'Fashion', 'Food', 'Beauty', 'Gadgets'];
@@ -67,10 +69,12 @@ export default function BuyerSearch() {
     const isVerified = (s as any).is_verified;
 
     return (
-      <Link key={displaySlug} href={`/shop/store/${displaySlug}`} asChild>
         <Pressable
+          key={displaySlug}
           accessibilityRole="link"
           accessibilityLabel={`${displayName}, ${s.location || 'Nigeria'}`}
+          accessibilityHint="Opens the store’s website"
+          onPress={() => openStore(displaySlug)}
           className="flex-row items-center gap-3.5 rounded-[20px] border border-line bg-surface p-3.5 active:bg-sand/40"
         >
           <Avatar initial={displayInitial} color={displayColor} size={50} radius={16} fontSize={18} />
@@ -111,8 +115,8 @@ export default function BuyerSearch() {
               ) : null}
             </View>
           </View>
+          {s.id ? <FollowButton storeId={s.id} storeName={displayName} /> : null}
         </Pressable>
-      </Link>
     );
   };
 

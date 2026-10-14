@@ -6,6 +6,7 @@ import { ChevronRight, Sparkles, X, Truck } from 'lucide-react-native';
 import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { naira } from '@/lib/format';
+import { storeLink } from '@/lib/storefront';
 import { getMe, logout } from '@/api/auth';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
 import { PasswordLogin } from '@/features/account/PasswordLogin';
@@ -98,7 +99,7 @@ export default function Settings() {
           </View>
           <View className="flex-1 gap-0.5">
             <T className="font-sans-bold text-[17px]">{storeName}</T>
-            {storeSlug ? <T className="text-[13px] text-muted">{storeSlug}.frontstore.app</T> : null}
+            {storeSlug ? <T className="text-[13px] text-muted">{storeLink(storeSlug)}</T> : null}
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel="Edit store" hitSlop={4} onPress={() => router.push('/store-edit')} className="h-10 justify-center rounded-full border border-line-2 px-3.5">
             <T className="font-sans-bold text-[13px]">Edit</T>

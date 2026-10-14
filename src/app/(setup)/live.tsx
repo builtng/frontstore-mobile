@@ -8,6 +8,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, InstagramIcon, TikTokIcon, WhatsAppIcon } from '@/features/setup/parts';
 import { initialOf, toSlug, useDraft } from '@/features/setup/draft';
+import { openStore, storeLink, storeUrl } from '@/lib/storefront';
 
 function QrIcon({ color }: { color: string }) {
   return (
@@ -24,8 +25,8 @@ export default function Live() {
   const { name, username } = useDraft();
   const [copied, setCopied] = useState(false);
   const slug = username || toSlug(name);
-  const link = `${slug}.frontstore.app`;
-  const fullUrl = `https://${link}`;
+  const link = storeLink(slug);
+  const fullUrl = storeUrl(slug);
 
   const copyLink = async () => {
     await Clipboard.setStringAsync(fullUrl);
@@ -68,7 +69,7 @@ export default function Live() {
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug } })}
+              onPress={() => openStore(slug)}
               className="h-11 flex-1 items-center justify-center rounded-full border border-line-2 bg-surface"
             >
               <T className="font-sans-bold text-sm">Preview</T>

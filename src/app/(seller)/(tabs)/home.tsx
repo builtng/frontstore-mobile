@@ -12,6 +12,7 @@ import { getNotifications, getStore, markNotificationsRead } from '@/api/store';
 import type { StoreNotification } from '@/api/types';
 import { NINA_LABEL, NinaSheet, ninaState } from '@/features/seller/NinaSheet';
 import { formatNaira } from '@/lib/format';
+import { openStore, storeLink, storeUrl } from '@/lib/storefront';
 
 function Stat({ label, value, delta, dark }: { label: string; value: string; delta: string; dark?: boolean }) {
   return (
@@ -78,7 +79,7 @@ export default function Home() {
   const store = authData?.store;
   const storeName = store?.store_name || store?.name || 'My Store';
   const username = store?.username || store?.slug || '';
-  const link = username ? `${username}.frontstore.app` : '';
+  const link = username ? storeLink(username) : '';
   const ownerName = user?.name ? user.name.split(' ')[0] : '';
   const live = store?.is_active !== false;
 
@@ -101,7 +102,7 @@ export default function Home() {
   };
 
   const copy = async () => {
-    await Clipboard.setStringAsync(`https://${link}`);
+    await Clipboard.setStringAsync(storeUrl(username));
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
   };
@@ -151,7 +152,7 @@ export default function Home() {
               <T className="font-sans-semibold text-sm text-bg">{copied ? 'Copied' : 'Copy'}</T>
             </Pressable>
             {username ? (
-              <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug: username } })} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
+              <Pressable accessibilityRole="button" onPress={() => openStore(username)} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
                 <T className="font-sans-semibold text-sm text-bg">Preview</T>
               </Pressable>
             ) : null}

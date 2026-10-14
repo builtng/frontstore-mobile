@@ -62,7 +62,7 @@ function ShareArt() {
       </View>
       <View style={[{ position: 'absolute', left: 24, right: 24, top: 214 }, shadow(0.18, 12, 12)]} className="h-[52px] flex-row items-center justify-between rounded-full bg-surface pl-[18px] pr-1.5">
         <T className="font-sans-bold text-sm">
-          mamav<T className="font-sans-medium text-sm text-muted">.frontstore.app</T>
+          <T className="font-sans-medium text-sm text-muted">frontstore.app/</T>mamav
         </T>
         <View className="h-10 justify-center rounded-full bg-green px-3.5">
           <T className="font-sans-bold text-[13px] text-white">Copy</T>

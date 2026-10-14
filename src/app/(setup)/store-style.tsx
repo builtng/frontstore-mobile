@@ -40,7 +40,7 @@ export default function StoreStyle() {
           </Pressable>
           <View className="shrink pb-1">
             <T numberOfLines={1} className="font-display-x text-[17px]">{name.trim() || 'Your store'}</T>
-            <T numberOfLines={1} className="text-[13px] text-muted">{toSlug(name)}.frontstore.app</T>
+            <T numberOfLines={1} className="text-[13px] text-muted">frontstore.app/{toSlug(name)}</T>
           </View>
         </Card>
 

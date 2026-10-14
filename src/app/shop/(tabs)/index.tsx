@@ -8,6 +8,7 @@ import { naira } from '@/lib/format';
 import { Avatar, ChipRow, useTileWidth } from '@/features/buyer/parts';
 import { getMe } from '@/api/auth';
 import { getMarketplaceStores, getBuyerOrders } from '@/api/buyer';
+import { openStore } from '@/lib/storefront';
 
 const CATS = ['For you', 'Fashion', 'Food', 'Beauty', 'Gadgets'];
 
@@ -130,14 +131,19 @@ export default function BuyerHome() {
               const displayInitial = displayName[0] || 'S';
               const displayColor = s.primary_color || s.store_color || '#0B6E4F';
               return (
-                <Link key={displaySlug} href={`/shop/store/${displaySlug}`} asChild>
-                  <Pressable accessibilityRole="link" accessibilityLabel={displayName} className="w-[76px] items-center gap-1.5">
+                <Pressable
+                  key={displaySlug}
+                  accessibilityRole="link"
+                  accessibilityLabel={displayName}
+                  accessibilityHint="Opens the store’s website"
+                  onPress={() => openStore(displaySlug)}
+                  className="w-[76px] items-center gap-1.5"
+                >
                     <View className={cx('rounded-[24px] border-2 p-0.5', i === 0 ? 'border-green' : 'border-transparent')}>
                       <Avatar initial={displayInitial} color={displayColor} size={64} radius={20} fontSize={22} />
                     </View>
                     <T numberOfLines={1} className="text-center font-sans-semibold text-xs">{displayName}</T>
-                  </Pressable>
-                </Link>
+                </Pressable>
               );
             })}
           </ScrollView>
