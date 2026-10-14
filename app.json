@@ -30,7 +30,7 @@
         "backgroundColor": "#07261C"
       },
       "package": "app.frontstore.mobile",
-      "versionCode": 12,
+      "versionCode": 13,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.CAMERA"
@@ -63,7 +63,14 @@
         }
       ],
       "expo-video",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#0B6E4F",
+          "defaultChannel": "default"
+        }
+      ],
       [
         "expo-build-properties",
         {

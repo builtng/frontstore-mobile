@@ -9,7 +9,7 @@ import { useFonts, InstrumentSans_400Regular, InstrumentSans_500Medium, Instrume
 import { PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans';
 import { UpdateNotification } from '../components/UpdateNotification';
 import { getToken } from '@/api/authStore';
-import { registerForPush } from '@/lib/push';
+import { registerForPush, watchPushToken } from '@/lib/push';
 import { queryClient } from '@/lib/queryClient';
 
 SplashScreen.preventAutoHideAsync();
@@ -37,7 +37,11 @@ export default function RootLayout() {
     };
     Notifications.getLastNotificationResponseAsync().then(open);
     const sub = Notifications.addNotificationResponseReceivedListener(open);
-    return () => sub.remove();
+    const stopWatching = watchPushToken();
+    return () => {
+      sub.remove();
+      stopWatching();
+    };
   }, []);
   if (!loaded) return null;
   return (

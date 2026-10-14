@@ -9,3 +9,5 @@ expo-env.d.ts
 
 # macOS
 .DS_Store
+# Firebase config for Android push (EAS uses the GOOGLE_SERVICES_JSON file variable)
+google-services.json
