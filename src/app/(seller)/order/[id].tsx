@@ -202,11 +202,11 @@ export default function OrderDetail() {
             <T className="font-display-x text-[22px]">Mark order as shipped</T>
             <View className="gap-1.5">
               <T className="font-sans-bold text-sm">Courier Name</T>
-              <TextInput value={courierName} onChangeText={setCourierName} placeholder="GIG Logistics, Fez, etc." className="h-12 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base" />
+              <TextInput value={courierName} onChangeText={setCourierName} placeholder="Courier or rider name" className="h-12 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base" />
             </View>
             <View className="gap-1.5">
               <T className="font-sans-bold text-sm">Tracking Number (optional)</T>
-              <TextInput value={trackingNumber} onChangeText={setTrackingNumber} placeholder="GIG-44810273" className="h-12 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base" />
+              <TextInput value={trackingNumber} onChangeText={setTrackingNumber} placeholder="Tracking number or rider phone" className="h-12 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base" />
             </View>
             <Pressable accessibilityRole="button" onPress={confirmShipment} disabled={!courierName.trim()} className={cx('h-[54px] items-center justify-center rounded-full bg-deep', !courierName.trim() && 'opacity-40')}>
               <T className="font-sans-bold text-base text-white">Confirm Shipped</T>
