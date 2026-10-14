@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
 import { getMe } from '@/api/auth';
 import { setUserMode } from '@/api/authStore';
@@ -88,14 +87,7 @@ export default function Switch() {
           );
         })}
 
-        <Link href="/store-name" asChild>
-          <Pressable accessibilityRole="button" className="flex-row items-center gap-3 rounded-[18px] border-[1.5px] border-dashed border-[#B9B1A0] p-3.5">
-            <View className="h-12 w-12 items-center justify-center rounded-[14px] bg-cream">
-              <Plus size={22} color="#0E1A15" strokeWidth={2} />
-            </View>
-            <T className="font-sans-bold text-base">Open another store</T>
-          </Pressable>
-        </Link>
+        {/* No "open another store": an account has one store, and setup would overwrite it */}
 
         <Pressable accessibilityRole="button" onPress={go} className="h-[54px] items-center justify-center rounded-full bg-deep">
           <T className="font-sans-bold text-base text-white">{goLabel}</T>
