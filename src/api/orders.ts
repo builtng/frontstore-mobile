@@ -1,4 +1,4 @@
-import { apiGet, apiPatch, apiPost } from './client';
+import { apiGet, apiGetAllPages, apiPatch, apiPost } from './client';
 import { format } from 'date-fns';
 import { Order, OrderStatus, WalletBalance, PayoutRecord } from './types';
 
@@ -7,6 +7,7 @@ import { Order, OrderStatus, WalletBalance, PayoutRecord } from './types';
  * amounts in naira; the screens use one fulfilment stage and kobo.
  */
 export function orderStage(o: any): OrderStatus {
+  if (!o) return 'paid';
   if (o.payment_status === 'refunded' || o.order_status === 'refunded') return 'refunded';
   if (o.order_status === 'cancelled' || o.order_status === 'expired') return 'cancelled';
   if (o.order_status === 'completed' || o.delivery_milestone === 'delivered') return 'delivered';
@@ -20,10 +21,29 @@ function normalizeOrder(o: any): Order {
   return { ...o, status: orderStage(o), total_kobo: Math.round(amount * 100) };
 }
 
-/** Fetch seller orders */
+/** Where a buyer's order is, including unpaid and closed ones (the seller app only sees paid orders). */
+export type BuyerStage = 'awaiting_payment' | OrderStatus;
+
+export function buyerStage(o: any): BuyerStage {
+  if (!o) return 'awaiting_payment';
+  if (o.order_status === 'expired') return 'cancelled';
+  if (o.payment_status !== 'paid' && o.payment_status !== 'refunded' && o.order_status === 'pending') return 'awaiting_payment';
+  return orderStage(o);
+}
+
+export const BUYER_STAGE_LABEL: Record<BuyerStage, string> = {
+  awaiting_payment: 'Awaiting payment',
+  paid: 'Paid',
+  packed: 'Packed',
+  shipped: 'Out for delivery',
+  delivered: 'Delivered',
+  refunded: 'Refunded',
+  cancelled: 'Cancelled',
+};
+
+/** Fetch every seller order (the endpoint pages at 50) */
 export async function getSellerOrders(params?: { status?: string }): Promise<Order[]> {
-  const data = await apiGet<any>('/orders', params);
-  const list = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+  const list = await apiGetAllPages<any>('/orders', params);
   return list.map(normalizeOrder);
 }
 
@@ -73,17 +93,17 @@ export async function getPayoutHistory(): Promise<PayoutRecord[]> {
     id: w.id,
     amount_kobo: Math.round(Number(w.amount || 0) * 100),
     status: w.status === 'completed' ? 'paid' : w.status === 'failed' || w.status === 'rejected' ? 'failed' : 'processing',
-    date: format(new Date(w.requested_at || w.created_at), 'd MMM yyyy'),
+    date: w.requested_at || w.created_at ? format(new Date(w.requested_at || w.created_at), 'd MMM yyyy') : '',
     bank_name: w.bank_name || '',
     account_number: w.account_number || '',
   }));
 }
 
-/** Request withdrawal payout */
-export async function requestWithdrawal(amountKobo: number, otpCode?: string): Promise<any> {
+/** Request a payout. The backend works in naira and checks the emailed code as `otp_code`. */
+export async function requestWithdrawal(amountKobo: number, otpCode: string): Promise<any> {
   return apiPost('/store/withdraw', {
-    amount: amountKobo,
-    otp: otpCode,
+    amount: amountKobo / 100,
+    otp_code: otpCode,
   });
 }
 

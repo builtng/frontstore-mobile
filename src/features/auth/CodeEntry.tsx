@@ -60,7 +60,7 @@ export function CodeEntry({
     if (!to) {
       router.replace(fallback as any);
     }
-  }, [to]);
+  }, [to, fallback]);
 
   useEffect(() => {
     if (left <= 0) return;

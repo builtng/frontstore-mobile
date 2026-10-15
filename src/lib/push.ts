@@ -6,6 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 import { apiDelete, apiPost } from '@/api/client';
 
 const PUSH_TOKEN_KEY = 'frontstore_push_token';
+const HANDLED_KEY = 'frontstore_handled_notification';
 
 // Show notifications while the app is open too.
 Notifications.setNotificationHandler({
@@ -83,4 +84,51 @@ export async function unregisterPush(): Promise<void> {
   } catch (err) {
     console.warn('Push unregister failed', err);
   }
+}
+
+/** The app screen a notification points at (data.url), if it's one of ours. */
+export function notificationUrl(res: Notifications.NotificationResponse | null): string | null {
+  const url = res?.notification.request.content.data?.url;
+  // In-app paths only (e.g. /order/123, /shop/track/123), never another site
+  return typeof url === 'string' && url.startsWith('/') && !url.startsWith('//') ? url : null;
+}
+
+/**
+ * A notification tapped while the app was closed. Held until the start-up
+ * screen has checked the session, then opened from there.
+ */
+let pendingUrl: string | null = null;
+let launchId: string | null = null;
+
+/** True for the notification that launched the app (app/index opens that one). */
+export function isLaunchNotification(res: Notifications.NotificationResponse): boolean {
+  return !!launchId && res.notification.request.identifier === launchId;
+}
+
+let launchCheck: Promise<void> | null = null;
+
+/** Look up the launch notification once; later calls get the same promise. */
+export function holdLaunchNotification(): Promise<void> {
+  launchCheck ??= readLaunchNotification();
+  return launchCheck;
+}
+
+async function readLaunchNotification(): Promise<void> {
+  const res = await Notifications.getLastNotificationResponseAsync().catch(() => null);
+  const url = notificationUrl(res);
+  if (!res || !url) return;
+  // The last response is kept between launches; only act on each one once
+  const id = res.notification.request.identifier;
+  launchId = id;
+  const handled = await SecureStore.getItemAsync(HANDLED_KEY).catch(() => null);
+  if (handled === id) return;
+  await SecureStore.setItemAsync(HANDLED_KEY, id).catch(() => {});
+  pendingUrl = url;
+}
+
+/** Take (and clear) the screen a launch notification asked for. */
+export function takeLaunchNotificationUrl(): string | null {
+  const url = pendingUrl;
+  pendingUrl = null;
+  return url;
 }

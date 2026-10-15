@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'expo-router';
 import { Star } from 'lucide-react-native';
 import { Screen, T, cx } from '@/components/ui';
 import { AccountHeader } from '@/features/buyer/account';
-import { getBuyerReviews } from '@/api/buyer';
+import { getBuyerOrders, getBuyerReviews } from '@/api/buyer';
+import { buyerStage } from '@/api/orders';
 
 type Tab = 'to' | 'written';
 
@@ -24,12 +26,16 @@ export default function BuyerMyReviews() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<Tab>('to');
 
-  const { data: liveReviews = [] } = useQuery({ queryKey: ['buyer-reviews'], queryFn: getBuyerReviews });
+  const { data: liveReviews = [], isError: reviewsError, refetch: refetchReviews } = useQuery({ queryKey: ['buyer-reviews'], queryFn: getBuyerReviews });
+  const { data: orders = [], isError: ordersError, refetch: refetchOrders } = useQuery({ queryKey: ['buyer-orders'], queryFn: getBuyerOrders });
+  const loadError = reviewsError || ordersError;
 
-  const toReviewList: any[] = [];
+  // Delivered orders that have no review yet
+  const reviewedOrders = new Set(liveReviews.map((r) => String(r.order_id)));
+  const toReviewList = orders.filter((o) => buyerStage(o) === 'delivered' && !reviewedOrders.has(String(o.id)));
   const writtenList = liveReviews.map((r) => ({
     store: r.store?.name || 'Store',
-    product: r.product?.name || 'Product',
+    product: r.product?.name || 'Whole order',
     stars: r.rating,
     date: r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recently',
     text: r.comment || '',
@@ -59,10 +65,32 @@ export default function BuyerMyReviews() {
           })}
         </View>
 
+        {loadError ? (
+          <Pressable accessibilityRole="button" onPress={() => { refetchReviews(); refetchOrders(); }} className="rounded-2xl border border-line bg-surface p-4">
+            <T className="text-sm text-danger">Couldn’t load your reviews. Tap to try again.</T>
+          </Pressable>
+        ) : null}
+
         {tab === 'to' ? (
-          <View className="gap-2.5 py-6">
-            <T className="text-center text-sm text-muted">No pending items to review.</T>
-          </View>
+          toReviewList.length === 0 ? (
+            <T className="py-6 text-center text-sm text-muted">Nothing to review right now.</T>
+          ) : (
+            <View className="gap-2.5">
+              {toReviewList.map((o) => (
+                <Link key={o.id} href={`/shop/track/${o.id}`} asChild>
+                  <Pressable accessibilityRole="button" className="flex-row items-center justify-between gap-2 rounded-[20px] border border-line bg-surface p-3.5">
+                    <View className="flex-1">
+                      <T className="font-sans-bold text-[15px]" numberOfLines={1}>
+                        {o.items?.map((i) => i.product_name).filter(Boolean).join(', ') || 'Your order'}
+                      </T>
+                      <T className="text-xs text-muted">{o.store?.name || o.store?.store_name || 'Store'} · #{o.order_number || o.id}</T>
+                    </View>
+                    <T className="font-sans-bold text-sm text-green">Rate</T>
+                  </Pressable>
+                </Link>
+              ))}
+            </View>
+          )
         ) : (
           <View className="gap-2.5">
             {writtenList.length === 0 ? (

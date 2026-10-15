@@ -5,9 +5,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, T } from '@/components/ui';
 import { BottomSheet, LinkRow, SheetField } from '@/features/buyer/account';
 import { deleteAccount, exportMyData, getDeleteAccountPreview } from '@/api/auth';
+import { openSitePage } from '@/lib/storefront';
 
 /**
- * "Download my data" and "Delete my account" rows plus the delete sheet.
+ * Privacy policy / terms links, "Download my data" and "Delete my account"
+ * rows plus the delete sheet.
  * Required by the App Store and Play Store; used on both settings screens.
  */
 export function PrivacyActions() {
@@ -20,7 +22,7 @@ export function PrivacyActions() {
     onSuccess: (data) => Share.share({ title: 'My Frontstore data', message: JSON.stringify(data, null, 2) }),
   });
 
-  const { data: preview, isLoading: previewLoading } = useQuery({
+  const { data: preview, isLoading: previewLoading, isError: previewError, refetch: refetchPreview } = useQuery({
     queryKey: ['delete-account-preview'],
     queryFn: getDeleteAccountPreview,
     enabled: deleteOpen,
@@ -45,6 +47,8 @@ export function PrivacyActions() {
 
   return (
     <>
+      <LinkRow label="Privacy policy" onPress={() => openSitePage('/privacy')} />
+      <LinkRow label="Terms of service" onPress={() => openSitePage('/terms')} />
       <LinkRow
         label="Download my data"
         value={exportMutation.isPending ? 'Preparing…' : exportMutation.isError ? 'Try again' : undefined}
@@ -56,7 +60,12 @@ export function PrivacyActions() {
         <View className="gap-3 py-1">
           <T className="font-display text-xl">Delete your account?</T>
 
-          {previewLoading || !preview ? (
+          {previewError ? (
+            <View className="gap-2">
+              <T className="text-[15px] text-danger">Couldn’t check your account. Check your connection.</T>
+              <Button title="Try again" kind="dark" className="h-12" onPress={() => refetchPreview()} />
+            </View>
+          ) : previewLoading || !preview ? (
             <ActivityIndicator color="#0B6E4F" />
           ) : !preview.can_delete ? (
             <View className="gap-2">

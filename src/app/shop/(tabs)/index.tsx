@@ -7,6 +7,7 @@ import { Screen, T, cx } from '@/components/ui';
 import { Avatar, ChipRow } from '@/features/buyer/parts';
 import { getMe } from '@/api/auth';
 import { getMarketplaceStores, getBuyerOrders } from '@/api/buyer';
+import { BUYER_STAGE_LABEL, buyerStage } from '@/api/orders';
 import { openStore } from '@/lib/storefront';
 
 const CATS = ['For you', 'Fashion', 'Food', 'Beauty', 'Gadgets'];
@@ -35,7 +36,10 @@ export default function BuyerHome() {
   });
   const { data: orders = [] } = useQuery({ queryKey: ['buyer-orders'], queryFn: getBuyerOrders });
 
-  const activeOrder = orders.find((o) => o.order_status === 'paid' || o.order_status === 'shipped' || o.order_status === 'confirmed' || o.order_status === 'processing');
+  // Paid and on its way (not delivered, closed or unpaid)
+  const STEP = { paid: 1, packed: 2, shipped: 3 } as const;
+  const activeOrder = orders.find((o) => buyerStage(o) in STEP);
+  const activeStage = activeOrder ? (buyerStage(activeOrder) as keyof typeof STEP) : null;
 
   const user = me?.user;
   const userName = user?.name ? user.name.split(' ')[0] : 'Shopper';
@@ -93,15 +97,15 @@ export default function BuyerHome() {
 
         {activeOrder ? (
           <Link href={`/shop/track/${activeOrder.id}`} asChild>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Track order ${activeOrder.id}`} className="flex-row items-center gap-3 rounded-[20px] bg-ink p-3.5">
+            <Pressable accessibilityRole="button" accessibilityLabel={`Track order ${activeOrder.order_number || activeOrder.id}`} className="flex-row items-center gap-3 rounded-[20px] bg-ink p-3.5">
               <Avatar initial={(activeOrder.store?.name || activeOrder.store?.store_name)?.[0] ?? 'S'} color={activeOrder.store?.primary_color ?? '#8E4A5E'} size={44} radius={12} fontSize={16} />
               <View className="flex-1 gap-1.5">
                 <T className="text-sm text-bg">
-                  <T className="font-sans-bold text-sm text-bg">{activeOrder.order_status === 'shipped' ? 'Out for delivery' : 'Processing'}</T> · {activeOrder.store?.name || activeOrder.store?.store_name || 'Store'}
+                  <T className="font-sans-bold text-sm text-bg">{activeStage ? BUYER_STAGE_LABEL[activeStage] : ''}</T> · {activeOrder.store?.name || activeOrder.store?.store_name || 'Store'}
                 </T>
                 <View className="flex-row gap-1">
                   {[0, 1, 2, 3].map((i) => (
-                    <View key={i} className={cx('h-1 flex-1 rounded-full', i < (activeOrder.order_status === 'shipped' ? 3 : 1) ? 'bg-leaf' : 'bg-[#33504A]')} />
+                    <View key={i} className={cx('h-1 flex-1 rounded-full', i < (activeStage ? STEP[activeStage] : 0) ? 'bg-leaf' : 'bg-[#33504A]')} />
                   ))}
                 </View>
               </View>

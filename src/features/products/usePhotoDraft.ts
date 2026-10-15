@@ -8,7 +8,7 @@ export type PhotoStage = 'empty' | 'reading' | 'filled';
 export type Photo = { uri: string; url: string };
 
 const MAX_PHOTOS = 3;
-const POLL_MS = 1000;
+const POLL_MS = 2000;
 // The backend queue worker runs once a minute, so allow for that wait.
 const GIVE_UP_MS = 90000;
 
@@ -22,46 +22,53 @@ export function usePhotoDraft(onDraft: (draft: AiProductDraftResult) => void) {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const poll = useRef<ReturnType<typeof setInterval> | null>(null);
+  const poll = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Bumped on every new read / skip so a slow earlier request can't land late
+  const run = useRef(0);
   const onDraftRef = useRef(onDraft);
   onDraftRef.current = onDraft;
 
   const stopPolling = () => {
-    if (poll.current) clearInterval(poll.current);
+    run.current++;
+    if (poll.current) clearTimeout(poll.current);
     poll.current = null;
   };
   useEffect(() => stopPolling, []);
 
   const readPhotos = async (urls: string[]) => {
     stopPolling();
+    const mine = run.current;
+    setError(null);
     setStage('reading');
+    const giveUp = (msg = 'Nina couldn’t read these photos. Fill in the details yourself.') => {
+      setError(msg);
+      setStage('filled');
+    };
     try {
       const { job_id } = await createAiProductDraft(urls);
+      if (mine !== run.current) return;
       const startedAt = Date.now();
-      poll.current = setInterval(async () => {
+      // One request at a time: the next check is scheduled only after this one answers
+      const check = async () => {
+        let result: AiProductDraftResult | null = null;
         try {
-          const result = await getAiProductDraftStatus(job_id);
-          if (result.status === 'completed') {
-            stopPolling();
-            onDraftRef.current(result);
-            setStage('filled');
-          } else if (result.status === 'failed' || Date.now() - startedAt > GIVE_UP_MS) {
-            stopPolling();
-            setError('Nina couldn’t read these photos. Fill in the details yourself.');
-            setStage('filled');
-          }
+          result = await getAiProductDraftStatus(job_id);
         } catch {
-          // Network blip: keep polling until the give-up time.
-          if (Date.now() - startedAt > GIVE_UP_MS) {
-            stopPolling();
-            setError('Nina couldn’t read these photos. Fill in the details yourself.');
-            setStage('filled');
-          }
+          // Network blip: keep polling until the give-up time
         }
-      }, POLL_MS);
+        if (mine !== run.current) return;
+        if (result?.status === 'completed') {
+          onDraftRef.current(result);
+          setStage('filled');
+        } else if (result?.status === 'failed' || Date.now() - startedAt > GIVE_UP_MS) {
+          giveUp();
+        } else {
+          poll.current = setTimeout(check, POLL_MS);
+        }
+      };
+      poll.current = setTimeout(check, POLL_MS);
     } catch (e: any) {
-      setError(e.message || 'Nina couldn’t read these photos. Fill in the details yourself.');
-      setStage('filled');
+      if (mine === run.current) giveUp(e.message || undefined);
     }
   };
 

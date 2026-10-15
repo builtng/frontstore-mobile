@@ -27,11 +27,13 @@ export default function DeleteProduct() {
       const name = product?.name || 'Product';
       router.dismissTo({ pathname: '/products', params: { deleted: name, deletedId: id } });
     },
+    onError: () => setSubmitting(false),
   });
 
   const confirm = () => {
     if (submitting) return;
     setSubmitting(true);
+    deleteMutation.reset();
     deleteMutation.mutate();
   };
 
@@ -74,7 +76,7 @@ export default function DeleteProduct() {
           </View>
           <View className="flex-1">
             <T className="font-sans-bold text-[15px]">{name}</T>
-            <T className="text-[13px] text-muted">In stock</T>
+            <T className="text-[13px] text-muted">{product ? (product.status === 'hidden' ? 'Hidden' : product.stock_count > 0 ? 'In stock' : 'Sold out') : ''}</T>
           </View>
         </View>
         <View className="rounded-[14px] border border-dashed border-line-2 px-3.5 py-3">
@@ -86,6 +88,11 @@ export default function DeleteProduct() {
             - you can bring it back any time.
           </T>
         </View>
+        {deleteMutation.error ? (
+          <T accessibilityLiveRegion="polite" className="text-sm text-danger">
+            {(deleteMutation.error as Error).message || 'Couldn’t delete this product. Try again.'}
+          </T>
+        ) : null}
         <View className="gap-2.5">
           <Pressable accessibilityRole="button" onPress={confirm} disabled={submitting} className="h-[54px] flex-row items-center justify-center gap-2 rounded-full bg-danger">
             {submitting ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}

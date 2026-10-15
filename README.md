@@ -1,76 +1,73 @@
-# FrontStore Mobile App
+# FrontStore Mobile
 
-Premium React Native (Expo) merchant app for FrontStore.ng.
+Expo (React Native) app for FrontStore. One account, two modes:
 
-## Quick Start
+- **Selling**: store setup, products (photo-first with Nina AI), orders, payouts, sharing.
+- **Shopping**: discover stores, track orders, saved items, addresses, reviews.
+
+**No payments happen in the app.** Stores are opened on the website in an in-app
+browser tab (Chrome Custom Tab / Safari view) and buyers pay there. The app never
+shows plan prices or upgrade links. Merchants withdrawing their own earnings is
+not a purchase.
+
+## Quick start
 
 ```bash
-cd mobile
 npm install
 npx expo start
 ```
 
-## Required Assets
-
-Place these in `/assets/`:
-- `icon.png` — 1024×1024 app icon
-- `splash.png` — 1284×2778 splash screen
-- `adaptive-icon.png` — 1024×1024 Android adaptive icon
-- `favicon.png` — 196×196 web favicon
-
-## Stack
-
-| Layer | Library |
-|---|---|
-| Framework | Expo SDK 52 + Expo Router v4 |
-| Styling | NativeWind v4 (Tailwind) |
-| Animations | React Native Reanimated v3 |
-| Gestures | React Native Gesture Handler |
-| Lists | Shopify FlashList |
-| Data fetching | TanStack Query v5 |
-| State | Zustand v5 |
-| Forms | React Hook Form + Zod |
-| Fonts | Outfit + Plus Jakarta Sans (Google Fonts) |
-| Icons | Lucide React Native |
-| Images | Expo Image |
-
-## Architecture
-
-```
-mobile/
-├── app/                    # Expo Router screens
-│   ├── (auth)/             # Onboarding flow (8 steps)
-│   └── (merchant)/         # Merchant dashboard
-│       ├── orders/
-│       ├── products/
-│       ├── marketing.tsx
-│       └── more/
-├── src/
-│   ├── components/
-│   │   ├── ui/             # Reusable design system components
-│   │   └── merchant/       # Domain-specific components
-│   ├── constants/          # Colors, typography, spacing (8pt system)
-│   ├── hooks/              # useTheme, useHaptics
-│   ├── services/           # API clients (Axios)
-│   ├── stores/             # Zustand global state
-│   └── types/              # TypeScript interfaces
-```
-
-## Brand
-
-- **Primary**: `#62109F` (Frontstore Purple)
-- **Navy**: `#0A192F` (Deep Navy)
-- **Teal**: `#64FFDA` (Cyber Teal)  
-- **Amber**: `#FF9F43` (Vibrant Amber)
-- **Headings**: Outfit Bold
-- **Body**: Plus Jakarta Sans
+Checks: `npm run type-check`, `npm run lint`, `npm test`.
 
 ## API
 
-Configured to `https://api.frontstore.ng/v1`. Change `API_BASE_URL` in `src/constants/index.ts` for local development.
+Talks to the Laravel API in `../web` (`routes/api.php`). The base URL comes from
+`EXPO_PUBLIC_API_BASE_URL` (set per build profile in `eas.json`) and defaults to
+`https://frontstore.app/api/v1`. The storefront domain is `EXPO_PUBLIC_STORE_DOMAIN`
+(default `frontstore.app`).
 
-## Store Submissions (App Store & Google Play)
+Things the backend does that the app has to match:
 
-Complete submission guides, store listing copy, privacy nutrition labels, reviewer test credentials, and screenshot guides are documented in:
-👉 [Store Submission Documentation Suite](../../docs/store_submission/README.md)
+- Money: the API mostly works in **naira**; the app works in **kobo** internally
+  and converts at the edge (`src/api/orders.ts`, `src/api/products.ts`).
+- `/products` and `/orders` are paginated; use `apiGetAllPages`.
+- Order progress is `order_status` (`pending`, `confirmed`, `processing`, `completed`,
+  `refunded`, `expired`) plus `delivery_milestone` (`shipped`). Use `orderStage` /
+  `buyerStage`; don't compare `order_status` to "shipped" or "delivered".
+- `/auth/complete-setup` **updates the existing store** for a signed-in user who has
+  one. Only new stores may go through `(setup)`; payout changes use
+  `/payout?mode=edit`, which saves through `PUT /store`.
 
+`src/api/__tests__/contracts.test.ts` pins these request and response shapes.
+
+## Layout
+
+```
+src/
+  app/            Expo Router screens
+    (auth)/       welcome, login, signup, code entry, choose mode
+    (setup)/      new-store setup (name, style, payout, first product, live)
+    (seller)/     seller tabs, order, product, payouts, share, store edit
+    shop/         buyer tabs, track, addresses, reviews, settings
+    index.tsx     start-up routing (session check, launch notification)
+    switch.tsx    shopping/selling switcher
+  api/            API client and typed calls
+  components/     shared UI (ui.tsx, TabBar, SearchableSelectModal, …)
+  features/       screen parts grouped by area
+  lib/            push, storefront links, formatting, image sharing
+```
+
+## Stack
+
+Expo SDK 52, Expo Router 4, NativeWind 4, TanStack Query 5, expo-notifications
+(Android push needs `google-services.json`; see `app.config.js`).
+
+## Brand
+
+Colours live in `tailwind.config.js`: cream background `#F6F3EC`, ink `#0E1A15`,
+green `#0B6E4F`, deep `#07261C`. Fonts: Instrument Sans (body) and Plus Jakarta
+Sans (headings).
+
+## Store submissions
+
+See `../docs/store_submission/`.

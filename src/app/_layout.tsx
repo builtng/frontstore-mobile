@@ -9,11 +9,10 @@ import { useFonts, InstrumentSans_400Regular, InstrumentSans_500Medium, Instrume
 import { PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans';
 import { UpdateNotification } from '../components/UpdateNotification';
 import { getToken } from '@/api/authStore';
-import { registerForPush, watchPushToken } from '@/lib/push';
+import { isLaunchNotification, notificationUrl, registerForPush, watchPushToken } from '@/lib/push';
 import { queryClient } from '@/lib/queryClient';
 
 SplashScreen.preventAutoHideAsync();
-
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -24,25 +23,25 @@ export default function RootLayout() {
     if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
-  // Keep this phone's push token registered, and open the screen a tapped
-  // notification points at (data.url, e.g. /order/123 or /shop/track/123).
+  // Keep this phone's push token registered
   useEffect(() => {
     getToken().then((t) => {
       if (t) registerForPush();
     });
-
-    const open = (res: Notifications.NotificationResponse | null) => {
-      const url = res?.notification.request.content.data?.url;
-      if (typeof url === 'string') router.push(url as any);
-    };
-    Notifications.getLastNotificationResponseAsync().then(open);
-    const sub = Notifications.addNotificationResponseReceivedListener(open);
-    const stopWatching = watchPushToken();
-    return () => {
-      sub.remove();
-      stopWatching();
-    };
+    return watchPushToken();
   }, []);
+
+  // A notification tapped while the app is running opens its screen
+  // (data.url, e.g. /order/123 or /shop/track/123). Waits for the navigator,
+  // which only mounts once fonts are loaded; launch taps go through app/index.
+  useEffect(() => {
+    if (!loaded) return;
+    const sub = Notifications.addNotificationResponseReceivedListener((res) => {
+      const url = notificationUrl(res);
+      if (url && !isLaunchNotification(res)) router.push(url as any);
+    });
+    return () => sub.remove();
+  }, [loaded]);
   if (!loaded) return null;
   return (
     <QueryClientProvider client={queryClient}>

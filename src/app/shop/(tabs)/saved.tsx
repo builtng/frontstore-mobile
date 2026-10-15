@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, Alert, Image, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, T } from '@/components/ui';
 import { naira } from '@/lib/format';
@@ -10,19 +11,25 @@ import { FollowButton } from '@/features/buyer/FollowButton';
 
 type Tab = 'prod' | 'stores';
 export default function BuyerSaved() {
-  const [tab, setTab] = useState<Tab>('prod');
+  const params = useLocalSearchParams<{ tab?: string }>();
+  const [tab, setTab] = useState<Tab>(params.tab === 'stores' ? 'stores' : 'prod');
+  useEffect(() => {
+    if (params.tab === 'stores' || params.tab === 'prod') setTab(params.tab);
+  }, [params.tab]);
   const tile = useTileWidth();
   const queryClient = useQueryClient();
 
-  const { data: liveSavedProducts = [], isLoading: loadingProducts, isRefetching: refetchingProducts, refetch: refetchProducts } = useQuery({ queryKey: ['saved-products'], queryFn: getSavedProducts });
-  const { data: liveFollowedStores = [], isLoading: loadingStores, isRefetching: refetchingStores, refetch: refetchStores } = useQuery({ queryKey: ['followed-stores'], queryFn: getFollowedStores });
+  const { data: liveSavedProducts = [], isError: productsError, isLoading: loadingProducts, isRefetching: refetchingProducts, refetch: refetchProducts } = useQuery({ queryKey: ['saved-products'], queryFn: getSavedProducts });
+  const { data: liveFollowedStores = [], isError: storesError, isLoading: loadingStores, isRefetching: refetchingStores, refetch: refetchStores } = useQuery({ queryKey: ['followed-stores'], queryFn: getFollowedStores });
 
   const toggleSaveMutation = useMutation({
     mutationFn: (productId: number | string) => toggleSaveProduct(productId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-products'] });
     },
+    onError: (err: any) => Alert.alert('Couldn’t update saved items', err.message),
   });
+  const loadError = tab === 'prod' ? productsError : storesError;
 
   const productsCount = liveSavedProducts.length;
   const storesCount = liveFollowedStores.length;
@@ -46,7 +53,11 @@ export default function BuyerSaved() {
           options={[{ key: 'prod', label: `Products · ${productsCount}` }, { key: 'stores', label: `Stores · ${storesCount}` }]}
         />
 
-        {tab === 'prod' ? (
+        {loadError ? (
+          <Pressable accessibilityRole="button" onPress={handleRefresh} className="rounded-2xl border border-line bg-surface p-4">
+            <T className="text-sm text-danger">Couldn’t load your saved items. Tap to try again.</T>
+          </Pressable>
+        ) : tab === 'prod' ? (
           loadingProducts ? (
             <View className="items-center py-12">
               <ActivityIndicator size="small" color="#0B6E4F" />
@@ -63,7 +74,7 @@ export default function BuyerSaved() {
                     <Pressable
                       key={p.id}
                       accessibilityRole="link"
-                      accessibilityLabel={`${p.name}, ${storeName}, ${naira(p.price)}`}
+                      accessibilityLabel={`${p.name}, ${storeName}, ${naira(Number(p.price ?? 0))}`}
                       accessibilityHint="Opens the product on the store’s website"
                       onPress={() => storeSlug && openStore(storeSlug, p.slug)}
                       style={{ width: tile }}
@@ -76,7 +87,7 @@ export default function BuyerSaved() {
                         <HeartToggle on={true} label={p.name} onToggle={() => toggleSaveMutation.mutate(p.id)} />
                       </View>
                       <T numberOfLines={1} className="font-sans-bold text-sm">{p.name}</T>
-                      <T numberOfLines={1} className="text-[13px] text-muted">{storeName} · {naira(p.price)}</T>
+                      <T numberOfLines={1} className="text-[13px] text-muted">{storeName} · {naira(Number(p.price ?? 0))}</T>
                     </Pressable>
                 );
               })}

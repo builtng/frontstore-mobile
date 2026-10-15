@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MapPin } from 'lucide-react-native';
@@ -8,7 +8,8 @@ import { AccountHeader, BottomSheet, DashedAdd, SheetField } from '@/features/bu
 import { getAddresses, addAddress, deleteAddress, setDefaultAddress } from '@/api/buyer';
 import { Address } from '@/api/types';
 
-const EMPTY = { label: 'Home', recipient_name: '', street: '', city: '', state: '', phone_number: '', landmark: '' };
+// Field names match the backend's buyer_addresses table
+const EMPTY = { label: 'Home', street: '', area: '', state: '', phone: '', landmark: '' };
 
 export default function BuyerAddresses() {
   const insets = useSafeAreaInsets();
@@ -18,7 +19,7 @@ export default function BuyerAddresses() {
   const [form, setForm] = useState(EMPTY);
   const set = (k: keyof typeof EMPTY) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  const { data: liveAddresses = [] } = useQuery({ queryKey: ['buyer-addresses'], queryFn: getAddresses });
+  const { data: liveAddresses = [], isError, refetch } = useQuery({ queryKey: ['buyer-addresses'], queryFn: getAddresses });
 
   const addMutation = useMutation({
     mutationFn: (payload: Omit<Address, 'id'>) => addAddress(payload),
@@ -29,44 +30,57 @@ export default function BuyerAddresses() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteAddress(id),
+    mutationFn: (id: number | string) => deleteAddress(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyer-addresses'] });
     },
   });
 
   const defaultMutation = useMutation({
-    mutationFn: (id: number) => setDefaultAddress(id),
+    mutationFn: (id: number | string) => setDefaultAddress(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyer-addresses'] });
     },
   });
 
-  const close = () => { setOpen(false); setForm(EMPTY); };
+  const close = () => { setOpen(false); setForm(EMPTY); addMutation.reset(); };
 
   // A rider needs all of these; don't invent any of them
-  const complete = ['recipient_name', 'street', 'city', 'state', 'phone_number'].every((k) => form[k as keyof typeof EMPTY].trim());
+  const complete = (['street', 'area', 'state', 'phone'] as const).every((k) => form[k].trim());
 
   const save = () => {
     if (!complete) return;
     addMutation.mutate({
       label: form.label.trim() || 'Home',
-      recipient_name: form.recipient_name.trim(),
       street: form.street.trim(),
-      city: form.city.trim(),
+      area: form.area.trim(),
       state: form.state.trim(),
-      phone_number: form.phone_number.trim(),
-      landmark: form.landmark.trim(),
-      is_default: false,
+      phone: form.phone.trim(),
+      landmark: form.landmark.trim() || null,
+      // The backend makes the first address the default
+      is_default: liveAddresses.length === 0,
     });
   };
 
   const list: Address[] = liveAddresses;
+  const actionError = (deleteMutation.error || defaultMutation.error) as Error | null;
+
+  const confirmRemove = (a: Address) =>
+    Alert.alert('Remove this address?', [a.street, a.area].filter(Boolean).join(', '), [
+      { text: 'Keep', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => deleteMutation.mutate(a.id) },
+    ]);
 
   return (
     <Screen>
       <AccountHeader title="Addresses" />
       <ScrollView contentContainerClassName="gap-3 px-4 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
+        {isError ? (
+          <Pressable accessibilityRole="button" onPress={() => refetch()} className="rounded-2xl border border-line bg-surface p-4">
+            <T className="text-sm text-danger">Couldn’t load your addresses. Tap to try again.</T>
+          </Pressable>
+        ) : null}
+        {actionError ? <T className="text-sm text-danger">{actionError.message}</T> : null}
         {list.map((a) => {
           const isDef = a.is_default;
           return (
@@ -83,15 +97,16 @@ export default function BuyerAddresses() {
                 ) : null}
               </View>
               <T className="text-sm leading-[21px] text-[#33403A]">
-                <T className="font-sans-bold text-sm text-ink">{a.recipient_name}</T>
-                {`\n${a.street}${a.city ? `, ${a.city}` : ''}\n${a.phone_number}`}
+                {[a.street, a.area, a.state].filter(Boolean).join(', ')}
+                {a.landmark ? `\nNear ${a.landmark}` : ''}
+                {a.phone ? `\n${a.phone}` : ''}
               </T>
               <View className="flex-row items-center gap-4 border-t border-[#F0ECE3] pt-2">
-                <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${a.label} address`} hitSlop={12} onPress={() => deleteMutation.mutate(typeof a.id === 'number' ? a.id : Number(a.id))}>
+                <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${a.label} address`} hitSlop={12} onPress={() => confirmRemove(a)}>
                   <T className="font-sans-bold text-sm text-danger">Remove</T>
                 </Pressable>
                 {!isDef ? (
-                  <Pressable accessibilityRole="button" accessibilityLabel={`Set ${a.label} as default address`} hitSlop={12} onPress={() => defaultMutation.mutate(typeof a.id === 'number' ? a.id : Number(a.id))} className="ml-auto">
+                  <Pressable accessibilityRole="button" accessibilityLabel={`Set ${a.label} as default address`} hitSlop={12} onPress={() => defaultMutation.mutate(a.id)} className="ml-auto">
                     <T className="font-sans-bold text-sm text-green">Set as default</T>
                   </Pressable>
                 ) : null}
@@ -110,13 +125,13 @@ export default function BuyerAddresses() {
             <T className="font-sans-bold text-[15px] text-muted">Cancel</T>
           </Pressable>
         </View>
-        <SheetField label="Full Name" placeholder="Recipient name" value={form.recipient_name} onChangeText={set('recipient_name')} />
+        <SheetField label="Label" placeholder="Home, Work…" value={form.label} onChangeText={set('label')} />
         <SheetField label="Street address" placeholder="House number and street" value={form.street} onChangeText={set('street')} autoComplete="street-address" />
         <View className="flex-row gap-2.5">
-          <SheetField className="flex-1" label="City" placeholder="e.g. Yaba" value={form.city} onChangeText={set('city')} />
+          <SheetField className="flex-1" label="Area / town" placeholder="e.g. Yaba" value={form.area} onChangeText={set('area')} />
           <SheetField className="flex-1" label="State" placeholder="e.g. Lagos" value={form.state} onChangeText={set('state')} />
         </View>
-        <SheetField label="Phone for the rider" placeholder="0803 000 0000" keyboardType="phone-pad" value={form.phone_number} onChangeText={set('phone_number')} />
+        <SheetField label="Phone for the rider" placeholder="0803 000 0000" keyboardType="phone-pad" value={form.phone} onChangeText={set('phone')} maxLength={20} />
         <SheetField label="Landmark (optional)" placeholder="Helps the rider find you" value={form.landmark} onChangeText={set('landmark')} />
         {addMutation.error ? <T className="text-sm text-danger">{(addMutation.error as Error).message}</T> : null}
         <Button

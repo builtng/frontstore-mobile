@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, Share as RNShare, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Share as RNShare, View } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ban, Check, Copy, EyeOff, Pencil, Share, Trash2, type LucideIcon } from 'lucide-react-native';
@@ -10,6 +10,7 @@ import { formatNaira } from '@/lib/format';
 import { Grip, goBack } from '@/features/seller/parts';
 import { getProduct, updateProduct } from '@/api/products';
 import { getMe } from '@/api/auth';
+import { storeUrl } from '@/lib/storefront';
 
 function Row({ Icon, label, onPress, danger, className }: { Icon: LucideIcon; label: string; onPress: () => void; danger?: boolean; className?: string }) {
   const color = danger ? '#A8321E' : '#0E1A15';
@@ -39,7 +40,7 @@ export default function ProductActions() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (patch: any) => updateProduct(id!, patch),
+    mutationFn: (patch: any) => updateProduct(id!, patch, product?.variants),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product', id] });
@@ -53,11 +54,12 @@ export default function ProductActions() {
   const isHidden = product?.status === 'hidden';
   const isOut = (product?.stock_count ?? 10) === 0;
 
-  const storeSlug = me?.store?.username || me?.store?.slug || 'store';
-  const productSlug = product?.slug || id;
-  const productUrl = (product as any)?.public_url || `https://frontstore.app/${storeSlug}/${productSlug}`;
+  const storeSlug = me?.store?.username || me?.store?.slug || '';
+  const productUrl = (product as any)?.public_url || (storeSlug ? storeUrl(storeSlug, product?.slug || id) : '');
+  const img = product?.thumbnail_url || product?.image_url || product?.images?.[0];
 
   const shareProduct = () => {
+    if (!productUrl) return;
     RNShare.share({
       message: `${name}: ${productUrl}`,
       url: productUrl,
@@ -66,6 +68,7 @@ export default function ProductActions() {
   };
 
   const copyProductLink = async () => {
+    if (!productUrl) return;
     await Clipboard.setStringAsync(productUrl);
     setCopied(true);
     setTimeout(() => {
@@ -75,7 +78,13 @@ export default function ProductActions() {
   };
 
   const toggleSoldOut = () => {
-    updateMutation.mutate({ stock_count: isOut ? 10 : 0 });
+    // Back in stock needs a real quantity, so ask for it on the edit screen
+    if (isOut) {
+      router.replace({ pathname: '/product/[id]/edit', params: { id: id!, focus: 'stock' } });
+      return;
+    }
+    // Sizes/colours go along so every variant is zeroed, not just the total
+    updateMutation.mutate({ stock_count: 0, sizes: product?.sizes, colors: product?.colors });
   };
 
   const toggleHide = () => {
@@ -99,18 +108,22 @@ export default function ProductActions() {
       >
         <Grip className="mb-2" />
         <View className="flex-row items-center gap-3 border-b border-[#F0ECE3] px-1 pb-3.5 pt-1">
-          <View className="h-[52px] w-[52px] items-center justify-center rounded-xl bg-[#E9A23B]">
-            <T className="font-sans-bold text-white text-lg">{name[0]}</T>
+          <View className="h-[52px] w-[52px] items-center justify-center overflow-hidden rounded-xl bg-[#E9A23B]">
+            {img ? <Image source={{ uri: img }} className="h-full w-full" resizeMode="cover" /> : <T className="font-sans-bold text-white text-lg">{name[0]}</T>}
           </View>
           <View className="flex-1 gap-0.5">
             <T className="font-sans-bold text-base">{name}</T>
             <T className="font-sans-bold text-sm text-green">{formatNaira(priceKobo / 100)} · {isHidden ? 'Hidden' : isOut ? 'Sold out' : 'In stock'}</T>
           </View>
+          {updateMutation.isPending ? <ActivityIndicator color="#0B6E4F" /> : null}
         </View>
+        {updateMutation.error ? (
+          <T accessibilityLiveRegion="polite" className="px-2 text-sm text-danger">{(updateMutation.error as Error).message}</T>
+        ) : null}
         <Row Icon={Pencil} label="Edit product" onPress={() => router.replace(`/product/${id}/edit`)} />
         <Row Icon={Share} label="Share product link" onPress={shareProduct} />
         <Row Icon={copied ? Check : Copy} label={copied ? 'Link copied!' : 'Copy product link'} onPress={copyProductLink} />
-        <Row Icon={Ban} label={isOut ? 'Mark as in stock' : 'Mark as sold out'} onPress={toggleSoldOut} />
+        <Row Icon={Ban} label={isOut ? 'Mark as in stock…' : 'Mark as sold out'} onPress={toggleSoldOut} />
         <Row Icon={EyeOff} label={isHidden ? 'Show on store' : 'Hide from store'} onPress={toggleHide} />
         <Row Icon={Trash2} label="Delete product" danger className="border-t border-[#F0ECE3]" onPress={() => router.replace(`/product/${id}/delete`)} />
         <Pressable accessibilityRole="button" onPress={close} className="mt-1.5 h-[52px] items-center justify-center rounded-full bg-cream">

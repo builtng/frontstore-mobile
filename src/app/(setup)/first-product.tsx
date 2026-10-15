@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Progress, StepHeader } from '@/features/setup/parts';
@@ -7,6 +7,7 @@ import { AiProductFlow, useAiProduct } from '@/features/setup/AiProductFlow';
 import { finishDraft, useDraft, toSlug } from '@/features/setup/draft';
 import { completeStoreSetup, uploadStoreLogo } from '@/api/store';
 import { createProduct } from '@/api/products';
+import { getMe } from '@/api/auth';
 
 export default function FirstProduct() {
   const draft = useDraft();
@@ -21,6 +22,16 @@ export default function FirstProduct() {
     setSubmitting(true);
     setErrorMsg(null);
     try {
+      // The backend overwrites an existing store on this call, so never run it for one
+      if (!draft.setup_token) {
+        const me = await getMe();
+        if (me?.store) {
+          finishDraft();
+          router.replace('/home');
+          return;
+        }
+      }
+
       const { store } = await completeStoreSetup({
         setup_token: draft.setup_token,
         name: draft.owner_name || draft.name || 'Frontstore Merchant',
@@ -39,11 +50,13 @@ export default function FirstProduct() {
       });
       finishDraft({ username: store?.username });
 
+      // The store exists now; anything below failing shouldn't undo that, but the merchant must know
+      const problems: string[] = [];
       if (draft.logo_uri) {
         try {
           await uploadStoreLogo(draft.logo_uri);
-        } catch (logoErr) {
-          console.warn('Store logo upload warning:', logoErr);
+        } catch (logoErr: any) {
+          problems.push(`Your logo didn’t upload (${logoErr.message || 'network error'}). Add it again from Store → Edit.`);
         }
       }
 
@@ -61,15 +74,18 @@ export default function FirstProduct() {
             sizes: flow.product.sizes,
             colors: flow.product.colours,
           });
-        } catch (prodErr) {
-          console.warn('First product creation warning:', prodErr);
+        } catch (prodErr: any) {
+          problems.push(`“${flow.product.name.trim()}” wasn’t added (${prodErr.message || 'network error'}). Add it again with the + button.`);
         }
       }
 
-      router.replace('/live');
+      if (problems.length) {
+        Alert.alert('Your store is ready, but…', problems.join('\n\n'), [{ text: 'OK', onPress: () => router.replace('/live') }]);
+      } else {
+        router.replace('/live');
+      }
     } catch (err: any) {
-      console.warn('Store setup API error:', err);
-      const msg = err.response?.data?.message || err.message || 'Could not complete store setup. Please check details and try again.';
+      const msg = err.message || 'Could not complete store setup. Please check details and try again.';
       setErrorMsg(msg);
     } finally {
       setSubmitting(false);

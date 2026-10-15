@@ -104,13 +104,15 @@ export interface Product {
 export type OrderStatus = 'paid' | 'packed' | 'shipped' | 'delivered' | 'refunded' | 'cancelled';
 
 export interface OrderItem {
-  id: number;
-  order_id: number;
-  product_id: number;
+  id: number | string;
+  order_id: number | string;
+  product_id: number | string | null;
   product_name: string;
   quantity: number;
-  unit_price_kobo: number;
-  total_kobo: number;
+  /** Naira, as stored on the order */
+  product_price?: number | string;
+  unit_price_kobo?: number;
+  total_kobo?: number;
   selected_size?: string | null;
   selected_color?: string | null;
   image_url?: string | null;
@@ -149,7 +151,8 @@ export interface Order {
   created_at: string;
   // Aliases & Extended Properties
   order_status?: string;
-  total_amount?: number;
+  /** Naira */
+  total_amount?: number | string;
   store?: Store | null;
 }
 
@@ -202,19 +205,17 @@ export interface Currency {
   default_country?: string;
 }
 
+/** Matches the backend's buyer_addresses columns. */
 export interface Address {
-  id: number;
+  id: number | string;
   label: string;
   street: string;
-  area?: string;
+  /** Town / area, e.g. "Yaba" */
+  area: string;
   state: string;
-  phone?: string;
+  phone: string;
   landmark?: string | null;
   is_default: boolean;
-  // Aliases & Extended Properties
-  recipient_name?: string;
-  city?: string;
-  phone_number?: string;
 }
 
 export interface SavedCard {
@@ -228,7 +229,8 @@ export interface SavedCard {
 }
 
 export interface Review {
-  id: number;
+  id: number | string;
+  order_id?: string | null;
   store_id: number;
   product_id?: number | null;
   product_name?: string | null;

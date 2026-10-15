@@ -4,8 +4,9 @@ import { Redirect } from 'expo-router';
 import { getUserMode, hasSeenOnboarding } from '@/api/authStore';
 import { checkSession } from '@/api/auth';
 import { loadDraft } from '@/features/setup/draft';
+import { holdLaunchNotification, takeLaunchNotificationUrl } from '@/lib/push';
 
-type Dest = '/home' | '/shop' | '/choose-mode' | '/login' | '/welcome';
+type Dest = string;
 
 export default function Index() {
   const [dest, setDest] = useState<Dest | null>(null);
@@ -14,9 +15,11 @@ export default function Index() {
     async function route() {
       try {
         // Ask the server rather than trusting whatever token is saved
-        const session = await checkSession();
+        const [session] = await Promise.all([checkSession(), holdLaunchNotification()]);
+        const fromNotification = takeLaunchNotificationUrl();
         if (session !== 'invalid') {
-          setDest((await getUserMode()) === 'buyer' ? '/shop' : '/home');
+          // Opened by tapping a notification: go straight to its screen
+          setDest(fromNotification ?? ((await getUserMode()) === 'buyer' ? '/shop' : '/home'));
           return;
         }
         // Verified their email but closed the app before finishing setup
@@ -40,5 +43,5 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={dest} />;
+  return <Redirect href={dest as any} />;
 }

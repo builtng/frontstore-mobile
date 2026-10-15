@@ -206,7 +206,7 @@ export default function Home() {
                   </View>
                   <View className="flex-1 gap-0.5">
                     <T className="font-sans-bold">{o.customer_name}</T>
-                    <T className="text-[13px] text-muted">#{o.order_number} · Paid · {o.payment_method}</T>
+                    <T className="text-[13px] text-muted">#{o.order_number} · {o.status === 'packed' ? 'Packed' : 'Paid'}{o.payment_method ? ` · ${o.payment_method}` : ''}</T>
                   </View>
                   <T className="font-sans-bold">{formatNaira(o.total_kobo / 100)}</T>
                 </Pressable>
@@ -245,7 +245,7 @@ export default function Home() {
                 accessibilityRole="button"
                 onPress={() => {
                   setNotificationsOpen(false);
-                  router.push('/payout');
+                  router.push({ pathname: '/payout', params: { mode: 'edit' } });
                 }}
                 className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5"
               >

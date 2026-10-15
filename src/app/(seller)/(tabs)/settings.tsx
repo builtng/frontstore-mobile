@@ -11,7 +11,7 @@ import { getMe, logout } from '@/api/auth';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
 import { PasswordLogin } from '@/features/account/PasswordLogin';
 import { NINA_LABEL, NinaSheet, ninaState } from '@/features/seller/NinaSheet';
-import { getPlans, getStore, updateStore } from '@/api/store';
+import { getPlans, getStore, sendWhatsappPhoneOtp, updateStore, verifyWhatsappPhoneOtp } from '@/api/store';
 import { getProducts } from '@/api/products';
 import { getWalletBalance } from '@/api/orders';
 
@@ -21,11 +21,15 @@ export default function Settings() {
   const [ninaOpen, setNinaOpen] = useState(false);
   const [flatFee, setFlatFee] = useState('');
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
+  const [waOpen, setWaOpen] = useState(false);
+  const [waPhone, setWaPhone] = useState('');
+  const [waCode, setWaCode] = useState('');
+  const [waCodeSent, setWaCodeSent] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
   const { data: store } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
-  const { data: wallet } = useQuery({ queryKey: ['seller-wallet'], queryFn: getWalletBalance });
+  const { data: wallet } = useQuery({ queryKey: ['wallet'], queryFn: getWalletBalance });
   const { data: products } = useQuery({ queryKey: ['products'], queryFn: () => getProducts() });
   const { data: planGroups = [] } = useQuery({ queryKey: ['plans'], queryFn: getPlans, staleTime: 1000 * 60 * 60 });
 
@@ -37,6 +41,29 @@ export default function Settings() {
     },
     onError: (err: any) => setDeliveryError(err.message || 'Could not save your delivery fee.'),
   });
+
+  const sendWaCode = useMutation({
+    mutationFn: () => sendWhatsappPhoneOtp(waPhone.trim()),
+    onSuccess: () => setWaCodeSent(true),
+  });
+  const verifyWaCode = useMutation({
+    mutationFn: () => verifyWhatsappPhoneOtp(waPhone.trim(), waCode),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seller-store'] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      closeWa();
+    },
+  });
+  const openWa = () => {
+    setWaPhone('');
+    setWaCode('');
+    setWaCodeSent(false);
+    sendWaCode.reset();
+    verifyWaCode.reset();
+    setWaOpen(true);
+  };
+  const closeWa = () => setWaOpen(false);
+  const waError = (sendWaCode.error || verifyWaCode.error) as Error | null;
 
   const storeName = store?.store_name || store?.name || me?.store?.store_name || 'My Store';
   const storeSlug = store?.username || store?.slug || me?.store?.username || '';
@@ -77,9 +104,9 @@ export default function Settings() {
 
   const generalRows: { label: string; value: string; href?: Href; onPress?: () => void }[] = [
     { label: 'Switch to Buyer view', value: userName, href: '/switch' },
-    { label: 'WhatsApp Business Number', value: userPhone },
+    { label: 'WhatsApp Business Number', value: userPhone, onPress: openWa },
     { label: 'Delivery fee', value: deliveryValue, onPress: openDelivery },
-    { label: 'Store Theme & Branding', value: storeColor, href: '/store-edit' },
+    { label: 'Store Theme & Branding', value: '', href: '/store-edit' },
     { label: 'Share Store & QR Code', value: '', href: '/share' },
   ];
 
@@ -216,6 +243,54 @@ export default function Settings() {
             />
           </View>
         ) : null}
+      </BottomSheet>
+
+      {/* WhatsApp number: a code goes to the new number before it replaces the old one */}
+      <BottomSheet visible={waOpen} onClose={closeWa}>
+        <View className="gap-3 py-1">
+          <View className="flex-row items-center justify-between">
+            <T className="font-display text-xl">Change WhatsApp number</T>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" hitSlop={8} onPress={closeWa}>
+              <X size={20} color="#0E1A15" />
+            </Pressable>
+          </View>
+          <T className="text-sm text-muted-2">Customers and Nina reach you on this number. We’ll send a code to the new number to confirm it’s yours.</T>
+          <SheetField
+            label="New WhatsApp number"
+            keyboardType="phone-pad"
+            value={waPhone}
+            onChangeText={(v) => { setWaPhone(v); setWaCodeSent(false); }}
+            placeholder="0803 000 0000"
+            maxLength={20}
+            editable={!verifyWaCode.isPending}
+          />
+          {waCodeSent ? (
+            <SheetField
+              label="6-digit code"
+              keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              value={waCode}
+              onChangeText={(v) => setWaCode(v.replace(/\D/g, '').slice(0, 6))}
+              placeholder="123456"
+            />
+          ) : null}
+          {waError ? <T className="text-sm text-danger">{waError.message}</T> : null}
+          {waCodeSent ? (
+            <Button
+              title={verifyWaCode.isPending ? 'Confirming...' : 'Confirm number'}
+              className="h-[50px]"
+              disabled={waCode.length !== 6 || verifyWaCode.isPending}
+              onPress={() => verifyWaCode.mutate()}
+            />
+          ) : (
+            <Button
+              title={sendWaCode.isPending ? 'Sending code...' : 'Send code'}
+              className="h-[50px]"
+              disabled={waPhone.replace(/\D/g, '').length < 10 || sendWaCode.isPending}
+              onPress={() => sendWaCode.mutate()}
+            />
+          )}
+        </View>
       </BottomSheet>
 
       {/* Delivery Zones BottomSheet */}
