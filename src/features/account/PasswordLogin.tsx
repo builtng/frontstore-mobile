@@ -59,7 +59,7 @@ export function PasswordLogin() {
     toggle.mutate(v);
   };
 
-  const matches = next.length >= 6 && next === confirm;
+  const matches = next.length >= 8 && next === confirm;
   const ready = matches && (!hasPassword || current.length > 0);
   const error = (toggle.error ?? save.error) as Error | null;
 
@@ -86,7 +86,7 @@ export function PasswordLogin() {
           {hasPassword ? (
             <SheetField label="Current password" secureTextEntry autoComplete="current-password" value={current} onChangeText={setCurrent} />
           ) : null}
-          <SheetField label="New password" secureTextEntry autoComplete="new-password" value={next} onChangeText={setNext} placeholder="At least 6 characters" />
+          <SheetField label="New password" secureTextEntry autoComplete="new-password" value={next} onChangeText={setNext} placeholder="At least 8 characters" />
           <SheetField label="Confirm new password" secureTextEntry autoComplete="new-password" value={confirm} onChangeText={setConfirm} />
           {confirm && next !== confirm ? <T className="text-sm text-danger">Passwords don’t match.</T> : null}
           {save.error ? <T className="text-sm text-danger">{(save.error as Error).message}</T> : null}
