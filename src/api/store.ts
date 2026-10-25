@@ -1,10 +1,14 @@
-import { apiGet, apiPost, apiPostRaw, apiPut } from './client';
+import { apiGet, apiPost, apiPostRaw, apiPut, apiPutRaw } from './client';
+import { imageMime } from './products';
 import { Store, Bank, Country, Currency, StoreNotification } from './types';
 import { setToken, setUserMode } from './authStore';
 import { registerForPush } from '@/lib/push';
 
-/** Check if a store username / subdomain is available */
-export async function checkSubdomainAvailable(username: string): Promise<boolean> {
+/**
+ * Is a store username free? true / false, or null when we couldn't tell
+ * (offline, server error): the server checks again when the store is created.
+ */
+export async function checkSubdomainAvailable(username: string): Promise<boolean | null> {
   if (!username || username.trim().length < 3) return false;
   try {
     const slug = username.toLowerCase().replace(/[^a-z0-9-]/g, '');
@@ -12,11 +16,9 @@ export async function checkSubdomainAvailable(username: string): Promise<boolean
     // If store exists (200), domain is taken
     return !store;
   } catch (err: any) {
-    if (err.status === 404) {
-      // 404 means store does not exist -> username is available!
-      return true;
-    }
-    return false;
+    // 404 means no store has it
+    if (err.status === 404) return true;
+    return null;
   }
 }
 
@@ -123,8 +125,7 @@ export async function markNotificationsRead(): Promise<void> {
 export async function uploadStoreLogo(fileUri: string): Promise<{ url: string }> {
   const formData = new FormData();
   const filename = fileUri.split('/').pop() || 'logo.jpg';
-  const match = /\.(\w+)$/.exec(filename);
-  formData.append('logo', { uri: fileUri, name: filename, type: match ? `image/${match[1]}` : 'image/jpeg' } as any);
+  formData.append('logo', { uri: fileUri, name: filename, type: imageMime(filename) } as any);
   return apiPost<{ url: string }>('/store/upload-logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 }
 
@@ -139,4 +140,34 @@ export async function updateStore(payload: {
   nina_enabled?: boolean;
 }): Promise<Store> {
   return apiPut<Store>('/store', payload);
+}
+
+/**
+ * Save the payout bank account on an existing store. Once a verified account
+ * is on file the backend doesn't apply a change straight away: it goes to an
+ * admin for approval (`pending` is then true).
+ */
+export async function updatePayoutAccount(account: {
+  bank_name: string;
+  bank_code: string;
+  account_number: string;
+  account_name: string;
+}): Promise<{ pending: boolean; message?: string }> {
+  const res = await apiPutRaw<any>('/store', {
+    bank_name: account.bank_name,
+    paystack_bank_code: account.bank_code,
+    bank_account_number: account.account_number,
+    bank_account_name: account.account_name,
+  });
+  return { pending: !!res?.pending_payout_account_change, message: res?.message };
+}
+
+/** Text a code to a new WhatsApp number before it replaces the store's one. */
+export async function sendWhatsappPhoneOtp(phone: string): Promise<void> {
+  await apiPost('/store/whatsapp-phone/send-otp', { whatsapp_phone: phone });
+}
+
+/** Confirm the code and make that number the store's WhatsApp number. */
+export async function verifyWhatsappPhoneOtp(phone: string, otp: string): Promise<void> {
+  await apiPost('/store/whatsapp-phone/verify-otp', { whatsapp_phone: phone, otp });
 }

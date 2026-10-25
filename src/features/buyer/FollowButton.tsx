@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable } from 'react-native';
+import { ActivityIndicator, Alert, Pressable } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { T, cx } from '@/components/ui';
 import { getFollowedStores, toggleFollowStore } from '@/api/buyer';
@@ -10,8 +10,9 @@ export function FollowButton({ storeId, storeName }: { storeId: number | string;
   const on = followed.some((s) => String(s.id) === String(storeId));
 
   const toggle = useMutation({
-    mutationFn: () => toggleFollowStore(storeId as number),
+    mutationFn: () => toggleFollowStore(storeId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['followed-stores'] }),
+    onError: (err: any) => Alert.alert(`Couldn’t ${on ? 'unfollow' : 'follow'} ${storeName}`, err.message),
   });
 
   return (

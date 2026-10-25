@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { View, Pressable, AppState, AppStateStatus, Animated, StyleSheet, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Sparkles, X } from 'lucide-react-native';
@@ -15,7 +15,7 @@ export function UpdateNotification() {
   const translateY = useRef(new Animated.Value(-80)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
-  const checkUpdates = async () => {
+  const checkUpdates = useCallback(async () => {
     if (__DEV__ || isCheckingRef.current || updateAvailable) return;
     try {
       isCheckingRef.current = true;
@@ -29,7 +29,7 @@ export function UpdateNotification() {
     } finally {
       isCheckingRef.current = false;
     }
-  };
+  }, [updateAvailable]);
 
   useEffect(() => {
     if (__DEV__) return;
@@ -51,7 +51,7 @@ export function UpdateNotification() {
       sub.remove();
       clearInterval(interval);
     };
-  }, [updateAvailable]);
+  }, [checkUpdates]);
 
   useEffect(() => {
     if (updateAvailable && !dismissed) {
@@ -69,7 +69,7 @@ export function UpdateNotification() {
         }),
       ]).start();
     }
-  }, [updateAvailable, dismissed]);
+  }, [updateAvailable, dismissed, translateY, opacity]);
 
   const handleRestart = async () => {
     if (reloading) return;

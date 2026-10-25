@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { EllipsisVertical, Search } from 'lucide-react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -19,7 +19,9 @@ export default function Products() {
 
   const queryClient = useQueryClient();
 
-  const { data: apiProducts, isLoading } = useQuery({
+  const [undoError, setUndoError] = useState<string | null>(null);
+
+  const { data: apiProducts, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['products'],
     queryFn: () => getProducts(),
   });
@@ -39,8 +41,8 @@ export default function Products() {
       try {
         await restoreProduct(deletedId);
         queryClient.invalidateQueries({ queryKey: ['products'] });
-      } catch (err) {
-        console.warn('Restore failed', err);
+      } catch (err: any) {
+        setUndoError(`Couldn’t bring “${deleted}” back: ${err.message || 'network error'}`);
       }
     }
     setToast(null);
@@ -51,14 +53,15 @@ export default function Products() {
     if (!apiProducts) return [];
     const q = query.trim().toLowerCase();
     return apiProducts.filter((p) => {
-      if (toast && p.name === toast) return false;
+      // Hide the one just deleted (by id: names aren't unique) until the list refreshes
+      if (toast && deletedId && String(p.id) === String(deletedId)) return false;
       if (q && !p.name.toLowerCase().includes(q)) return false;
       if (filter === 'in') return p.stock_count > 0 && p.status !== 'hidden';
       if (filter === 'out') return p.stock_count === 0 && p.status !== 'hidden';
       if (filter === 'hidden') return p.status === 'hidden';
       return true;
     });
-  }, [apiProducts, query, filter, toast]);
+  }, [apiProducts, query, filter, toast, deletedId]);
 
   const open = (p: Product) => router.push(`/product/${p.id}`);
 
@@ -67,7 +70,7 @@ export default function Products() {
       <View className="gap-4 px-5 pt-3">
         <View className="flex-row items-center justify-between">
           <T className="font-display text-[32px] tracking-[-0.6px]">Products</T>
-          <T className="text-sm text-muted">{items.length} products</T>
+          <T className="text-sm text-muted">{apiProducts ? `${apiProducts.length} ${apiProducts.length === 1 ? 'product' : 'products'}` : ''}</T>
         </View>
         <View className="h-12 flex-row items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5">
           <Search size={18} color="#5B6660" strokeWidth={2} />
@@ -89,7 +92,16 @@ export default function Products() {
         </ScrollView>
       </View>
 
-      <ScrollView contentContainerClassName="gap-2.5 px-5 pb-28 pt-4">
+      <ScrollView
+        contentContainerClassName="gap-2.5 px-5 pb-28 pt-4"
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#0B6E4F" />}
+      >
+        {isError ? (
+          <Pressable accessibilityRole="button" onPress={() => refetch()} className="rounded-2xl border border-line bg-surface p-4">
+            <T className="text-sm text-danger">Couldn’t load your products. Tap to try again.</T>
+          </Pressable>
+        ) : null}
+        {undoError ? <T className="text-sm text-danger">{undoError}</T> : null}
         {isLoading ? (
           <View className="py-12 items-center">
             <ActivityIndicator size="large" color="#0B6E4F" />
@@ -98,22 +110,25 @@ export default function Products() {
           const inStock = p.stock_count > 0;
           const bg = inStock ? '#CFE8DC' : '#ECE8DF';
           const fg = inStock ? '#07261C' : '#4A524E';
-          const label = p.status === 'preorder' ? 'Pre-order' : inStock ? 'In stock' : 'Sold out';
+          const label = p.status === 'hidden' ? 'Hidden' : p.status === 'preorder' ? 'Pre-order' : inStock ? 'In stock' : 'Sold out';
+          const img = p.thumbnail_url || p.image_url || p.images?.[0];
 
           return (
             <Pressable
               key={p.id}
-              onLongPress={() => open(p)}
-              accessibilityHint="Long press for product options"
+              accessibilityRole="button"
+              accessibilityLabel={`${p.name}, ${formatNaira(p.price_kobo / 100)}, ${label}`}
+              accessibilityHint="Opens product options"
+              onPress={() => open(p)}
               className="flex-row items-center gap-3 rounded-[18px] border border-line bg-surface p-3"
             >
-              <View className="h-14 w-14 rounded-xl bg-[#E9A23B] items-center justify-center">
-                <T className="font-sans-bold text-white text-lg">{p.name[0]}</T>
+              <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-[#E9A23B]">
+                {img ? <Image source={{ uri: img }} className="h-full w-full" resizeMode="cover" /> : <T className="font-sans-bold text-lg text-white">{p.name[0]}</T>}
               </View>
               <View className="min-w-0 flex-1 gap-[3px]">
                 <T className="font-sans-bold" numberOfLines={1}>{p.name}</T>
                 <T className="font-sans-bold text-sm text-green">{formatNaira(p.price_kobo / 100)}</T>
-                <T className="text-xs text-muted">{p.stock_count} units left</T>
+                <T className="text-xs text-muted">{p.stock_count} {p.stock_count === 1 ? 'unit' : 'units'} left</T>
               </View>
               <View style={{ backgroundColor: bg }} className="rounded-full px-2.5 py-[5px]">
                 <T style={{ color: fg }} className="font-sans-bold text-xs">{label}</T>
@@ -129,7 +144,7 @@ export default function Products() {
             </Pressable>
           );
         })}
-        {!isLoading && items.length === 0 ? <T className="py-10 text-center text-muted">No products match.</T> : null}
+        {!isLoading && !isError && items.length === 0 ? <T className="py-10 text-center text-muted">No products match.</T> : null}
       </ScrollView>
 
       {toast ? (

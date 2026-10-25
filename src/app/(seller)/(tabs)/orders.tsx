@@ -1,18 +1,31 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { Search, ShoppingBag } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, T, cx } from '@/components/ui';
 import { getSellerOrders } from '@/api/orders';
+import type { OrderStatus } from '@/api/types';
 import { formatNaira } from '@/lib/format';
 
-type OrderTab = 'paid' | 'shipped' | 'delivered';
+type OrderTab = 'toship' | 'shipped' | 'delivered' | 'closed';
 const orderTabs: [OrderTab, string][] = [
-  ['paid', 'To ship'],
+  ['toship', 'To ship'],
   ['shipped', 'Shipped'],
   ['delivered', 'Delivered'],
+  ['closed', 'Closed'],
 ];
+// Every stage lands in exactly one tab (packed orders still need shipping)
+const TAB_OF: Record<OrderStatus, OrderTab> = {
+  paid: 'toship', packed: 'toship', shipped: 'shipped', delivered: 'delivered', refunded: 'closed', cancelled: 'closed',
+};
+// Same wording as the order screen's main button
+const NEXT_ACTION: Partial<Record<OrderStatus, string>> = {
+  paid: 'Mark as packed', packed: 'Mark as shipped', shipped: 'Mark as delivered',
+};
+const STAGE_LABEL: Record<OrderStatus, string> = {
+  paid: 'Paid', packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered', refunded: 'Refunded', cancelled: 'Cancelled',
+};
 
 function EmptyOrders() {
   return (
@@ -43,10 +56,10 @@ function EmptyOrders() {
 
 export default function Orders() {
   const { empty } = useLocalSearchParams<{ empty?: string }>();
-  const [tab, setTab] = useState<OrderTab>('paid');
+  const [tab, setTab] = useState<OrderTab>('toship');
   const [query, setQuery] = useState('');
 
-  const { data: apiOrders, isLoading } = useQuery({
+  const { data: apiOrders, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['seller-orders'],
     queryFn: () => getSellerOrders(),
   });
@@ -55,7 +68,7 @@ export default function Orders() {
     if (!apiOrders) return [];
     const q = query.trim().toLowerCase();
     return apiOrders.filter((o) => {
-      if (o.status !== tab) return false;
+      if (TAB_OF[o.status] !== tab) return false;
       if (!q) return true;
       const text = `${o.customer_name} ${o.order_number} ${o.items_summary || ''}`.toLowerCase();
       return text.includes(q);
@@ -89,7 +102,7 @@ export default function Orders() {
                 style={on ? { shadowColor: '#0E1A15', shadowOpacity: 0.12, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 } : undefined}
                 className={cx('h-10 flex-1 items-center justify-center rounded-[11px]', on && 'bg-surface')}
               >
-                <T className={cx('text-sm', on ? 'font-sans-bold text-ink' : 'font-sans-semibold text-muted-2')}>{label}</T>
+                <T numberOfLines={1} className={cx('text-[13px]', on ? 'font-sans-bold text-ink' : 'font-sans-semibold text-muted-2')}>{label}</T>
               </Pressable>
             );
           })}
@@ -108,14 +121,22 @@ export default function Orders() {
         </View>
       </View>
 
-      <ScrollView contentContainerClassName="gap-3 px-5 pb-8 pt-3.5">
+      <ScrollView
+        contentContainerClassName="gap-3 px-5 pb-8 pt-3.5"
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#0B6E4F" />}
+      >
+        {isError ? (
+          <Pressable accessibilityRole="button" onPress={() => refetch()} className="rounded-2xl border border-line bg-surface p-4">
+            <T className="text-sm text-danger">Couldn’t load your orders. Tap to try again.</T>
+          </Pressable>
+        ) : null}
         {isLoading ? (
           <View className="py-12 items-center">
             <ActivityIndicator size="large" color="#0B6E4F" />
           </View>
         ) : list.map((o) => {
           const href = `/order/${o.id}` as const;
-          const nextAction = tab === 'paid' ? 'Mark shipped' : tab === 'shipped' ? 'Mark delivered' : 'Send receipt';
+          const nextAction = NEXT_ACTION[o.status];
 
           return (
             <View key={o.id} className="gap-3 rounded-[20px] border border-line bg-surface p-4">
@@ -132,7 +153,7 @@ export default function Orders() {
                 <View className="items-end gap-1">
                   <T className="font-sans-bold">{formatNaira(o.total_kobo / 100)}</T>
                   <View className="rounded-full bg-mint-2 px-2 py-[3px]">
-                    <T className="font-sans-bold text-[11px] text-deep">Paid · {o.payment_method}</T>
+                    <T className="font-sans-bold text-[11px] text-deep">{STAGE_LABEL[o.status]}{o.payment_method ? ` · ${o.payment_method}` : ''}</T>
                   </View>
                 </View>
               </View>
@@ -143,16 +164,18 @@ export default function Orders() {
                     <T className="font-sans-bold text-sm">View order</T>
                   </Pressable>
                 </Link>
-                <Link href={href} asChild>
-                  <Pressable accessibilityRole="button" className="h-11 flex-1 items-center justify-center rounded-full bg-deep">
-                    <T className="font-sans-bold text-sm text-white">{nextAction}</T>
-                  </Pressable>
-                </Link>
+                {nextAction ? (
+                  <Link href={href} asChild>
+                    <Pressable accessibilityRole="button" className="h-11 flex-1 items-center justify-center rounded-full bg-deep">
+                      <T className="font-sans-bold text-sm text-white">{nextAction}</T>
+                    </Pressable>
+                  </Link>
+                ) : null}
               </View>
             </View>
           );
         })}
-        {!isLoading && list.length === 0 ? <T className="py-10 text-center text-muted">No orders in this tab.</T> : null}
+        {!isLoading && !isError && list.length === 0 ? <T className="py-10 text-center text-muted">No orders in this tab.</T> : null}
       </ScrollView>
     </Screen>
   );

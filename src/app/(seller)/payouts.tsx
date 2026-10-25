@@ -23,7 +23,10 @@ export default function Payouts() {
   const [otpModal, setOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet'],
@@ -43,6 +46,7 @@ export default function Payouts() {
       setOtpModal(false);
       setOtpCode('');
       setSubmitting(false);
+      setNotice(`Payout of ${formatNaira(availKobo / 100)} requested. It shows below as Processing until it lands.`);
     },
     onError: (err: any) => {
       setErrorMsg(err.message || 'Withdrawal failed. Please check OTP.');
@@ -51,12 +55,21 @@ export default function Payouts() {
   });
 
   const handlePayOutNow = async () => {
+    if (!canPayOut || sendingOtp) return;
+    setPageError(null);
+    setNotice(null);
+    setSendingOtp(true);
     try {
       await sendWithdrawalOtp();
-    } catch {
-      // Proceed to modal anyway
+      setErrorMsg(null);
+      setOtpCode('');
+      setOtpModal(true);
+    } catch (err: any) {
+      // No code was sent, so there's nothing to type in
+      setPageError(err.message || 'We couldn’t send your verification code. Try again in a minute.');
+    } finally {
+      setSendingOtp(false);
     }
-    setOtpModal(true);
   };
 
   const confirmWithdrawal = () => {
@@ -67,6 +80,9 @@ export default function Payouts() {
   };
 
   const availKobo = wallet?.available_balance_kobo ?? 0;
+  const hasBank = !!wallet?.account_number;
+  const canPayOut = !!wallet && hasBank && availKobo > 0;
+  const payOutHint = !wallet ? null : !hasBank ? 'Add a payout account first.' : availKobo <= 0 ? 'Nothing to pay out yet.' : null;
   const pendingKobo = wallet?.pending_balance_kobo ?? 0;
   const bankName = wallet?.bank_name || '';
   const accNo = wallet?.account_number ? `••••${wallet.account_number.slice(-4)}` : '';
@@ -85,10 +101,21 @@ export default function Payouts() {
           <T className="text-[13px] text-on-dark-2">Available to pay out</T>
           <T className="font-display-x text-[38px] tracking-[-0.8px] text-bg">{formatNaira(availKobo / 100)}</T>
           <T className="text-[13px] text-on-dark">Pending {formatNaira(pendingKobo / 100)}{payoutNote ? ` · ${payoutNote}` : ''}</T>
-          <Pressable accessibilityRole="button" onPress={handlePayOutNow} className="mt-2 h-12 items-center justify-center rounded-full bg-gold">
-            <T className="font-sans-bold text-base text-[#2A1B05]">Pay out now</T>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canPayOut || sendingOtp }}
+            disabled={!canPayOut || sendingOtp}
+            onPress={handlePayOutNow}
+            className={cx('mt-2 h-12 flex-row items-center justify-center gap-2 rounded-full bg-gold', (!canPayOut || sendingOtp) && 'opacity-40')}
+          >
+            {sendingOtp ? <ActivityIndicator color="#2A1B05" size="small" /> : null}
+            <T className="font-sans-bold text-base text-[#2A1B05]">{sendingOtp ? 'Sending code…' : 'Pay out now'}</T>
           </Pressable>
+          {payOutHint ? <T className="text-center text-[13px] text-on-dark-2">{payOutHint}</T> : null}
         </View>
+
+        {pageError ? <T accessibilityLiveRegion="polite" className="text-sm text-danger">{pageError}</T> : null}
+        {notice ? <T accessibilityLiveRegion="polite" className="text-sm text-green">{notice}</T> : null}
 
         <View className="flex-row items-center gap-3 rounded-[20px] border border-line bg-surface px-4 py-3.5">
           <View className="h-11 w-11 items-center justify-center rounded-xl bg-mint">
@@ -98,9 +125,9 @@ export default function Payouts() {
             {accHolder ? <T className="font-sans-bold text-[15px]">{accHolder}</T> : null}
             {accNo ? <T className="text-[13px] text-muted-2">{[bankName, accNo].filter(Boolean).join(' · ')}</T> : null}
           </View>
-          <Link href="/payout" asChild>
-            <Pressable accessibilityRole="button" accessibilityLabel="Change payout account" hitSlop={4} className="h-10 justify-center rounded-full border border-line-2 px-3">
-              <T className="font-sans-bold text-[13px]">Change</T>
+          <Link href={{ pathname: '/payout', params: { mode: 'edit' } }} asChild>
+            <Pressable accessibilityRole="button" accessibilityLabel={hasBank ? 'Change payout account' : 'Add payout account'} hitSlop={4} className="h-10 justify-center rounded-full border border-line-2 px-3">
+              <T className="font-sans-bold text-[13px]">{hasBank ? 'Change' : 'Add'}</T>
             </Pressable>
           </Link>
         </View>
@@ -138,7 +165,7 @@ export default function Payouts() {
           <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 16 }} className="gap-4 rounded-t-[28px] bg-surface px-5 pt-3">
             <Grip />
             <T className="font-display-x text-[22px]">Confirm payout</T>
-            <T className="text-sm text-muted-2">Enter the OTP sent to your WhatsApp or email to authorize withdrawal of {formatNaira(availKobo / 100)}.</T>
+            <T className="text-sm text-muted-2">Enter the 6-digit code we just sent you to pay out {formatNaira(availKobo / 100)} to {bankName || 'your bank'} {accNo}.</T>
 
             {errorMsg ? (
               <View className="rounded-xl bg-red-100 p-3 border border-red-200">
@@ -147,10 +174,13 @@ export default function Payouts() {
             ) : null}
 
             <View className="gap-1.5">
-              <T className="font-sans-bold text-sm">6-digit OTP code</T>
+              <T className="font-sans-bold text-sm">6-digit code</T>
               <TextInput
                 value={otpCode}
-                onChangeText={setOtpCode}
+                onChangeText={(v) => setOtpCode(v.replace(/\D/g, '').slice(0, 6))}
+                textContentType="oneTimeCode"
+                autoComplete="one-time-code"
+                accessibilityLabel="Verification code"
                 keyboardType="number-pad"
                 maxLength={6}
                 placeholder="123456"

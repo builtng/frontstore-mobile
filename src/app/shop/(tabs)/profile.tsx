@@ -47,8 +47,8 @@ export default function BuyerProfile() {
 
   const stats = [
     { n: String(orders.length), label: 'Orders', href: '/shop/orders' as Href },
-    { n: String(saved.length), label: 'Saved', href: '/shop/saved' as Href },
-    { n: String(follows.length), label: 'Following', href: '/shop/saved' as Href },
+    { n: String(saved.length), label: 'Saved', href: '/shop/saved?tab=prod' as Href },
+    { n: String(follows.length), label: 'Following', href: '/shop/saved?tab=stores' as Href },
   ];
 
   return (

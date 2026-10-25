@@ -81,7 +81,10 @@ function sessionRejected(token: string): Promise<boolean> {
       .then(() => false)
       // Offline or a server error: keep the user signed in
       .catch((err: AxiosError) => err.response?.status === 401)
-      .finally(() => setTimeout(() => sessionChecks.delete(token), 30000));
+      .finally(() => {
+        const t: any = setTimeout(() => sessionChecks.delete(token), 30000);
+        t?.unref?.(); // don't hold Jest (or Node) open
+      });
     sessionChecks.set(token, check);
   }
   return check;
@@ -99,94 +102,71 @@ export class ApiError extends Error {
   }
 }
 
-/** Wrapper helper methods matching expected API call patterns */
-export async function apiGet<T = any>(url: string, params?: Record<string, any>, config?: any): Promise<T> {
+/** Turn an axios failure (or a `status: "error"` body) into an ApiError. */
+function toApiError(err: any): ApiError {
+  if (err instanceof ApiError) return err;
+  // Laravel validation errors: show the first field message, not just "The given data was invalid."
+  const firstFieldError = Object.values(err.response?.data?.errors ?? {}).flat()[0];
+  const message = (typeof firstFieldError === 'string' && firstFieldError) || err.response?.data?.message || err.message || 'Network request failed';
+  return new ApiError(message, err.response?.status || 500, err.response?.data);
+}
+
+/** Run a request and unwrap the body; `raw` keeps the whole body instead of just `data`. */
+async function send<T>(request: Promise<{ data: any; status: number }>, raw = false): Promise<T> {
   try {
-    const res = await apiClient.get(url, { params, ...config });
+    const res = await request;
     const json = res.data;
     if (json?.status === 'error') {
       throw new ApiError(json.message || 'Request failed', res.status, json);
     }
-    return json?.data !== undefined ? json.data : json;
+    return raw ? json : json?.data !== undefined ? json.data : json;
   } catch (err: any) {
-    if (err instanceof ApiError) throw err;
-    const message = err.response?.data?.message || err.message || 'Network request failed';
-    throw new ApiError(message, err.response?.status || 500, err.response?.data);
+    throw toApiError(err);
   }
 }
 
-export async function apiPost<T = any>(url: string, body?: any, config?: any): Promise<T> {
-  try {
-    const res = await apiClient.post(url, body, config);
-    const json = res.data;
-    if (json?.status === 'error') {
-      throw new ApiError(json.message || 'Request failed', res.status, json);
-    }
-    return json?.data !== undefined ? json.data : json;
-  } catch (err: any) {
-    if (err instanceof ApiError) throw err;
-    const message = err.response?.data?.message || err.message || 'Network request failed';
-    throw new ApiError(message, err.response?.status || 500, err.response?.data);
-  }
+/** Wrapper helper methods matching expected API call patterns */
+export function apiGet<T = any>(url: string, params?: Record<string, any>, config?: any): Promise<T> {
+  return send(apiClient.get(url, { params, ...config }));
+}
+
+export function apiPost<T = any>(url: string, body?: any, config?: any): Promise<T> {
+  return send(apiClient.post(url, body, config));
 }
 
 /** POST that returns the whole response body. Auth endpoints put `token` beside `data`, which apiPost would drop. */
-export async function apiPostRaw<T = any>(url: string, body?: any, config?: any): Promise<T> {
-  try {
-    const res = await apiClient.post(url, body, config);
-    const json = res.data;
-    if (json?.status === 'error') {
-      throw new ApiError(json.message || 'Request failed', res.status, json);
-    }
-    return json;
-  } catch (err: any) {
-    if (err instanceof ApiError) throw err;
-    const message = err.response?.data?.message || err.message || 'Network request failed';
-    throw new ApiError(message, err.response?.status || 500, err.response?.data);
-  }
+export function apiPostRaw<T = any>(url: string, body?: any, config?: any): Promise<T> {
+  return send(apiClient.post(url, body, config), true);
 }
 
-export async function apiPut<T = any>(url: string, body?: any): Promise<T> {
-  try {
-    const res = await apiClient.put(url, body);
-    const json = res.data;
-    if (json?.status === 'error') {
-      throw new ApiError(json.message || 'Request failed', res.status, json);
-    }
-    return json?.data !== undefined ? json.data : json;
-  } catch (err: any) {
-    if (err instanceof ApiError) throw err;
-    const message = err.response?.data?.message || err.message || 'Network request failed';
-    throw new ApiError(message, err.response?.status || 500, err.response?.data);
-  }
+/** PUT that returns the whole response body (for top-level flags beside `data`). */
+export function apiPutRaw<T = any>(url: string, body?: any): Promise<T> {
+  return send(apiClient.put(url, body), true);
 }
 
-export async function apiPatch<T = any>(url: string, body?: any): Promise<T> {
-  try {
-    const res = await apiClient.patch(url, body);
-    const json = res.data;
-    if (json?.status === 'error') {
-      throw new ApiError(json.message || 'Request failed', res.status, json);
-    }
-    return json?.data !== undefined ? json.data : json;
-  } catch (err: any) {
-    if (err instanceof ApiError) throw err;
-    const message = err.response?.data?.message || err.message || 'Network request failed';
-    throw new ApiError(message, err.response?.status || 500, err.response?.data);
-  }
+export function apiPut<T = any>(url: string, body?: any): Promise<T> {
+  return send(apiClient.put(url, body));
 }
 
-export async function apiDelete<T = any>(url: string, body?: any): Promise<T> {
-  try {
-    const res = await apiClient.delete(url, body ? { data: body } : undefined);
-    const json = res.data;
-    if (json?.status === 'error') {
-      throw new ApiError(json.message || 'Request failed', res.status, json);
-    }
-    return json?.data !== undefined ? json.data : json;
-  } catch (err: any) {
-    if (err instanceof ApiError) throw err;
-    const message = err.response?.data?.message || err.message || 'Network request failed';
-    throw new ApiError(message, err.response?.status || 500, err.response?.data);
+export function apiPatch<T = any>(url: string, body?: any): Promise<T> {
+  return send(apiClient.patch(url, body));
+}
+
+export function apiDelete<T = any>(url: string, body?: any): Promise<T> {
+  return send(apiClient.delete(url, body ? { data: body } : undefined));
+}
+
+/**
+ * GET every page of a Laravel paginator (`data: { data: [...], current_page, last_page }`).
+ * `maxPages` stops a runaway loop on a huge store.
+ */
+export async function apiGetAllPages<T = any>(url: string, params: Record<string, any> = {}, maxPages = 20): Promise<T[]> {
+  const items: T[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const data = await apiGet<any>(url, { limit: 100, ...params, page });
+    if (Array.isArray(data)) return [...items, ...data];
+    items.push(...(Array.isArray(data?.data) ? data.data : []));
+    if (!data?.last_page || page >= data.last_page) break;
   }
+  return items;
 }

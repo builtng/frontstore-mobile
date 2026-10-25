@@ -15,7 +15,7 @@ export default function Switch() {
   const [sel, setSel] = useState<Mode>(current === 'shop' ? 'sell' : 'shop');
   const insets = useSafeAreaInsets();
 
-  const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
+  const { data: me, isLoading: meLoading, isError: meError, refetch: refetchMe } = useQuery({ queryKey: ['me'], queryFn: getMe });
 
   const user = me?.user;
   const sellerStore = me?.store;
@@ -34,7 +34,14 @@ export default function Switch() {
 
   const close = () => (router.canGoBack() ? router.back() : router.replace(current === 'shop' ? '/shop' : '/home'));
 
+  // Selling needs to know whether there's a store; don't guess while the account loads
+  const waiting = sel === 'sell' && !me;
+
   const go = async () => {
+    if (waiting) {
+      if (meError) refetchMe();
+      return;
+    }
     // Selling without a store yet: set one up first (safe, there's nothing to overwrite)
     if (sel === 'sell' && me && !sellerStore) {
       router.replace('/store-name');
@@ -47,6 +54,7 @@ export default function Switch() {
 
   const goLabel = sel === 'shop'
     ? (current === 'shop' ? 'Stay in shopping' : 'Switch to shopping')
+    : waiting ? (meLoading ? 'Loading…' : 'Couldn’t load your account. Try again')
     : me && !sellerStore ? 'Set up my store'
     : (current === 'sell' ? 'Stay in selling' : 'Switch to selling');
 

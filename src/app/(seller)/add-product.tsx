@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, ChevronDown, Lock } from 'lucide-react-native';
@@ -62,6 +62,12 @@ export default function AddProduct() {
   });
   const { stage, pick: pickImages } = photoDraft;
   const photos = photoDraft.photos.map((p) => p.uri);
+
+  const removePhoto = (uri: string) =>
+    Alert.alert('Remove this photo?', undefined, [
+      { text: 'Keep', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => photoDraft.remove(uri) },
+    ]);
 
   const onPublish = async () => {
     if (stage !== 'filled' || submitting) return;
@@ -126,29 +132,36 @@ export default function AddProduct() {
           <Pressable
             accessibilityRole="button"
             onPress={pickImages}
+            disabled={photoDraft.uploading}
             className="h-[210px] items-center justify-center gap-2.5 rounded-[22px] border-2 border-dashed border-[#B9B1A0] bg-surface"
           >
             <View className="h-14 w-14 items-center justify-center rounded-full bg-mint">
-              <Camera size={26} color="#0B6E4F" strokeWidth={2} />
+              {photoDraft.uploading ? <ActivityIndicator color="#0B6E4F" /> : <Camera size={26} color="#0B6E4F" strokeWidth={2} />}
             </View>
-            <T className="font-sans-bold text-base text-[#33403A]">Take a photo or choose from gallery</T>
+            <T className="font-sans-bold text-base text-[#33403A]">{photoDraft.uploading ? 'Uploading…' : 'Take a photo or choose from gallery'}</T>
             <T className="text-[13px] text-muted">Up to 3 photos · Nina AI fills in the rest</T>
           </Pressable>
         ) : (
           <View className="flex-row gap-2">
             {photos.map((uri, idx) => (
-              <View key={idx} className="h-[92px] w-[92px] overflow-hidden rounded-2xl bg-saffron">
+              <Pressable
+                key={uri}
+                accessibilityRole="button"
+                accessibilityLabel={`${idx === 0 ? 'Cover photo' : `Photo ${idx + 1}`}, remove`}
+                onPress={() => removePhoto(uri)}
+                className="h-[92px] w-[92px] overflow-hidden rounded-2xl bg-saffron"
+              >
                 <Image source={{ uri }} className="h-full w-full" resizeMode="cover" />
                 {idx === 0 ? (
                   <View className="absolute bottom-1.5 left-1.5 rounded-full bg-surface px-[7px] py-0.5">
                     <T className="font-sans-bold text-[10px]">Cover</T>
                   </View>
                 ) : null}
-              </View>
+              </Pressable>
             ))}
             {photos.length < 3 ? (
-              <Pressable accessibilityRole="button" onPress={pickImages} className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#B9B1A0] bg-surface">
-                <T className="text-[22px] text-muted">+</T>
+              <Pressable accessibilityRole="button" accessibilityLabel="Add photo" disabled={photoDraft.uploading} onPress={pickImages} className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#B9B1A0] bg-surface">
+                {photoDraft.uploading ? <ActivityIndicator color="#0B6E4F" /> : <T className="text-[22px] text-muted">+</T>}
               </Pressable>
             ) : null}
           </View>
@@ -206,7 +219,7 @@ export default function AddProduct() {
                 <Label text="Price" badge="Suggested" />
                 <View className="h-[50px] flex-row items-center gap-1.5 rounded-[14px] border border-line-2 bg-surface px-3.5">
                   <T className="font-sans-bold">₦</T>
-                  <TextInput value={price} onChangeText={setPrice} keyboardType="number-pad" accessibilityLabel="Price" className="h-full min-w-0 flex-1 font-sans-semibold text-base text-ink" />
+                  <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/[^\d]/g, ''))} keyboardType="number-pad" accessibilityLabel="Price" className="h-full min-w-0 flex-1 font-sans-semibold text-base text-ink" />
                 </View>
               </View>
               <View className="w-[140px] gap-1.5">
@@ -265,7 +278,7 @@ export default function AddProduct() {
 
             <View className="gap-2.5 rounded-2xl bg-peach p-3.5">
               <T className="font-sans-bold text-sm text-[#3D2608]">Stock quantity</T>
-              <TextInput value={stock} onChangeText={setStock} keyboardType="number-pad" className="h-[44px] rounded-xl border border-line-2 bg-surface px-3 font-sans-semibold text-base" />
+              <TextInput value={stock} onChangeText={(v) => setStock(v.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" placeholder="1" placeholderTextColor="#8A928E" accessibilityLabel="Stock quantity" className="h-[44px] rounded-xl border border-line-2 bg-surface px-3 font-sans-semibold text-base" />
             </View>
           </View>
         )}

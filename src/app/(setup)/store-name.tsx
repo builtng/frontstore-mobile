@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Check, ChevronDown, X } from 'lucide-react-native';
@@ -26,7 +26,7 @@ export default function StoreName() {
   const { setup_token } = useLocalSearchParams<{ setup_token?: string }>();
   const activeToken = setup_token || draft.setup_token;
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     router.replace({
       pathname: '/choose-mode',
       params: {
@@ -34,7 +34,7 @@ export default function StoreName() {
         initial_mode: 'sell',
       },
     });
-  };
+  }, [activeToken]);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -42,13 +42,15 @@ export default function StoreName() {
       return true;
     });
     return () => sub.remove();
-  }, [activeToken]);
+  }, [handleBack]);
 
   const [countries, setCountries] = useState<Country[]>([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [checking, setChecking] = useState(false);
+  // null: not checked yet, or we couldn't tell (the server checks again on create)
   const [available, setAvailable] = useState<boolean | null>(null);
+  const [checkFailed, setCheckFailed] = useState(false);
 
   // Capture setup token from route params if provided
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function StoreName() {
     }
   }, [setup_token]);
 
-  // Load countries and detect location
+  // Load countries and detect location (once; the draft's country is read at mount)
   useEffect(() => {
     setLoadingCountries(true);
     getCountries()
@@ -98,12 +100,13 @@ export default function StoreName() {
       .finally(() => {
         setLoadingCountries(false);
       });
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const slug = toSlug(name);
   const ok = name.trim().length > 0 && available !== false;
 
   useEffect(() => {
+    setCheckFailed(false);
     if (!slug || slug.length < 3) {
       setAvailable(null);
       setChecking(false);
@@ -111,18 +114,19 @@ export default function StoreName() {
     }
 
     setChecking(true);
+    let stale = false;
     const timer = setTimeout(async () => {
-      try {
-        const isAvail = await checkSubdomainAvailable(slug);
-        setAvailable(isAvail);
-      } catch {
-        setAvailable(true); // fallback
-      } finally {
-        setChecking(false);
-      }
+      const isAvail = await checkSubdomainAvailable(slug);
+      if (stale) return;
+      setAvailable(isAvail);
+      setCheckFailed(isAvail === null);
+      setChecking(false);
     }, 400);
 
-    return () => clearTimeout(timer);
+    return () => {
+      stale = true;
+      clearTimeout(timer);
+    };
   }, [slug]);
 
   const selectItems: SelectItem[] = useMemo(() => {
@@ -179,6 +183,8 @@ export default function StoreName() {
                 <Check size={14} color="#0B6E4F" strokeWidth={3} />
                 <T className="font-sans-bold text-[13px] text-green">Available</T>
               </View>
+            ) : checkFailed ? (
+              <T className="font-sans-medium text-[13px] text-muted">Couldn’t check right now. We’ll check again when you finish.</T>
             ) : available === false ? (
               <View className="flex-row items-center gap-1.5">
                 <X size={14} color="#DC2626" strokeWidth={3} />

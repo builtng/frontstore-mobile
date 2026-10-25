@@ -1,155 +1,167 @@
-import { useEffect, useState, useMemo } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
-import { router } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Check, ChevronDown, Landmark, Lock, RefreshCw } from 'lucide-react-native';
 import { Button, Screen, T } from '@/components/ui';
-import { BottomBar, Heading, Labelled, Progress, RingInput, StepHeader } from '@/features/setup/parts';
-import { getBanks, resolveAccount } from '@/api/store';
+import { BottomBar, Heading, Labelled, Progress, RingInput, StepHeader, goBack } from '@/features/setup/parts';
+import { getBanks, resolveAccount, updatePayoutAccount } from '@/api/store';
 import { Bank } from '@/api/types';
 import { updateDraft, useDraft } from '@/features/setup/draft';
 import { SearchableSelectModal, SelectItem } from '@/components/SearchableSelectModal';
 
+/**
+ * Payout bank account. Two uses:
+ * - store setup (default): saves into the setup draft, then on to the first product
+ * - `?mode=edit` from Payouts / Home: saves straight to the existing store and goes back.
+ *   It must never go through setup, which would overwrite the store.
+ * Only a name the bank confirms is accepted; the backend treats it as verified.
+ */
 export default function Payout() {
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const editing = mode === 'edit';
   const draft = useDraft();
+  const queryClient = useQueryClient();
+  const saved = editing ? undefined : draft.payout;
+
   const [banks, setBanks] = useState<Bank[]>([]);
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingBanks, setLoadingBanks] = useState(false);
-  const [account, setAccount] = useState(draft.payout?.account || '');
+  const [banksError, setBanksError] = useState(false);
+  const [account, setAccount] = useState(saved?.account || '');
   const [resolving, setResolving] = useState(false);
-  const [accountName, setAccountName] = useState<string | null>(draft.payout?.accountName || null);
-  const [manualAccountName, setManualAccountName] = useState(draft.payout?.accountName || draft.owner_name || draft.name || '');
+  const [accountName, setAccountName] = useState<string | null>(saved?.accountName || null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  // Only the latest lookup may set the name (an older one can finish last)
+  const lookup = useRef(0);
 
-  // Fetch real bank list from API
-  useEffect(() => {
+  const loadBanks = () => {
     setLoadingBanks(true);
+    setBanksError(false);
     getBanks()
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBanks(data);
-          // Restore previously chosen bank or default to first
-          const existing = draft.payout?.bankCode
-            ? data.find((b) => b.code === draft.payout?.bankCode)
-            : null;
-          setSelectedBank(existing || data[0]);
-        }
+        if (!Array.isArray(data)) return;
+        setBanks(data);
+        // Restore a bank picked earlier in setup; otherwise the merchant chooses
+        const existing = saved?.bankCode ? data.find((b) => b.code === saved.bankCode) : null;
+        if (existing) setSelectedBank(existing);
       })
-      .catch((err) => {
-        console.warn('Failed to load banks:', err);
-      })
-      .finally(() => {
-        setLoadingBanks(false);
-      });
-  }, []);
+      .catch(() => setBanksError(true))
+      .finally(() => setLoadingBanks(false));
+  };
+
+  useEffect(loadBanks, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const doResolve = (accNumber: string, bank: Bank) => {
-    if (accNumber.length !== 10) {
-      setAccountName(null);
-      setErrorMsg(null);
-      return;
-    }
+    const id = ++lookup.current;
+    setAccountName(null);
+    setErrorMsg(null);
+    if (accNumber.length !== 10) return;
 
     setResolving(true);
-    setErrorMsg(null);
     resolveAccount(accNumber, bank.code)
       .then((res) => {
-        if (res.account_name) {
-          setAccountName(res.account_name);
-          setManualAccountName(res.account_name);
-          updateDraft({
-            payout: {
-              bank: bank.name,
-              bankCode: bank.code,
-              account: accNumber,
-              accountName: res.account_name,
-            },
-          });
-        }
+        if (id !== lookup.current) return;
+        if (res.account_name) setAccountName(res.account_name);
+        else setErrorMsg('The bank didn’t return a name for this account. Check the number and bank.');
       })
       .catch((err) => {
-        setAccountName(null);
-        const rawMsg = err.response?.data?.message || err.message || '';
-        const isAuthOrNetwork =
-          rawMsg.toLowerCase().includes('unauthenticated') ||
-          rawMsg.toLowerCase().includes('network') ||
-          err.response?.status === 401;
-
-        const msg = isAuthOrNetwork
-          ? 'Live name lookup is temporarily unavailable. Please enter your account name below.'
-          : rawMsg || 'Could not verify account name automatically.';
-        setErrorMsg(msg);
+        if (id !== lookup.current) return;
+        setErrorMsg(err.message || 'We couldn’t confirm this account with the bank.');
       })
       .finally(() => {
-        setResolving(false);
+        if (id === lookup.current) setResolving(false);
       });
   };
 
   useEffect(() => {
-    if (account.length === 10 && selectedBank) {
-      doResolve(account, selectedBank);
-    } else {
-      setAccountName(null);
-      setErrorMsg(null);
-    }
-  }, [account, selectedBank]);
+    if (selectedBank) doResolve(account, selectedBank);
+    else lookup.current++;
+  }, [account, selectedBank]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const bankSelectItems: SelectItem[] = useMemo(() => {
     const seen = new Set<string>();
-    const uniqueBanks = banks.filter((b) => {
-      if (seen.has(b.code)) return false;
-      seen.add(b.code);
-      return true;
-    });
-
-    return uniqueBanks.map((b) => ({
-      id: b.code,
-      title: b.name,
-      subtitle: `Code: ${b.code}`,
-      icon: (
-        <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint/50">
-          <Landmark size={18} color="#0B6E4F" strokeWidth={2} />
-        </View>
-      ),
-      metadata: b,
-    }));
+    return banks
+      .filter((b) => (seen.has(b.code) ? false : (seen.add(b.code), true)))
+      .map((b) => ({
+        id: b.code,
+        title: b.name,
+        icon: (
+          <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint/50">
+            <Landmark size={18} color="#0B6E4F" strokeWidth={2} />
+          </View>
+        ),
+        metadata: b,
+      }));
   }, [banks]);
 
-  const handleSave = () => {
-    if (!selectedBank || account.length !== 10) return;
-    const finalAccountName = (accountName || manualAccountName || draft.owner_name || draft.name || 'Merchant Account').trim();
-    updateDraft({
-      payout: {
-        bank: selectedBank.name,
-        bankCode: selectedBank.code,
-        account,
-        accountName: finalAccountName,
-      },
-    });
-    router.push('/first-product');
-  };
+  const canSave = account.length === 10 && !!selectedBank && !!accountName && !resolving && !saving;
 
-  const canSave = account.length === 10 && !!selectedBank && !resolving;
+  const handleSave = async () => {
+    if (!canSave || !selectedBank || !accountName) return;
+    const payout = { bank: selectedBank.name, bankCode: selectedBank.code, account, accountName };
+
+    if (!editing) {
+      updateDraft({ payout });
+      router.push('/first-product');
+      return;
+    }
+
+    setSaving(true);
+    setErrorMsg(null);
+    try {
+      const res = await updatePayoutAccount({
+        bank_name: payout.bank,
+        bank_code: payout.bankCode,
+        account_number: payout.account,
+        account_name: payout.accountName,
+      });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-store'] });
+      Alert.alert(
+        res.pending ? 'Change sent for approval' : 'Payout account saved',
+        res.pending
+          ? 'For your security, changes to a verified payout account are checked by our team before they apply. Payouts keep going to your current account until then.'
+          : `Payouts will go to ${payout.accountName}.`,
+        [{ text: 'OK', onPress: () => goBack('/payouts') }],
+      );
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Could not save your payout account.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-        <StepHeader fallback="/store-style" label="Step 4 of 5" right={{ title: 'Later', href: '/first-product' }} />
-        <Progress pct={80} />
+        {editing ? (
+          <StepHeader fallback="/payouts" label="Payout account" />
+        ) : (
+          <>
+            <StepHeader fallback="/store-style" label="Step 4 of 5" right={{ title: 'Later', href: '/first-product' }} />
+            <Progress pct={80} />
+          </>
+        )}
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-[18px] px-5 pt-6 pb-6">
-          <Heading title="Where should we send your money?" sub="Customer payments are paid out directly to this account." />
+          <Heading
+            title={editing ? 'Change payout account' : 'Where should we send your money?'}
+            sub="Customer payments are paid out directly to this account."
+          />
 
           <Labelled label="Bank">
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Bank: ${selectedBank?.name || 'Select bank'}`}
-              onPress={() => setModalOpen(true)}
+              onPress={() => (banksError ? loadBanks() : setModalOpen(true))}
               className="h-[54px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-4"
             >
               <View className="flex-1 flex-row items-center gap-2.5 pr-2">
                 <Landmark size={18} color="#0B6E4F" strokeWidth={2} />
-                <T className="text-base font-sans-medium text-ink flex-1" numberOfLines={1}>
-                  {selectedBank?.name || (loadingBanks ? 'Loading banks...' : 'Select bank')}
+                <T className="flex-1 font-sans-medium text-base text-ink" numberOfLines={1}>
+                  {selectedBank?.name || (loadingBanks ? 'Loading banks...' : banksError ? 'Couldn’t load banks. Tap to retry' : 'Select your bank')}
                 </T>
               </View>
               <ChevronDown size={18} color="#5B6660" strokeWidth={2} />
@@ -171,7 +183,7 @@ export default function Payout() {
           {resolving ? (
             <View className="flex-row items-center gap-2 py-2">
               <ActivityIndicator size="small" color="#0B6E4F" />
-              <T className="text-sm text-muted">Verifying account with bank...</T>
+              <T className="text-sm text-muted">Checking the account with your bank...</T>
             </View>
           ) : accountName ? (
             <View className="flex-row items-center gap-3 rounded-[14px] bg-mint px-4 py-3.5" accessibilityLiveRegion="polite">
@@ -180,45 +192,28 @@ export default function Payout() {
               </View>
               <View className="flex-1">
                 <T className="text-xs text-[#33403A]">Verified account name</T>
-                <T className="font-sans-bold text-base text-ink" numberOfLines={1}>
-                  {accountName}
-                </T>
+                <T className="font-sans-bold text-base text-ink" numberOfLines={1}>{accountName}</T>
               </View>
             </View>
-          ) : (
-            <View className="gap-2">
-              <Labelled label="Account name">
-                <RingInput
-                  value={manualAccountName}
-                  onChangeText={setManualAccountName}
-                  placeholder="e.g. Account owner or business name"
-                  accessibilityLabel="Account name"
-                />
-              </Labelled>
-
-              {errorMsg ? (
-                <View className="rounded-[14px] bg-amber-50 p-3.5 border border-amber-200 gap-1.5">
-                  <T className="text-xs font-sans-medium text-amber-800">{errorMsg}</T>
-                  {selectedBank && account.length === 10 ? (
-                    <Pressable
-                      onPress={() => doResolve(account, selectedBank)}
-                      className="flex-row items-center gap-1.5 self-start mt-1"
-                    >
-                      <RefreshCw size={13} color="#92400E" />
-                      <T className="text-xs font-sans-bold text-amber-900 underline">Retry auto-lookup</T>
-                    </Pressable>
-                  ) : null}
-                </View>
+          ) : errorMsg ? (
+            <View className="gap-1.5 rounded-[14px] border border-amber-200 bg-amber-50 p-3.5" accessibilityLiveRegion="polite">
+              <T className="text-xs font-sans-medium text-amber-800">{errorMsg}</T>
+              {selectedBank && account.length === 10 ? (
+                <Pressable accessibilityRole="button" onPress={() => doResolve(account, selectedBank)} className="mt-1 flex-row items-center gap-1.5 self-start">
+                  <RefreshCw size={13} color="#92400E" />
+                  <T className="text-xs font-sans-bold text-amber-900 underline">Try again</T>
+                </Pressable>
               ) : null}
+              {!editing ? <T className="text-xs text-amber-800">You can also tap “Later” and add it from Payouts.</T> : null}
             </View>
-          )}
+          ) : null}
 
           <View className="flex-row items-start gap-2.5">
             <View className="mt-0.5">
               <Lock size={16} color="#4A524E" strokeWidth={2} />
             </View>
             <T className="flex-1 text-[13px] leading-5 text-muted-2">
-              Payments are processed securely via regulated payment rails. Payouts arrive next business day at 10:00am.
+              We only accept an account the bank confirms, so your money can’t go to the wrong name.
             </T>
           </View>
         </ScrollView>
@@ -227,22 +222,19 @@ export default function Payout() {
           visible={modalOpen}
           onClose={() => setModalOpen(false)}
           title="Select Bank"
-          subtitle="Search by bank name or code"
           placeholder="Search bank name (e.g. GTB, Kuda, Zenith)..."
           items={bankSelectItems}
           selectedId={selectedBank?.code}
           loading={loadingBanks}
-          onSelect={(item) => {
-            const bank = item.metadata as Bank;
-            setSelectedBank(bank);
-          }}
+          onSelect={(item) => setSelectedBank(item.metadata as Bank)}
         />
 
         <BottomBar>
           <Button
-            title="Save account"
+            title={saving ? 'Saving...' : 'Save account'}
             disabled={!canSave}
             onPress={handleSave}
+            left={saving ? <ActivityIndicator color="#FFFFFF" size="small" /> : undefined}
           />
         </BottomBar>
       </KeyboardAvoidingView>

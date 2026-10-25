@@ -77,18 +77,19 @@ export function Group({ title, children }: { title: string; children: React.Reac
   );
 }
 
-/** Tappable settings row with value + chevron. */
+/** Settings row with value; tappable (with chevron) only when it has an onPress. */
 export function LinkRow({ label, value, danger, onPress }: { label: string; value?: string; danger?: boolean; onPress?: () => void }) {
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole={onPress ? 'button' : 'text'}
       accessibilityLabel={value ? `${label}, ${value}` : label}
       onPress={onPress}
+      disabled={!onPress}
       className="min-h-[56px] flex-row items-center gap-3 border-b border-[#F0ECE3] px-[18px]"
     >
       <T className={cx('flex-1 font-sans-semibold text-[15px]', danger ? 'text-danger' : 'text-ink')}>{label}</T>
       {value ? <T className="text-sm text-muted">{value}</T> : null}
-      <ChevronRight size={16} color="#8A918D" strokeWidth={2} />
+      {onPress ? <ChevronRight size={16} color="#8A918D" strokeWidth={2} /> : null}
     </Pressable>
   );
 }

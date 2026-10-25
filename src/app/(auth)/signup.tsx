@@ -6,6 +6,7 @@ import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Labelled, Progress, RingInput, StepHeader } from '@/features/setup/parts';
 import { sendEmailOtp } from '@/api/auth';
 import { updateDraft } from '@/features/setup/draft';
+import { openSitePage } from '@/lib/storefront';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -70,7 +71,12 @@ export default function Signup() {
             onPress={next}
             left={loading ? <ActivityIndicator color="#FFFFFF" size="small" /> : undefined}
           />
-          <T className="text-center text-[13px] text-muted">By continuing you agree to the Terms and Privacy Policy.</T>
+          <T className="text-center text-[13px] text-muted">
+            By continuing you agree to the{' '}
+            <T accessibilityRole="link" onPress={() => openSitePage('/terms')} className="font-sans-bold text-[13px] text-green">Terms</T>
+            {' '}and{' '}
+            <T accessibilityRole="link" onPress={() => openSitePage('/privacy')} className="font-sans-bold text-[13px] text-green">Privacy Policy</T>.
+          </T>
           <Link href="/login" asChild>
             <Pressable accessibilityRole="link" className="min-h-[44px] items-center justify-center">
               <T className="text-center text-[15px] text-muted-2">

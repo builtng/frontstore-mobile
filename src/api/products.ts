@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, apiDelete } from './client';
+import { apiGet, apiGetAllPages, apiPost, apiPut, apiDelete } from './client';
 import { Product, ProductCategory, ProductVariant, AiProductDraftResult } from './types';
 
 /** Fill the app's kobo / stock_count / status / images fields from the backend's. */
@@ -34,10 +34,9 @@ function splitStock(total: number, parts: number): number[] {
   return Array.from({ length: parts }, (_, i) => base + (i < total % parts ? 1 : 0));
 }
 
-/** Fetch seller's products */
-export async function getProducts(params?: { status?: string; search?: string }): Promise<Product[]> {
-  const data = await apiGet<any>('/products', params);
-  const list = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+/** Fetch all the seller's products (the endpoint pages at 15) */
+export async function getProducts(params?: { stock_status?: string; category_id?: string }): Promise<Product[]> {
+  const list = await apiGetAllPages<any>('/products', params);
   return list.map(normalizeProduct);
 }
 
@@ -63,10 +62,13 @@ function toBackendProduct(p: Partial<Product>, existing: ProductVariant[] = []):
   if (p.stock_count !== undefined) {
     out.track_inventory = true;
     out.inventory_quantity = p.stock_count;
+    if (p.status === undefined) out.stock_status = p.stock_count > 0 ? 'in_stock' : 'out_of_stock';
   }
   if (p.status !== undefined) {
     out.is_draft = p.status === 'hidden';
+    // Back from pre-order too: stock_status otherwise stays 'preorder' for good
     if (p.status === 'preorder') out.stock_status = 'preorder';
+    else if (p.stock_count !== undefined) out.stock_status = p.stock_count > 0 ? 'in_stock' : 'out_of_stock';
   }
   if (p.category_id !== undefined) out.category_id = p.category_id;
   const sizes = p.sizes ?? [];
@@ -90,12 +92,12 @@ function toBackendProduct(p: Partial<Product>, existing: ProductVariant[] = []):
 
 /** Create new product */
 export async function createProduct(payload: Partial<Product>): Promise<Product> {
-  return apiPost<Product>('/products', toBackendProduct(payload));
+  return normalizeProduct(await apiPost<any>('/products', toBackendProduct(payload)));
 }
 
 /** Update product */
 export async function updateProduct(id: string | number, payload: Partial<Product>, existingVariants: ProductVariant[] = []): Promise<Product> {
-  return apiPut<Product>(`/products/${id}`, toBackendProduct(payload, existingVariants));
+  return normalizeProduct(await apiPut<any>(`/products/${id}`, toBackendProduct(payload, existingVariants)));
 }
 
 /** Soft delete product */
@@ -108,12 +110,18 @@ export async function restoreProduct(id: string | number): Promise<Product> {
   return apiPost<Product>(`/products/${id}/restore`);
 }
 
+/** MIME type from a file name; "jpg" isn't a real image subtype. */
+export function imageMime(filename: string): string {
+  const ext = /\.(\w+)$/.exec(filename)?.[1]?.toLowerCase();
+  if (!ext || ext === 'jpg') return 'image/jpeg';
+  return `image/${ext}`;
+}
+
 /** Upload product image */
 export async function uploadProductImage(fileUri: string): Promise<{ url: string }> {
   const formData = new FormData();
   const filename = fileUri.split('/').pop() || 'photo.jpg';
-  const match = /\.(\w+)$/.exec(filename);
-  const type = match ? `image/${match[1]}` : 'image/jpeg';
+  const type = imageMime(filename);
 
   formData.append('image', {
     uri: fileUri,

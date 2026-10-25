@@ -99,27 +99,18 @@ export async function searchMarketplace(query: string): Promise<{ stores: Store[
 export async function getBuyerOrders(): Promise<Order[]> {
   const token = await getToken();
   if (!token) return [];
-  try {
-    const data = await apiGet<any>('/buyer/auth/orders', undefined, { skipAuthRedirect: true });
-    let ordersList: any[] = [];
-    if (Array.isArray(data)) {
-      ordersList = data;
-    } else if (data && Array.isArray(data.data)) {
-      ordersList = data.data;
-    } else if (data && data.data && Array.isArray(data.data.orders)) {
-      ordersList = data.data.orders;
-    } else if (data && Array.isArray(data.orders)) {
-      ordersList = data.orders;
-    }
-    return ordersList.map(normalizeOrder);
-  } catch {
-    return [];
-  }
+  // Errors reach the screen so it can say "couldn't load" instead of "no orders"
+  const data = await apiGet<any>('/buyer/auth/orders', undefined, { skipAuthRedirect: true });
+  const ordersList: any[] = Array.isArray(data) ? data
+    : Array.isArray(data?.orders) ? data.orders
+    : Array.isArray(data?.data) ? data.data
+    : [];
+  return ordersList.map(normalizeOrder);
 }
 
 /** Track order by ID */
-export async function trackOrder(orderId: string | number): Promise<Order> {
-  return apiGet<Order>(`/public/orders/${orderId}`);
+export async function trackOrder(orderId: string | number): Promise<Order & { reviews?: Review[] }> {
+  return normalizeOrder(await apiGet<any>(`/public/orders/${orderId}`));
 }
 
 /** Confirm delivery of an order */
@@ -131,38 +122,34 @@ export async function confirmOrderDelivery(orderId: string | number): Promise<Or
 export async function getAddresses(): Promise<Address[]> {
   const token = await getToken();
   if (!token) return [];
-  try {
-    const data = await apiGet<any>('/buyer/addresses', undefined, { skipAuthRedirect: true });
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.data)) return data.data;
-    return [];
-  } catch {
-    return [];
-  }
+  const data = await apiGet<any>('/buyer/addresses', undefined, { skipAuthRedirect: true });
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.data)) return data.data;
+  return [];
 }
 
-/** Add delivery address */
+/** Add delivery address (backend fields: street, area, state, phone, landmark) */
 export async function addAddress(payload: Omit<Address, 'id'>): Promise<Address> {
   return apiPost<Address>('/buyer/addresses', payload);
 }
 
 /** Update delivery address */
-export async function updateAddress(id: number, payload: Partial<Address>): Promise<Address> {
+export async function updateAddress(id: number | string, payload: Partial<Address>): Promise<Address> {
   return apiPut<Address>(`/buyer/addresses/${id}`, payload);
 }
 
 /** Delete delivery address */
-export async function deleteAddress(id: number): Promise<void> {
+export async function deleteAddress(id: number | string): Promise<void> {
   return apiDelete(`/buyer/addresses/${id}`);
 }
 
 /** Set default address */
-export async function setDefaultAddress(id: number): Promise<void> {
+export async function setDefaultAddress(id: number | string): Promise<void> {
   return apiPatch(`/buyer/addresses/${id}/default`);
 }
 
 /** Follow / unfollow store */
-export async function toggleFollowStore(storeId: number): Promise<{ followed: boolean }> {
+export async function toggleFollowStore(storeId: number | string): Promise<{ followed: boolean }> {
   return apiPost<{ followed: boolean }>(`/buyer/follows/${storeId}`);
 }
 
@@ -170,15 +157,9 @@ export async function toggleFollowStore(storeId: number): Promise<{ followed: bo
 export async function getFollowedStores(): Promise<Store[]> {
   const token = await getToken();
   if (!token) return [];
-  try {
-    const data = await apiGet<any>('/buyer/follows', undefined, { skipAuthRedirect: true });
-    let rawList: any[] = [];
-    if (Array.isArray(data)) rawList = data;
-    else if (data && Array.isArray(data.data)) rawList = data.data;
-    return rawList.map(normalizeStore);
-  } catch {
-    return [];
-  }
+  const data = await apiGet<any>('/buyer/follows', undefined, { skipAuthRedirect: true });
+  const rawList: any[] = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+  return rawList.map(normalizeStore);
 }
 
 /** Save / unsave product */
@@ -190,52 +171,34 @@ export async function toggleSaveProduct(productId: number | string): Promise<{ s
 export async function getSavedProducts(): Promise<Product[]> {
   const token = await getToken();
   if (!token) return [];
-  try {
-    const data = await apiGet<any>('/buyer/saved-products', undefined, { skipAuthRedirect: true });
-    let rawList: any[] = [];
-    if (Array.isArray(data)) rawList = data;
-    else if (data && Array.isArray(data.data)) rawList = data.data;
-    return rawList.map(normalizeProduct);
-  } catch {
-    return [];
-  }
+  const data = await apiGet<any>('/buyer/saved-products', undefined, { skipAuthRedirect: true });
+  const rawList: any[] = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+  return rawList.map(normalizeProduct);
 }
 
 /** Fetch buyer reviews */
 export async function getBuyerReviews(): Promise<Review[]> {
   const token = await getToken();
   if (!token) return [];
-  try {
-    const data = await apiGet<any>('/buyer/reviews', undefined, { skipAuthRedirect: true });
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.data)) return data.data;
-    return [];
-  } catch {
-    return [];
-  }
+  const data = await apiGet<any>('/buyer/reviews', undefined, { skipAuthRedirect: true });
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.data)) return data.data;
+  return [];
 }
 
-/** Submit review for delivered order */
-export async function submitOrderReview(orderId: number | string, rating: number, comment: string): Promise<Review> {
-  return apiPost<Review>(`/public/orders/${orderId}/reviews`, { rating, comment });
+/** Review a paid order. No product_id means a review of the order / store as a whole. */
+export async function submitOrderReview(orderId: number | string, rating: number, comment: string, productId?: string | number | null): Promise<Review[]> {
+  return apiPost<Review[]>(`/public/orders/${orderId}/reviews`, {
+    reviews: [{ product_id: productId ?? null, rating, comment: comment.trim() || null }],
+  });
 }
 
-/** Fetch buyer notification preferences */
+/**
+ * Fetch buyer notification preferences. Errors are thrown rather than
+ * replaced with all-off defaults, which a later toggle would then save.
+ */
 export async function getNotificationPreferences(): Promise<NotificationPreferences> {
-  const token = await getToken();
-  const fallback: NotificationPreferences = {
-    whatsapp_order_updates: false,
-    email_notifications: false,
-    push_notifications: false,
-    new_drops: false,
-    price_drops: false,
-  };
-  if (!token) return fallback;
-  try {
-    return await apiGet<NotificationPreferences>('/buyer/notification-preferences', undefined, { skipAuthRedirect: true });
-  } catch {
-    return fallback;
-  }
+  return apiGet<NotificationPreferences>('/buyer/notification-preferences', undefined, { skipAuthRedirect: true });
 }
 
 /** Update buyer notification preferences */

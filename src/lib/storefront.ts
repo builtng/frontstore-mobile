@@ -19,7 +19,15 @@ export function storeUrl(username: string, path = ''): string {
 
 /** Open a store (or one of its pages) on the website in an in-app browser tab. */
 export async function openStore(username: string, path = ''): Promise<void> {
-  const url = storeUrl(username, path);
+  return openInBrowser(storeUrl(username, path));
+}
+
+/** Open a Frontstore page such as /privacy or /terms in an in-app browser tab. */
+export function openSitePage(path: string): Promise<void> {
+  return openInBrowser(`https://${DOMAIN}/${path.replace(/^\/+/, '')}`);
+}
+
+async function openInBrowser(url: string): Promise<void> {
   try {
     // Loaded lazily: app builds from before expo-web-browser was added have no
     // native module for it, and an update must not crash them
