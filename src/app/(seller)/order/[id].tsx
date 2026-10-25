@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Modal, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronDown } from 'lucide-react-native';
@@ -57,10 +57,11 @@ export default function OrderDetail() {
 
   const refundMutation = useMutation({
     mutationFn: (args: { reason: string }) => refundOrder(id!, args.reason),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['order', id] });
       queryClient.invalidateQueries({ queryKey: ['seller-orders'] });
       setRefundOpen(false);
+      if (result.pendingReview) Alert.alert('Sent for review', result.message);
     },
   });
 

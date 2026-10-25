@@ -1,4 +1,4 @@
-import { apiGet, apiGetAllPages, apiPatch, apiPost } from './client';
+import { apiGet, apiGetAllPages, apiPatch, apiPost, apiPostRaw } from './client';
 import { format } from 'date-fns';
 import { Order, OrderStatus, WalletBalance, PayoutRecord } from './types';
 
@@ -66,9 +66,13 @@ export async function updateOrderStatus(
   return normalizeOrder(await apiPatch<any>(`/orders/${id}/status`, { order_status: orderStatus }));
 }
 
-/** Merchant refunds the whole order */
-export async function refundOrder(id: string | number, reason: string): Promise<Order> {
-  return normalizeOrder(await apiPost<any>(`/orders/${id}/refund`, { reason }));
+/**
+ * Merchant refunds the whole order. `pendingReview` means the store's balance
+ * didn't cover it, so the Frontstore team will decide; the buyer isn't refunded yet.
+ */
+export async function refundOrder(id: string | number, reason: string): Promise<{ order: Order; pendingReview: boolean; message: string }> {
+  const res = await apiPostRaw<any>(`/orders/${id}/refund`, { reason });
+  return { order: normalizeOrder(res.data), pendingReview: res.status === 'pending_review', message: res.message ?? '' };
 }
 
 /** Fetch seller wallet balance (the backend sends naira and bank_* names) */
