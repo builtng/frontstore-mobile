@@ -18,7 +18,14 @@ function Stat({ label, value, delta, dark }: { label: string; value: string; del
   return (
     <View className={cx('flex-1 gap-0.5 rounded-[20px] p-4', dark ? 'bg-green' : 'border border-line bg-surface')}>
       <T className={cx('text-xs', dark ? 'text-[#D7EAE1]' : 'text-muted')}>{label}</T>
-      <T className={cx('font-display text-[28px]', dark && 'text-bg')}>{value}</T>
+      {/* Naira amounts are wider than counts; shrink them so they stay on one line */}
+      <T
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        className={cx('font-display', value.length > 7 ? 'text-[16px]' : value.length > 5 ? 'text-[19px]' : value.length > 3 ? 'text-[24px]' : 'text-[28px]', dark && 'text-bg')}
+      >
+        {value}
+      </T>
       <T className={cx('font-sans-bold text-xs', dark ? 'text-[#F3D9A8]' : 'text-green')}>{delta}</T>
     </View>
   );
