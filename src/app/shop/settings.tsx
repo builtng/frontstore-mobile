@@ -64,8 +64,6 @@ export default function BuyerSettings() {
     updateMutation.mutate({ [k]: val });
   };
 
-  const [pw, setPw] = useState(false);
-
   return (
     <Screen>
       <AccountHeader title="Settings" />
@@ -79,7 +77,6 @@ export default function BuyerSettings() {
 
         <Group title="Login & security">
           <LinkRow label="Login codes" value="Email or WhatsApp" />
-          <SwitchRow label="Log in with a password" sub="Off: we send a one-time code instead" value={pw} onChange={setPw} />
         </Group>
 
         <Group title="Privacy">
