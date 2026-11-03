@@ -33,6 +33,7 @@ export default function EditProduct() {
   const [sizes, setSizes] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [inStock, setInStock] = useState(true);
+  const [stock, setStock] = useState('');
   const [visible, setVisible] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -43,6 +44,7 @@ export default function EditProduct() {
       setPrice(String(Math.round(product.price_kobo / 100)));
       setCategory(product.category_id ?? '');
       setInStock(product.stock_count > 0);
+      setStock(product.stock_count > 0 ? String(product.stock_count) : '');
       setVisible(product.status !== 'hidden');
       if (product.sizes) setSizes(product.sizes);
       if (product.colors) setColors(product.colors);
@@ -77,8 +79,8 @@ export default function EditProduct() {
       name,
       price_kobo: numericPriceKobo,
       category_id: category || null,
-      // Keep the real count unless the merchant flipped in/out of stock.
-      stock_count: !inStock ? 0 : product && product.stock_count > 0 ? product.stock_count : 10,
+      // The exact count the seller typed; switching "In stock" off sets it to 0.
+      stock_count: !inStock ? 0 : Math.max(1, parseInt(stock, 10) || 1),
       status: visible ? 'live' : 'hidden',
       sizes,
       colors,
@@ -184,8 +186,22 @@ export default function EditProduct() {
         <View className="rounded-[18px] border border-line bg-surface">
           <View className="flex-row items-center justify-between px-4 py-3.5">
             <T className="font-sans-semibold text-[15px]">In stock</T>
-            <Toggle label="In stock" value={inStock} onChange={setInStock} />
+            <Toggle label="In stock" value={inStock} onChange={(v) => { setInStock(v); if (v && !stock) setStock('1'); }} />
           </View>
+          {inStock ? (
+            <View className="flex-row items-center justify-between border-t border-line px-4 py-2.5">
+              <T className="font-sans-semibold text-[15px]">How many</T>
+              <TextInput
+                value={stock}
+                onChangeText={(v) => setStock(v.replace(/\D/g, '').slice(0, 5))}
+                keyboardType="number-pad"
+                placeholder="1"
+                placeholderTextColor="#8A928E"
+                accessibilityLabel="How many in stock"
+                className="h-10 w-24 rounded-xl border border-line-2 bg-surface px-3 text-right font-sans-semibold text-base text-ink"
+              />
+            </View>
+          ) : null}
           <View className="flex-row items-center justify-between border-t border-line px-4 py-3.5">
             <T className="font-sans-semibold text-[15px]">Show on storefront</T>
             <Toggle label="Show on storefront" value={visible} onChange={setVisible} />

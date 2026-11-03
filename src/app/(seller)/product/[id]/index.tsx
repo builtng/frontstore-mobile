@@ -74,8 +74,10 @@ export default function ProductActions() {
     }, 1200);
   };
 
+  // Sold out is one tap. Back in stock opens the editor so the seller enters the real count.
   const toggleSoldOut = () => {
-    updateMutation.mutate({ stock_count: isOut ? 10 : 0 });
+    if (isOut) router.replace(`/product/${id}/edit`);
+    else updateMutation.mutate({ stock_count: 0 });
   };
 
   const toggleHide = () => {
