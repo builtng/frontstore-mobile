@@ -1,5 +1,6 @@
 import '../global.css';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Stack, router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
@@ -27,6 +28,8 @@ export default function RootLayout() {
   // Keep this phone's push token registered, and open the screen a tapped
   // notification points at (data.url, e.g. /order/123 or /shop/track/123).
   useEffect(() => {
+    // Push notifications only exist on phones (the web preview has none).
+    if (Platform.OS === 'web') return;
     getToken().then((t) => {
       if (t) registerForPush();
     });

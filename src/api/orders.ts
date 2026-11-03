@@ -14,9 +14,30 @@ export function orderStage(o: any): OrderStatus {
   return 'paid';
 }
 
+/** How the buyer paid, in words a seller recognises. */
+function paymentLabel(method: unknown): string {
+  const m = String(method || '').toLowerCase();
+  if (m.includes('transfer') || m === 'bank') return 'Transfer';
+  if (m.includes('ussd')) return 'USSD';
+  if (m.includes('card') || m === 'paystack' || m === 'stripe') return 'Card';
+  if (m === 'payment_link') return 'Payment link';
+  if (['delivery', 'cod', 'cash_on_delivery', 'pay_on_delivery'].includes(m)) return 'On delivery';
+  if (m === 'whatsapp') return 'WhatsApp';
+  return m ? m.charAt(0).toUpperCase() + m.slice(1) : '';
+}
+
 function normalizeOrder(o: any): Order {
   const amount = Number(o.display_amount ?? o.total_amount ?? 0);
-  return { ...o, status: orderStage(o), total_kobo: Math.round(amount * 100) };
+  // Bundle parts are listed under their bundle; summarise the top-level lines.
+  const items = Array.isArray(o.items) ? o.items.filter((i: any) => !i.bundle_parent_id) : [];
+  const summary = items.map((i: any) => `${Number(i.quantity ?? 1)}× ${i.product_name ?? i.name ?? 'Item'}`).join(', ');
+  return {
+    ...o,
+    status: orderStage(o),
+    total_kobo: Math.round(amount * 100),
+    items_summary: o.items_summary ?? summary,
+    payment_method: paymentLabel(o.payment_method) as Order['payment_method'],
+  };
 }
 
 /** Fetch seller orders */
