@@ -50,24 +50,56 @@ export async function refundOrder(id: string | number, reason: string): Promise<
   return normalizeOrder(await apiPost<any>(`/orders/${id}/refund`, { reason }));
 }
 
-/** Fetch seller wallet balance */
-export async function getWalletBalance(): Promise<WalletBalance> {
-  return apiGet<WalletBalance>('/store/wallet');
+const toKobo = (naira: unknown) => Math.round((Number(naira) || 0) * 100);
+
+function payoutStatus(s: unknown): PayoutRecord['status'] {
+  const v = String(s || '').toLowerCase();
+  if (['completed', 'paid', 'success', 'successful'].includes(v)) return 'paid';
+  if (['failed', 'rejected', 'reversed', 'cancelled'].includes(v)) return 'failed';
+  return 'processing';
 }
 
-/** Fetch seller payout history */
+/**
+ * Seller wallet. The backend sends naira (withdrawable_balance, pending_balance)
+ * and the payout list; the screens use kobo and these names.
+ */
+export async function getWalletBalance(): Promise<WalletBalance & { withdrawals: PayoutRecord[] }> {
+  const w: any = await apiGet<any>('/store/wallet');
+  const available = Number(w?.withdrawable_balance ?? 0);
+  const pending = Number(w?.pending_balance ?? 0);
+  const withdrawals: PayoutRecord[] = (Array.isArray(w?.withdrawals) ? w.withdrawals : []).map((x: any) => ({
+    id: x.id,
+    amount_kobo: toKobo(x.amount),
+    status: payoutStatus(x.status),
+    date: x.created_at || x.updated_at || '',
+    orders_count: Number(x.orders_count ?? 0),
+    bank_name: x.bank_name || '',
+    account_number: x.account_number || '',
+  }));
+  return {
+    ...w,
+    available_balance_kobo: toKobo(available),
+    pending_balance_kobo: toKobo(pending),
+    total_earned_kobo: toKobo(available + pending + withdrawals.filter((x) => x.status === 'paid').reduce((sum, x) => sum + x.amount_kobo / 100, 0)),
+    currency: w?.currency_code || 'NGN',
+    bank_name: w?.bank_name ?? null,
+    account_number: w?.bank_account_number ?? null,
+    account_name: w?.bank_account_name ?? null,
+    balance: available,
+    withdrawals,
+  };
+}
+
+/** Seller payout history: it comes with the wallet (/withdrawals is the admin-only list). */
 export async function getPayoutHistory(): Promise<PayoutRecord[]> {
-  const data = await apiGet<any>('/withdrawals');
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
+  return (await getWalletBalance()).withdrawals;
 }
 
-/** Request withdrawal payout */
+/** Request a payout. The backend takes the amount in naira and the code as otp_code. */
 export async function requestWithdrawal(amountKobo: number, otpCode?: string): Promise<any> {
   return apiPost('/store/withdraw', {
-    amount: amountKobo,
-    otp: otpCode,
+    amount: Math.round(amountKobo) / 100,
+    otp_code: otpCode,
   });
 }
 

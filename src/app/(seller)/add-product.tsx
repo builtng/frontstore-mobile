@@ -110,10 +110,6 @@ export default function AddProduct() {
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-3.5 px-5 pb-6 pt-3">
         <View className="flex-row items-center justify-between gap-2">
           <T className="flex-1 text-sm text-muted-2">Start with a photo. AI does the typing.</T>
-          <View className="flex-row items-center gap-[5px] rounded-full bg-mint px-2.5 py-[5px]">
-            <Sparkle size={12} />
-            <T className="font-sans-bold text-xs text-green">Unlimited AI</T>
-          </View>
         </View>
 
         {photoDraft.error && !filled ? <T className="text-sm text-danger">{photoDraft.error}</T> : null}
@@ -224,7 +220,6 @@ export default function AddProduct() {
                 </Pressable>
               </View>
             </View>
-            <T className="-mt-1.5 text-xs text-muted">Similar items in Lagos: ₦16,000 - ₦22,000</T>
 
             <View className="gap-1.5">
               <Label text="Description" />
