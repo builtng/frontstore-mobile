@@ -47,7 +47,10 @@ apiClient.interceptors.response.use(
         url.includes('/public/') ||
         url.includes('/buyer/');
 
-      const shouldSkip = (error.config as any)?.skipAuthRedirect || isPublicOrVerification;
+      // A request sent without a login (e.g. mid sign-up, before the account
+      // exists) failing with 401 is not a "session expired": don't log out.
+      const sentToken = !!(error.config?.headers as any)?.Authorization;
+      const shouldSkip = (error.config as any)?.skipAuthRedirect || isPublicOrVerification || !sentToken;
 
       if (!shouldSkip) {
         await removeToken();
