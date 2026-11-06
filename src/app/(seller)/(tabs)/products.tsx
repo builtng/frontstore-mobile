@@ -7,6 +7,7 @@ import { Screen, T } from '@/components/ui';
 import { formatNaira } from '@/lib/format';
 import { Chip } from '@/features/seller/parts';
 import { getProducts, restoreProduct } from '@/api/products';
+import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { Product } from '@/api/types';
 
 type Filter = 'all' | 'in' | 'out' | 'hidden';
@@ -67,7 +68,7 @@ export default function Products() {
       <View className="gap-4 px-5 pt-3">
         <View className="flex-row items-center justify-between">
           <T className="font-display text-[32px] tracking-[-0.6px]">Products</T>
-          <T className="text-sm text-muted">{items.length} products</T>
+          <T className="text-sm text-muted">{items.length} {items.length === 1 ? 'product' : 'products'}</T>
         </View>
         <View className="h-12 flex-row items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5">
           <Search size={18} color="#5B6660" strokeWidth={2} />
@@ -107,9 +108,7 @@ export default function Products() {
               accessibilityHint="Long press for product options"
               className="flex-row items-center gap-3 rounded-[18px] border border-line bg-surface p-3"
             >
-              <View className="h-14 w-14 rounded-xl bg-[#E9A23B] items-center justify-center">
-                <T className="font-sans-bold text-white text-lg">{p.name[0]}</T>
-              </View>
+              <ProductImage uri={productPhoto(p)} name={p.name} className="h-14 w-14 rounded-xl" />
               <View className="min-w-0 flex-1 gap-[3px]">
                 <T className="font-sans-bold" numberOfLines={1}>{p.name}</T>
                 <T className="font-sans-bold text-sm text-green">{formatNaira(p.price_kobo / 100)}</T>

@@ -1,4 +1,5 @@
 import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Card, Screen, T, cx } from '@/components/ui';
 import { BottomBar, Heading, Progress, StepHeader } from '@/features/setup/parts';
@@ -25,6 +26,7 @@ export default function StoreStyle() {
         <Heading title="Make it look like you" />
 
         <Card className="flex-row items-end gap-3 rounded-[22px] p-4">
+          <View>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={logo_uri ? 'Change logo' : 'Add logo'}
@@ -38,6 +40,10 @@ export default function StoreStyle() {
               <T className="font-sans-bold text-2xl text-white">{initialOf(name)}</T>
             )}
           </Pressable>
+          <View pointerEvents="none" className="absolute -bottom-1 -right-1 h-7 w-7 items-center justify-center rounded-full border-2 border-bg bg-ink">
+              <Camera size={13} color="#FFFFFF" strokeWidth={2.4} />
+            </View>
+          </View>
           <View className="shrink pb-1">
             <T numberOfLines={1} className="font-display-x text-[17px]">{name.trim() || 'Your store'}</T>
             <T numberOfLines={1} className="text-[13px] text-muted">{toSlug(name)}.frontstore.app</T>

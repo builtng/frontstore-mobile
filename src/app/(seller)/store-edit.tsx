@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Camera } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
@@ -72,6 +73,7 @@ export default function StoreEdit() {
       ) : (
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-5 px-5 pb-6 pt-3">
           <View className="flex-row items-center gap-4">
+            <View>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={logo ? 'Change logo' : 'Add logo'}
@@ -91,6 +93,10 @@ export default function StoreEdit() {
                 </View>
               ) : null}
             </Pressable>
+            <View pointerEvents="none" className="absolute -bottom-1 -right-1 h-7 w-7 items-center justify-center rounded-full border-2 border-bg bg-ink">
+              <Camera size={13} color="#FFFFFF" strokeWidth={2.4} />
+            </View>
+            </View>
             <View className="shrink gap-0.5">
               <T className="font-sans-bold text-[15px]">Logo</T>
               <T className="text-[13px] text-muted">{logoMutation.isPending ? 'Uploading…' : 'Tap to choose a square image'}</T>

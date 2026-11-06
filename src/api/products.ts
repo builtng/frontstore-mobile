@@ -36,9 +36,13 @@ function splitStock(total: number, parts: number): number[] {
 
 /** Fetch seller's products */
 export async function getProducts(params?: { status?: string; search?: string }): Promise<Product[]> {
-  const data = await apiGet<any>('/products', params);
-  const list = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
-  return list.map(normalizeProduct);
+  const all: any[] = [];
+  for (let page = 1; ; page++) {
+    const data = await apiGet<any>('/products', { ...params, limit: 100, page });
+    all.push(...(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []));
+    if (Array.isArray(data) || !data?.last_page || page >= data.last_page) break;
+  }
+  return all.map(normalizeProduct);
 }
 
 /** Fetch product by ID */

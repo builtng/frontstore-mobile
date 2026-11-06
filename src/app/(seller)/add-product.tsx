@@ -6,6 +6,7 @@ import { Camera, ChevronDown, Lock } from 'lucide-react-native';
 import { Screen, T, cx } from '@/components/ui';
 import { Sparkle, goBack } from '@/features/seller/parts';
 import { createProduct } from '@/api/products';
+import { queryClient } from '@/api/queryClient';
 import { usePhotoDraft } from '@/features/products/usePhotoDraft';
 import { ColourChips } from '@/features/products/ColourChips';
 import { formatNaira } from '@/lib/format';
@@ -86,6 +87,7 @@ export default function AddProduct() {
         sizes,
         colors,
       });
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
       router.dismissTo('/products');
     } catch (err: any) {
       setErrorMsg(err.message || 'Could not publish product. Please try again.');
@@ -200,14 +202,14 @@ export default function AddProduct() {
             </View>
 
             <View className="flex-row gap-2.5">
-              <View className="flex-1 gap-1.5">
+              <View className="w-[140px] gap-1.5">
                 <Label text="Price" badge="Suggested" />
                 <View className="h-[50px] flex-row items-center gap-1.5 rounded-[14px] border border-line-2 bg-surface px-3.5">
                   <T className="font-sans-bold">₦</T>
                   <TextInput value={price} onChangeText={setPrice} keyboardType="number-pad" accessibilityLabel="Price" className="h-full min-w-0 flex-1 font-sans-semibold text-base text-ink" />
                 </View>
               </View>
-              <View className="w-[140px] gap-1.5">
+              <View className="min-w-0 flex-1 gap-1.5">
                 <Label text="Category" />
                 <Pressable
                   accessibilityRole="button"

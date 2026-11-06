@@ -7,6 +7,7 @@ import { AiProductFlow, useAiProduct } from '@/features/setup/AiProductFlow';
 import { useDraft, toSlug } from '@/features/setup/draft';
 import { completeStoreSetup, uploadStoreLogo } from '@/api/store';
 import { createProduct } from '@/api/products';
+import { queryClient } from '@/api/queryClient';
 import { getMe } from '@/api/auth';
 import { getToken } from '@/api/authStore';
 
@@ -106,6 +107,7 @@ export default function FirstProduct() {
             sizes: flow.product.sizes,
             colors: flow.product.colours,
           });
+          await queryClient.invalidateQueries({ queryKey: ['products'] });
         } catch (prodErr) {
           console.warn('First product creation warning:', prodErr);
         }

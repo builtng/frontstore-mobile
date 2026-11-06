@@ -6,6 +6,7 @@ import { ChevronRight, Truck, X } from 'lucide-react-native';
 import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
+import { ContactEditSheet, type ContactKind } from '@/features/account/ContactEditSheet';
 import { naira } from '@/lib/format';
 import { getMe } from '@/api/auth';
 import { getStore } from '@/api/store';
@@ -41,6 +42,7 @@ function Rows({ rows }: { rows: Row[] }) {
 
 export default function Settings() {
   const qc = useQueryClient();
+  const [editing, setEditing] = useState<ContactKind | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
   const [flatFee, setFlatFee] = useState('');
   const [saving, setSaving] = useState(false);
@@ -103,8 +105,8 @@ export default function Settings() {
   ];
   const accountRows: Row[] = [
     { label: 'Switch to buyer view', href: '/switch' },
-    { label: 'WhatsApp number', value: s.whatsapp_phone || user.phone_number || 'Not set' },
-    { label: 'Email', value: user.email || 'Not set' },
+    { label: 'WhatsApp number', value: s.whatsapp_phone || user.phone_number || 'Not set', onPress: () => setEditing('whatsapp') },
+    { label: 'Email', value: user.email || 'Not set', onPress: () => setEditing('email') },
   ];
 
   return (
@@ -185,6 +187,7 @@ export default function Settings() {
           <Button title={saving ? 'Saving…' : 'Save delivery fee'} className="h-[50px]" disabled={saving || flatFee === savedFee} onPress={saveFee} />
         </View>
       </BottomSheet>
+      <ContactEditSheet kind={editing} onClose={() => setEditing(null)} />
     </Screen>
   );
 }

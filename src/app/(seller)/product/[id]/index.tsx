@@ -9,6 +9,7 @@ import { T, cx } from '@/components/ui';
 import { formatNaira } from '@/lib/format';
 import { Grip, goBack } from '@/features/seller/parts';
 import { getProduct, updateProduct } from '@/api/products';
+import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { getMe } from '@/api/auth';
 
 function Row({ Icon, label, onPress, danger, className }: { Icon: LucideIcon; label: string; onPress: () => void; danger?: boolean; className?: string }) {
@@ -101,9 +102,7 @@ export default function ProductActions() {
       >
         <Grip className="mb-2" />
         <View className="flex-row items-center gap-3 border-b border-[#F0ECE3] px-1 pb-3.5 pt-1">
-          <View className="h-[52px] w-[52px] items-center justify-center rounded-xl bg-[#E9A23B]">
-            <T className="font-sans-bold text-white text-lg">{name[0]}</T>
-          </View>
+          <ProductImage uri={productPhoto(product)} name={name} className="h-[52px] w-[52px] rounded-xl" />
           <View className="flex-1 gap-0.5">
             <T className="font-sans-bold text-base">{name}</T>
             <T className="font-sans-bold text-sm text-green">{formatNaira(priceKobo / 100)} · {isHidden ? 'Hidden' : isOut ? 'Sold out' : 'In stock'}</T>

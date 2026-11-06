@@ -162,7 +162,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
       </View>
 
       <View className="flex-row gap-2.5">
-        <View className="flex-1 gap-1.5">
+        <View className="w-[140px] gap-1.5">
           <FieldLabel label="Price" tag="Suggested" />
           <View className={cx(inputBox, 'h-[50px] flex-row items-center gap-1.5 px-3.5')}>
             <T className="font-sans-bold text-base">₦</T>
@@ -175,7 +175,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
             />
           </View>
         </View>
-        <View className="w-[140px] gap-1.5">
+        <View className="min-w-0 flex-1 gap-1.5">
           <FieldLabel label="Category" tag="AI" />
           <Pressable
             accessibilityRole="button"
