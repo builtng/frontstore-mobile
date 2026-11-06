@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, ChevronDown, ChevronRight, Trash2, X } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Screen, T, cx } from '@/components/ui';
+import { Screen, Skeleton, T, cx } from '@/components/ui';
 import { Toggle, goBack } from '@/features/seller/parts';
 import { getProduct, updateProduct, uploadProductImage } from '@/api/products';
 import { ProductImage } from '@/features/products/ProductImage';
@@ -140,6 +140,14 @@ export default function EditProduct() {
         </View>
       ) : null}
 
+      {isLoading ? (
+        <View className="gap-4 px-5 pt-2">
+          <Skeleton className="h-[110px] w-[110px] rounded-[18px]" />
+          <Skeleton className="h-[50px] rounded-[14px]" />
+          <Skeleton className="h-[50px] rounded-[14px]" />
+          <Skeleton className="h-40 rounded-[22px]" />
+        </View>
+      ) : (
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-4 px-5 pb-6 pt-2">
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2.5">
           {photos.length ? photos.map((uri, i) => (
@@ -262,6 +270,7 @@ export default function EditProduct() {
           </View>
         </View>
       </ScrollView>
+      )}
 
       <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }} className="flex-row gap-2.5 border-t border-line bg-bg px-5 pt-3">
         <Pressable

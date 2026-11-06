@@ -41,9 +41,9 @@ export default function ShareStore() {
 
   const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
   const store = me?.store;
-  const storeName = store?.store_name || store?.name || 'My Store';
-  const username = store?.username || store?.slug || 'mystore';
-  const displayLink = `frontstore.app/${username}`;
+  const storeName = store?.store_name || store?.name || '';
+  const username = store?.username || store?.slug || '';
+  const displayLink = username ? `frontstore.app/${username}` : '';
   const url = `https://${displayLink}`;
   const message = `Shop ${storeName} - now taking orders: ${url}`;
 

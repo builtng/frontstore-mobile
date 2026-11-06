@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { Link, type Href } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Screen, T } from '@/components/ui';
+import { EmptyState, Screen, SkeletonRows, T } from '@/components/ui';
 import { naira } from '@/lib/format';
 import { Avatar, Segmented } from '@/features/buyer/parts';
 import { getBuyerOrders } from '@/api/buyer';
@@ -117,16 +117,16 @@ export default function BuyerOrders() {
           options={[{ key: 'active', label: `Active · ${activeOrders.length}` }, { key: 'past', label: `Past · ${pastOrders.length}` }]}
         />
         {isLoading ? (
-          <View className="items-center py-12">
-            <ActivityIndicator size="small" color="#0B6E4F" />
-            <T className="mt-2 text-xs text-muted">Loading your orders...</T>
-          </View>
+          <SkeletonRows count={3} />
         ) : list.length > 0 ? (
           list.map((o: any) => <OrderCard key={o.id} o={o} />)
         ) : (
-          <View className="items-center py-10">
-            <T className="text-sm text-muted">No {tab} orders found.</T>
-          </View>
+          <EmptyState
+            title={tab === 'active' ? 'No orders on the way' : 'No past orders yet'}
+            sub={tab === 'active' ? 'Orders you place will show here so you can track them.' : 'Orders you’ve received will show here.'}
+            action="Browse stores"
+            href="/shop"
+          />
         )}
       </ScrollView>
     </Screen>

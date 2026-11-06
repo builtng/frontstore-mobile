@@ -19,9 +19,10 @@ export function ProductImage({ uri, name, className, textClassName = 'text-lg' }
   useEffect(() => setFailed(false), [uri]);
 
   return (
-    <View className={cx('items-center justify-center overflow-hidden bg-[#E9A23B]', className)}>
+    // A neutral background while the photo loads, so a letter never flashes first.
+    <View className={cx('items-center justify-center overflow-hidden', uri && !failed ? 'bg-[#E9E4D9]' : 'bg-[#E9A23B]', className)}>
       {uri && !failed ? (
-        <Image source={{ uri }} onError={() => setFailed(true)} accessibilityIgnoresInvertColors className="h-full w-full" resizeMode="cover" />
+        <Image source={{ uri }} fadeDuration={0} onError={() => setFailed(true)} accessibilityIgnoresInvertColors className="h-full w-full" resizeMode="cover" />
       ) : (
         <T className={cx('font-sans-bold text-white', textClassName)}>{name?.[0] || 'P'}</T>
       )}

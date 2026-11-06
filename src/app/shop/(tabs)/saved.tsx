@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { Link } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Screen, T } from '@/components/ui';
+import { EmptyState, Screen, SkeletonRows, T } from '@/components/ui';
 import { naira } from '@/lib/format';
 import { Avatar, HeartToggle, Segmented, useTileWidth } from '@/features/buyer/parts';
 import { getSavedProducts, getFollowedStores, toggleSaveProduct } from '@/api/buyer';
@@ -47,12 +47,9 @@ export default function BuyerSaved() {
 
         {tab === 'prod' ? (
           loadingProducts ? (
-            <View className="items-center py-12">
-              <ActivityIndicator size="small" color="#0B6E4F" />
-              <T className="mt-2 text-xs text-muted">Loading saved products...</T>
-            </View>
+            <SkeletonRows count={3} />
           ) : liveSavedProducts.length === 0 ? (
-            <T className="py-8 text-center text-sm text-muted">No saved products yet.</T>
+            <EmptyState title="No saved products yet" sub="Tap the heart on a product to keep it here." action="Browse stores" href="/shop" />
           ) : (
             <View className="flex-row flex-wrap gap-x-3 gap-y-4">
               {liveSavedProducts.map((p) => {
@@ -77,12 +74,9 @@ export default function BuyerSaved() {
           )
         ) : (
           loadingStores ? (
-            <View className="items-center py-12">
-              <ActivityIndicator size="small" color="#0B6E4F" />
-              <T className="mt-2 text-xs text-muted">Loading followed stores...</T>
-            </View>
+            <SkeletonRows count={3} />
           ) : liveFollowedStores.length === 0 ? (
-            <T className="py-8 text-center text-sm text-muted">No followed stores yet.</T>
+            <EmptyState title="No followed stores yet" sub="Follow a store to see it here." action="Browse stores" href="/shop" />
           ) : (
             <View className="gap-2.5">
               {liveFollowedStores.map((s) => {

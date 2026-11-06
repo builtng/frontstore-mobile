@@ -3,7 +3,7 @@ import { Image, Linking, Pressable, ScrollView, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronRight, Truck, X } from 'lucide-react-native';
-import { Button, Screen, T, cx } from '@/components/ui';
+import { Button, Screen, Skeleton, T, cx } from '@/components/ui';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
 import { ContactEditSheet, type ContactKind } from '@/features/account/ContactEditSheet';
@@ -15,7 +15,7 @@ import { getWalletBalance } from '@/api/orders';
 import { apiGet } from '@/api/client';
 import { planName, signOut, updateStore } from '@/api/account';
 
-type Row = { label: string; value?: string; href?: Href; onPress?: () => void };
+type Row = { label: string; value?: string; loading?: boolean; href?: Href; onPress?: () => void };
 
 const fmtDate = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
@@ -33,7 +33,7 @@ function Rows({ rows }: { rows: Row[] }) {
           className={cx('min-h-[52px] flex-row items-center gap-3.5 px-4', i < rows.length - 1 && 'border-b border-[#F0ECE3]')}
         >
           <T className="flex-1 font-sans-semibold text-[15px]">{r.label}</T>
-          {r.value ? <T className="text-sm text-muted">{r.value}</T> : null}
+          {r.loading ? <Skeleton className="h-3.5 w-14" /> : r.value ? <T className="text-sm text-muted">{r.value}</T> : null}
           {r.href || r.onPress ? <ChevronRight size={16} color="#8A918D" strokeWidth={2} /> : null}
         </Pressable>
       ))}
@@ -51,9 +51,9 @@ export default function Settings() {
   const [saveError, setSaveError] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
-  const { data: store } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
-  const { data: wallet } = useQuery({ queryKey: ['seller-wallet'], queryFn: getWalletBalance });
+  const { data: me, isLoading: meLoading } = useQuery({ queryKey: ['me'], queryFn: getMe });
+  const { data: store, isLoading: storeLoading } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
+  const { data: wallet, isLoading: walletLoading } = useQuery({ queryKey: ['seller-wallet'], queryFn: getWalletBalance });
   const { data: platform } = useQuery({
     queryKey: ['public-settings'],
     queryFn: () => apiGet<{ support_email?: string; support_whatsapp?: string }>('/public/settings'),
@@ -100,7 +100,7 @@ export default function Settings() {
   };
 
   const storeRows: Row[] = [
-    { label: 'Payouts', value: wallet ? naira(wallet.balance) : undefined, href: '/payouts' },
+    { label: 'Payouts', value: wallet ? naira(wallet.balance) : undefined, loading: walletLoading, href: '/payouts' },
     { label: 'Delivery fee', value: savedFee ? naira(Number(savedFee)) : 'Not set', onPress: () => setDeliveryOpen(true) },
     { label: 'Store details and look', href: '/store-edit' },
     { label: 'Share store and QR code', href: '/share' },
@@ -112,6 +112,19 @@ export default function Settings() {
     { label: 'Email', value: user.email || 'Add email', onPress: () => setEditing('email') },
     { label: 'Log in with password', value: passwordOn ? 'On' : 'Off', onPress: () => setPasswordOpen(true) },
   ];
+
+  if (meLoading || storeLoading) {
+    return (
+      <Screen>
+        <View className="gap-4 px-5 pt-3">
+          <T className="font-display text-[32px] tracking-[-0.6px]">Store</T>
+          <Skeleton className="h-[90px] rounded-[22px]" />
+          <Skeleton className="h-[66px] rounded-[22px]" />
+          <Skeleton className="h-52 rounded-[22px]" />
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>

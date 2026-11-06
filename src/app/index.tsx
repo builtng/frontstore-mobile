@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { Redirect } from 'expo-router';
 import { getToken, getUserMode, hasSeenOnboarding } from '@/api/authStore';
 
@@ -29,11 +29,7 @@ export default function Index() {
   }, []);
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-bg">
-        <ActivityIndicator size="large" color="#0B6E4F" />
-      </View>
-    );
+    return <View className="flex-1 bg-bg" />;
   }
 
   if (authenticated) {

@@ -4,7 +4,7 @@ import { Camera } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Screen, T, cx } from '@/components/ui';
+import { Button, Screen, Skeleton, T, cx } from '@/components/ui';
 import { BackHeader, goBack } from '@/features/seller/parts';
 import { getStore, updateStore, uploadStoreLogo } from '@/api/store';
 import { initialOf } from '@/features/setup/draft';
@@ -40,6 +40,7 @@ export default function StoreEdit() {
     onSuccess: (res) => {
       setLogo(res.url);
       queryClient.invalidateQueries({ queryKey: ['seller-store'] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 
@@ -67,8 +68,10 @@ export default function StoreEdit() {
     <Screen>
       <BackHeader title="Edit store" fallback="/settings" />
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#0B6E4F" />
+        <View className="gap-5 px-5 pt-3">
+          <Skeleton className="h-20 w-20 rounded-[22px]" />
+          <Skeleton className="h-[50px] rounded-[14px]" />
+          <Skeleton className="h-24 rounded-[14px]" />
         </View>
       ) : (
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-5 px-5 pb-6 pt-3">

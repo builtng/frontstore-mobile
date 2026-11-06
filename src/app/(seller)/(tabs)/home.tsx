@@ -4,7 +4,7 @@ import { Link, router } from 'expo-router';
 import { Bell, CheckCircle, MessageCircle, Package, Plus, Share, Sparkles, X } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Screen, T, cx } from '@/components/ui';
+import { Button, EmptyState, LoadError, Screen, Skeleton, SkeletonRows, T, cx } from '@/components/ui';
 import { BottomSheet } from '@/features/buyer/account';
 import { getMe } from '@/api/auth';
 import { getSellerOrders, getWalletBalance } from '@/api/orders';
@@ -15,12 +15,21 @@ import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { formatNaira } from '@/lib/format';
 
-function Stat({ label, value, delta, dark }: { label: string; value: string; delta: string; dark?: boolean }) {
+function Stat({ label, value, delta, dark, loading }: { label: string; value: string; delta: string; dark?: boolean; loading?: boolean }) {
   return (
     <View className={cx('flex-1 gap-0.5 rounded-[20px] p-4', dark ? 'bg-green' : 'border border-line bg-surface')}>
       <T className={cx('text-xs', dark ? 'text-[#D7EAE1]' : 'text-muted')}>{label}</T>
-      <T className={cx('font-display text-[28px]', dark && 'text-bg')}>{value}</T>
-      <T className={cx('font-sans-bold text-xs', dark ? 'text-[#F3D9A8]' : 'text-green')}>{delta}</T>
+      {loading ? (
+        <View className="gap-2 pt-1.5">
+          <Skeleton className="h-6 w-12" />
+          <Skeleton className="h-3 w-16" />
+        </View>
+      ) : (
+        <>
+          <T className={cx('font-display text-[28px]', dark && 'text-bg')}>{value}</T>
+          <T className={cx('font-sans-bold text-xs', dark ? 'text-[#F3D9A8]' : 'text-green')}>{delta}</T>
+        </>
+      )}
     </View>
   );
 }
@@ -39,18 +48,18 @@ export default function Home() {
     queryFn: getMe,
   });
 
-  const { data: walletData } = useQuery({
+  const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ['wallet'],
     queryFn: getWalletBalance,
   });
 
-  const { data: ordersData } = useQuery({
+  const { data: ordersData, isLoading: ordersLoading, isError: ordersError, refetch: refetchOrders } = useQuery({
     queryKey: ['seller-orders'],
     queryFn: () => getSellerOrders(),
   });
 
   // The store's real assistant setting (same switch as the web dashboard). It answers buyers only on Pro and above.
-  const { data: sellerStore } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
+  const { data: sellerStore, isLoading: sellerStoreLoading } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
   const ninaAvailable = Boolean((sellerStore as any)?.nina_available);
   const ninaActive = ninaAvailable && Boolean((sellerStore as any)?.nina_enabled);
   const setNina = async (on: boolean) => {
@@ -66,7 +75,7 @@ export default function Home() {
     }
   };
 
-  const { data: products, isLoading: productsLoading } = useQuery({ queryKey: ['products'], queryFn: () => getProducts() });
+  const { data: products, isLoading: productsLoading, isError: productsError, refetch: refetchProducts } = useQuery({ queryKey: ['products'], queryFn: () => getProducts() });
   const latestProducts = (products ?? []).slice(0, 5);
   const needsWhatsapp = !!sellerStore && !sellerStore.whatsapp_phone;
   const hour = new Date().getHours();
@@ -94,7 +103,11 @@ export default function Home() {
         <View className="flex-row items-center justify-between">
           <View className="min-w-0 flex-1 gap-0.5 pr-3">
             <T className="text-sm text-muted">{greeting}</T>
-            <T numberOfLines={2} className="font-display text-[26px] leading-[31px] tracking-[-0.5px]">{storeName}</T>
+            {authLoading ? (
+              <Skeleton className="mt-1.5 h-6 w-44" />
+            ) : (
+              <T numberOfLines={2} className="font-display text-[26px] leading-[31px] tracking-[-0.5px]">{storeName}</T>
+            )}
           </View>
           <View className="flex-row gap-2">
             <Pressable
@@ -104,11 +117,11 @@ export default function Home() {
               className="h-11 w-11 items-center justify-center rounded-full border border-line bg-surface"
             >
               <Bell size={20} color="#0E1A15" strokeWidth={2} />
-              <View className="absolute right-[10px] top-[9px] h-2 w-2 rounded-full bg-[#C8553D]" />
+              {toShipOrders.length > 0 ? <View className="absolute right-[10px] top-[9px] h-2 w-2 rounded-full bg-[#C8553D]" /> : null}
             </Pressable>
             <Link href="/switch" asChild>
               <Pressable accessibilityRole="button" accessibilityLabel="Switch account" className="h-11 w-11 items-center justify-center rounded-full bg-[#C8553D]">
-                <T className="font-sans-bold text-white">{initials}</T>
+                <T className="font-sans-bold text-white">{authLoading ? '' : initials}</T>
               </Pressable>
             </Link>
           </View>
@@ -137,7 +150,7 @@ export default function Home() {
               <View className="h-[7px] w-[7px] rounded-full bg-leaf" />
               <T className="text-[13px] text-on-dark-2">Store is live</T>
             </View>
-            <T className="font-sans-bold text-[17px] text-bg">{link}</T>
+            {authLoading ? <Skeleton className="mt-1 h-4 w-40 bg-white/15" /> : <T className="font-sans-bold text-[17px] text-bg">{link}</T>}
           </View>
           <View className="flex-row gap-2">
             <Link href="/share" asChild>
@@ -156,12 +169,15 @@ export default function Home() {
         </View>
 
         <View className="flex-row gap-3">
-          <Stat label="Total Orders" value={String(ordersData?.length ?? 0)} delta={`${ordersData?.length ?? 0} total`} />
-          <Stat label="To Ship" value={String(toShipOrders.length)} delta={`${toShipOrders.length} pending`} dark />
-          <Stat label="Available" value={formatNaira(balanceKobo / 100)} delta="Paystack" />
+          <Stat loading={ordersLoading} label="Total Orders" value={String(ordersData?.length ?? 0)} delta={`${ordersData?.length ?? 0} total`} />
+          <Stat loading={ordersLoading} label="To Ship" value={String(toShipOrders.length)} delta={`${toShipOrders.length} pending`} dark />
+          <Stat loading={walletLoading} label="Available" value={formatNaira(balanceKobo / 100)} delta="Paystack" />
         </View>
 
         {/* Nina AI Status Banner */}
+        {sellerStoreLoading ? (
+          <Skeleton className="h-[92px] rounded-[20px]" />
+        ) : (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Open Nina AI Agent settings"
@@ -186,6 +202,7 @@ export default function Home() {
             <T className="text-lg">⚡</T>
           </View>
         </Pressable>
+        )}
 
         <View className="flex-row items-baseline justify-between">
           <T className="font-sans-bold text-lg">To ship</T>
@@ -196,7 +213,11 @@ export default function Home() {
           </Link>
         </View>
         <View className="gap-2.5">
-          {toShipOrders.length > 0 ? (
+          {ordersLoading ? (
+            <SkeletonRows count={2} />
+          ) : ordersError && !ordersData ? (
+            <LoadError what="your orders" onRetry={() => refetchOrders()} />
+          ) : toShipOrders.length > 0 ? (
             toShipOrders.map((o) => (
               <Link key={o.id} href={`/order/${o.id}`} asChild>
                 <Pressable accessibilityRole="button" className="flex-row items-center gap-3 rounded-[18px] border border-line bg-surface p-3.5">
@@ -212,9 +233,11 @@ export default function Home() {
               </Link>
             ))
           ) : (
-            <View className="rounded-[18px] border border-line bg-surface p-4 items-center">
-              <T className="font-sans-medium text-sm text-muted">No pending orders to ship right now.</T>
-            </View>
+            <EmptyState
+              icon={<CheckCircle size={22} color="#5B6660" />}
+              title="You’re all caught up"
+              sub="Paid orders waiting to be packed will show here."
+            />
           )}
         </View>
 
@@ -230,9 +253,9 @@ export default function Home() {
         </View>
         <View className="gap-2.5">
           {productsLoading ? (
-            <View className="items-center rounded-[18px] border border-line bg-surface p-6">
-              <ActivityIndicator color="#0B6E4F" />
-            </View>
+            <SkeletonRows count={3} />
+          ) : productsError && !products ? (
+            <LoadError what="your products" onRetry={() => refetchProducts()} />
           ) : latestProducts.length ? (
             latestProducts.map((p) => (
               <Link key={p.id} href={`/product/${p.id}`} asChild>
@@ -247,21 +270,13 @@ export default function Home() {
               </Link>
             ))
           ) : (
-            <View className="items-center gap-3 rounded-[18px] border border-line bg-surface p-5">
-              <View className="h-12 w-12 items-center justify-center rounded-2xl bg-bg">
-                <Package size={22} color="#5B6660" />
-              </View>
-              <View className="items-center gap-0.5">
-                <T className="font-sans-bold">No products yet</T>
-                <T className="text-center text-[13px] text-muted">Snap a photo and your first product is ready to sell.</T>
-              </View>
-              <Link href="/add-product" asChild>
-                <Pressable accessibilityRole="button" className="h-11 flex-row items-center gap-1.5 rounded-full bg-ink px-5">
-                  <Plus size={16} color="#F6F3EC" strokeWidth={2.4} />
-                  <T className="font-sans-bold text-sm text-bg">Add a product</T>
-                </Pressable>
-              </Link>
-            </View>
+            <EmptyState
+              icon={<Package size={22} color="#5B6660" />}
+              title="No products yet"
+              sub="Snap a photo and your first product is ready to sell."
+              action="Add a product"
+              href="/add-product"
+            />
           )}
         </View>
 
@@ -269,7 +284,7 @@ export default function Home() {
           <Pressable accessibilityRole="button" className="flex-row items-center justify-between rounded-[20px] bg-ink px-[18px] py-4">
             <View className="gap-0.5">
               <T className="text-xs text-on-dark-2">Frontstore Pay Balance</T>
-              <T className="font-display-x text-[22px] text-bg">{formatNaira(balanceKobo / 100)}</T>
+              {walletLoading ? <Skeleton className="mt-1 h-6 w-24 bg-white/15" /> : <T className="font-display-x text-[22px] text-bg">{formatNaira(balanceKobo / 100)}</T>}
             </View>
             <T className="font-sans-bold text-sm text-gold">Payouts →</T>
           </Pressable>

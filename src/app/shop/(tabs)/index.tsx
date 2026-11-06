@@ -3,7 +3,7 @@ import { BackHandler, Pressable, ScrollView, View } from 'react-native';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ChevronDown, RefreshCw, Search } from 'lucide-react-native';
-import { Screen, T, cx } from '@/components/ui';
+import { EmptyState, LoadError, Screen, Skeleton, T, cx } from '@/components/ui';
 import { naira } from '@/lib/format';
 import { Avatar, ChipRow, useTileWidth } from '@/features/buyer/parts';
 import { getMe } from '@/api/auth';
@@ -30,7 +30,7 @@ export default function BuyerHome() {
   }, [isFromOnboarding, setup_token]);
 
   const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
-  const { data: liveStores = [] } = useQuery({
+  const { data: liveStores = [], isLoading: storesLoading, isError: storesError, refetch: refetchStores } = useQuery({
     queryKey: ['marketplace-stores', cat],
     queryFn: () => getMarketplaceStores({ category: cat === 'For you' ? undefined : cat }),
   });
@@ -122,7 +122,15 @@ export default function BuyerHome() {
           </Link>
         </View>
 
-        {liveStores.length > 0 ? (
+        {storesLoading ? (
+          <View className="flex-row gap-3">
+            <Skeleton className="h-36 w-36 rounded-[18px]" />
+            <Skeleton className="h-36 w-36 rounded-[18px]" />
+            <Skeleton className="h-36 w-36 rounded-[18px]" />
+          </View>
+        ) : storesError ? (
+          <LoadError what="stores" onRetry={() => refetchStores()} />
+        ) : liveStores.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="grow-0" contentContainerClassName="gap-3">
             {liveStores.map((s, i) => {
               const displayName = s.name || s.store_name || 'Store';
@@ -142,7 +150,7 @@ export default function BuyerHome() {
             })}
           </ScrollView>
         ) : (
-          <T className="text-sm text-muted">No stores found for {cat.toLowerCase()}.</T>
+          <EmptyState title={`No ${cat.toLowerCase()} stores yet`} sub="Try another category. New stores join every day." />
         )}
 
         <Link href="/switch?from=shop" asChild>

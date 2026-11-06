@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react
 import { Link, useLocalSearchParams } from 'expo-router';
 import { Search, ShoppingBag } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Screen, T, cx } from '@/components/ui';
+import { EmptyState, LoadError, Screen, SkeletonRows, T, cx } from '@/components/ui';
 import { getSellerOrders } from '@/api/orders';
 import { formatNaira } from '@/lib/format';
 
@@ -46,7 +46,7 @@ export default function Orders() {
   const [tab, setTab] = useState<OrderTab>('paid');
   const [query, setQuery] = useState('');
 
-  const { data: apiOrders, isLoading } = useQuery({
+  const { data: apiOrders, isLoading, isError, refetch } = useQuery({
     queryKey: ['seller-orders'],
     queryFn: () => getSellerOrders(),
   });
@@ -110,9 +110,7 @@ export default function Orders() {
 
       <ScrollView contentContainerClassName="gap-3 px-5 pb-8 pt-3.5">
         {isLoading ? (
-          <View className="py-12 items-center">
-            <ActivityIndicator size="large" color="#0B6E4F" />
-          </View>
+          <SkeletonRows count={4} />
         ) : list.map((o) => {
           const href = `/order/${o.id}` as const;
           const nextAction = tab === 'paid' ? 'Mark shipped' : tab === 'shipped' ? 'Mark delivered' : 'Send receipt';
@@ -152,7 +150,15 @@ export default function Orders() {
             </View>
           );
         })}
-        {!isLoading && list.length === 0 ? <T className="py-10 text-center text-muted">No orders in this tab.</T> : null}
+        {isLoading || list.length > 0 ? null : isError && !apiOrders ? (
+          <LoadError what="your orders" onRetry={() => refetch()} />
+        ) : query.trim() ? (
+          <EmptyState title={`Nothing matches “${query.trim()}”`} sub="Try a name or order number." action="Clear search" onAction={() => setQuery('')} />
+        ) : !apiOrders?.length ? (
+          <EmptyState title="No orders yet" sub="Share your store link and orders will show here." action="Share my store" href="/share" />
+        ) : (
+          <EmptyState title="Nothing here right now" sub="Orders move to this tab as they progress." />
+        )}
       </ScrollView>
     </Screen>
   );

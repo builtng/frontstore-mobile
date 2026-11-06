@@ -1,12 +1,12 @@
 import '../global.css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Stack, router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '@/api/queryClient';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { CACHE_MAX_AGE, queryClient, queryPersister } from '@/api/queryClient';
 import { useFonts, InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold, InstrumentSans_700Bold } from '@expo-google-fonts/instrument-sans';
 import { PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans';
 import { UpdateNotification } from '../components/UpdateNotification';
@@ -21,9 +21,12 @@ export default function RootLayout() {
     InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold, InstrumentSans_700Bold,
     PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold,
   });
+  // Keep the splash up until fonts and saved data are ready, so the first screen
+  // the seller sees is already complete.
+  const [restored, setRestored] = useState(false);
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+    if (loaded && restored) SplashScreen.hideAsync();
+  }, [loaded, restored]);
 
   // Keep this phone's push token registered, and open the screen a tapped
   // notification points at (data.url, e.g. /order/123 or /shop/track/123).
@@ -42,16 +45,24 @@ export default function RootLayout() {
     const sub = Notifications.addNotificationResponseReceivedListener(open);
     return () => sub.remove();
   }, []);
-  if (!loaded) return null;
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister: queryPersister, maxAge: CACHE_MAX_AGE, buster: 'v1' }}
+      onSuccess={() => setRestored(true)}
+      onError={() => setRestored(true)}
+    >
+      {loaded && restored ? (
+        <>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F6F3EC' } }}>
         <Stack.Screen name="(seller)/product/[id]/index" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="switch" options={{ presentation: 'transparentModal', animation: 'fade' }} />
       </Stack>
       <UpdateNotification />
-    </QueryClientProvider>
+        </>
+      ) : null}
+    </PersistQueryClientProvider>
   );
 }
 

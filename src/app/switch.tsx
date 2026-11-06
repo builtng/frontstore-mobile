@@ -21,10 +21,10 @@ export default function Switch() {
   const user = me?.user;
   const sellerStore = me?.store;
 
-  const buyerName = user?.name || 'Customer';
+  const buyerName = user?.name || '';
   const buyerInitials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() : 'FS';
 
-  const sellerName = sellerStore?.store_name || sellerStore?.name || 'My Store';
+  const sellerName = sellerStore?.store_name || sellerStore?.name || '';
   const sellerInitial = (sellerName || 'S')[0].toUpperCase();
   const sellerColor = sellerStore?.primary_color || sellerStore?.store_color || '#0B6E4F';
 

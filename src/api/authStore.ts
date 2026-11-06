@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { clearQueryCache } from './queryClient';
 
 const TOKEN_KEY = 'frontstore_auth_token';
 const USER_MODE_KEY = 'frontstore_user_mode'; // 'seller' | 'buyer'
@@ -45,6 +46,8 @@ export async function setToken(token: string): Promise<void> {
 }
 
 export async function removeToken(): Promise<void> {
+  // The next person on this phone must never see this account's saved screens.
+  await clearQueryCache().catch(() => {});
   try {
     if (Platform.OS === 'web') {
       if (typeof localStorage !== 'undefined') localStorage.removeItem(TOKEN_KEY);

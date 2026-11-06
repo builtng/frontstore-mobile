@@ -112,3 +112,51 @@ export function Pill({ label, bg, fg }: { label: string; bg: string; fg: string 
 }
 
 export { cx };
+
+/** A calm grey shape where text will appear. It doesn't pulse, so nothing flickers. */
+export function Skeleton({ className }: { className?: string }) {
+  return <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className={cx('rounded-lg bg-[#E9E4D9]', className)} />;
+}
+
+/** Placeholder list rows, shaped like the real ones so the page doesn't jump. */
+export function SkeletonRows({ count = 3 }: { count?: number }) {
+  return (
+    <View className="gap-2.5">
+      {Array.from({ length: count }, (_, i) => (
+        <View key={i} className="flex-row items-center gap-3 rounded-[18px] border border-line bg-surface p-3">
+          <Skeleton className="h-12 w-12 rounded-xl" />
+          <View className="flex-1 gap-2">
+            <Skeleton className="h-3.5 w-3/5" />
+            <Skeleton className="h-3 w-2/5" />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** What a section shows when it truly has nothing: what's missing and what to do next. */
+export function EmptyState({ icon, title, sub, action, onAction, href }: {
+  icon?: React.ReactNode;
+  title: string;
+  sub?: string;
+  action?: string;
+  onAction?: () => void;
+  href?: Href;
+}) {
+  return (
+    <View className="items-center gap-3 rounded-[18px] border border-line bg-surface px-5 py-6">
+      {icon ? <View className="h-12 w-12 items-center justify-center rounded-2xl bg-bg">{icon}</View> : null}
+      <View className="items-center gap-1">
+        <T className="text-center font-sans-bold text-[15px]">{title}</T>
+        {sub ? <T className="text-center text-[13px] text-muted">{sub}</T> : null}
+      </View>
+      {action ? <Button title={action} kind="dark" href={href} onPress={onAction} className="h-11 px-5" textClassName="text-sm" /> : null}
+    </View>
+  );
+}
+
+/** A section that couldn't load: not the same as having nothing. */
+export function LoadError({ what, onRetry }: { what: string; onRetry?: () => void }) {
+  return <EmptyState title={`Couldn’t load ${what}`} sub="Check your connection and try again." action={onRetry ? 'Try again' : undefined} onAction={onRetry} />;
+}

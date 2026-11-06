@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { EllipsisVertical, Search } from 'lucide-react-native';
+import { EllipsisVertical, Package, Search } from 'lucide-react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Screen, T } from '@/components/ui';
+import { EmptyState, LoadError, Screen, Skeleton, SkeletonRows, T } from '@/components/ui';
 import { formatNaira } from '@/lib/format';
 import { Chip } from '@/features/seller/parts';
 import { getProducts, restoreProduct } from '@/api/products';
@@ -20,7 +20,7 @@ export default function Products() {
 
   const queryClient = useQueryClient();
 
-  const { data: apiProducts, isLoading } = useQuery({
+  const { data: apiProducts, isLoading, isError, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: () => getProducts(),
   });
@@ -68,7 +68,7 @@ export default function Products() {
       <View className="gap-4 px-5 pt-3">
         <View className="flex-row items-center justify-between">
           <T className="font-display text-[32px] tracking-[-0.6px]">Products</T>
-          <T className="text-sm text-muted">{items.length} {items.length === 1 ? 'product' : 'products'}</T>
+          {isLoading ? <Skeleton className="h-3.5 w-16" /> : <T className="text-sm text-muted">{items.length} {items.length === 1 ? 'product' : 'products'}</T>}
         </View>
         <View className="h-12 flex-row items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5">
           <Search size={18} color="#5B6660" strokeWidth={2} />
@@ -92,9 +92,7 @@ export default function Products() {
 
       <ScrollView contentContainerClassName="gap-2.5 px-5 pb-28 pt-4">
         {isLoading ? (
-          <View className="py-12 items-center">
-            <ActivityIndicator size="large" color="#0B6E4F" />
-          </View>
+          <SkeletonRows count={5} />
         ) : items.map((p) => {
           const inStock = p.stock_count > 0;
           const bg = inStock ? '#CFE8DC' : '#ECE8DF';
@@ -128,7 +126,24 @@ export default function Products() {
             </Pressable>
           );
         })}
-        {!isLoading && items.length === 0 ? <T className="py-10 text-center text-muted">No products match.</T> : null}
+        {isLoading || items.length > 0 ? null : isError && !apiProducts ? (
+          <LoadError what="your products" onRetry={() => refetch()} />
+        ) : !apiProducts?.length ? (
+          <EmptyState
+            icon={<Package size={22} color="#5B6660" />}
+            title="No products yet"
+            sub="Snap a photo and your first product is ready to sell."
+            action="Add a product"
+            href="/add-product"
+          />
+        ) : query.trim() ? (
+          <EmptyState title={`Nothing matches “${query.trim()}”`} sub="Try a different word." action="Clear search" onAction={() => setQuery('')} />
+        ) : (
+          <EmptyState
+            title={filter === 'in' ? 'Nothing in stock' : filter === 'out' ? 'Nothing is sold out' : 'No hidden products'}
+            sub={filter === 'in' ? 'Update your stock so buyers can order.' : filter === 'out' ? 'Products that run out will show here.' : 'Products you hide from your store will show here.'}
+          />
+        )}
       </ScrollView>
 
       {toast ? (

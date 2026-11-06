@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronDown } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Screen, T, cx } from '@/components/ui';
+import { Screen, SkeletonRows, T, cx } from '@/components/ui';
 import { BackHeader, Grip, Tag } from '@/features/seller/parts';
 import { getOrder, updateOrderStatus, refundOrder } from '@/api/orders';
 import { OrderStatus } from '@/api/types';
@@ -102,7 +102,7 @@ export default function OrderDetail() {
       <Screen>
         <BackHeader title="Order" sub="Order Details" fallback="/orders" />
         <View className="flex-1 items-center justify-center">
-          {isLoading ? <ActivityIndicator color="#0B6E4F" /> : <T className="text-muted-2">Order not found.</T>}
+          {isLoading ? <SkeletonRows count={3} /> : <T className="text-muted-2">Order not found.</T>}
         </View>
       </Screen>
     );
