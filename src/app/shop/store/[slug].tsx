@@ -3,9 +3,11 @@ import { ActivityIndicator, Linking, Pressable, ScrollView, Share, View } from '
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ProductImage, productPhoto } from '@/features/products/ProductImage';
+import { getMe } from '@/api/auth';
 import { ChevronLeft, Share as ShareIcon, Star, X } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
-import { Button, Screen, T, cx } from '@/components/ui';
+import { Button, EmptyState, LoadError, Screen, Skeleton, T, cx } from '@/components/ui';
 import { naira } from '@/lib/format';
 import { Avatar, ChipRow, useTileWidth } from '@/features/buyer/parts';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
@@ -17,16 +19,19 @@ export default function BuyerStore() {
   const tile = useTileWidth();
   const queryClient = useQueryClient();
 
-  const { data: liveData } = useQuery({
+  const { data: liveData, isLoading: storeLoading, isError: storeError, refetch: refetchStore } = useQuery({
     queryKey: ['public-store', slug],
     queryFn: () => getPublicStore(slug!),
     enabled: !!slug,
   });
 
   const storeObj = liveData?.store;
+  // Sellers can look at their own store but can't buy from it.
+  const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
+  const ownStore = !!me?.store && (String(me.store.id) === String(storeObj?.id) || me.store.username === slug);
   const liveProducts = liveData?.products || [];
 
-  const storeName = storeObj?.name || slug || 'Store';
+  const storeName = storeObj?.name || '';
   const storeInitial = storeName[0] || 'S';
   const storeColor = storeObj?.primary_color || '#0F172A';
   const storeBio = storeObj?.store_bio || '';
@@ -122,6 +127,7 @@ export default function BuyerStore() {
     name: p.name,
     price: p.price,
     color: p.primary_color || '#B5838D',
+    photo: productPhoto(p as any),
     cat: p.category || 'General',
   }));
 
@@ -132,7 +138,36 @@ export default function BuyerStore() {
 
   const back = () => (router.canGoBack() ? router.back() : router.replace('/shop'));
   const share = () => Share.share({ message: `${storeName} on Frontstore: https://frontstore.ng/${slug}` }).catch(() => {});
-  const meta = storeLocation ? `★ 5.0 · ${storeLocation}` : '★ 5.0';
+  const meta = storeLocation;
+
+  if (storeLoading || (storeError && !liveData)) {
+    return (
+      <Screen className="bg-surface-2">
+        <View className="flex-row items-center px-2 pb-1">
+          <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} className="h-11 w-11 items-center justify-center">
+            <ChevronLeft size={24} color="#0E1A15" strokeWidth={2} />
+          </Pressable>
+        </View>
+        {storeLoading ? (
+          <View className="gap-4 px-4">
+            <View className="flex-row items-center gap-3.5">
+              <Skeleton className="h-16 w-16 rounded-[20px]" />
+              <View className="flex-1 gap-2">
+                <Skeleton className="h-5 w-3/5" />
+                <Skeleton className="h-3.5 w-2/5" />
+              </View>
+            </View>
+            <Skeleton className="h-11 rounded-full" />
+            <View className="flex-row flex-wrap gap-3">
+              {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[180px] w-[47%] rounded-2xl" />)}
+            </View>
+          </View>
+        ) : (
+          <View className="px-4"><LoadError what="this store" onRetry={() => refetchStore()} /></View>
+        )}
+      </Screen>
+    );
+  }
 
   return (
     <Screen className="bg-surface-2">
@@ -146,9 +181,15 @@ export default function BuyerStore() {
       </View>
 
       <ScrollView contentContainerClassName="pb-6" showsVerticalScrollIndicator={false}>
+        {ownStore ? (
+          <View className="mx-4 mb-3 rounded-2xl bg-mint px-4 py-3">
+            <T className="font-sans-bold text-sm text-green">This is a preview of your store</T>
+            <T className="text-[13px] text-green">It’s what buyers see. You can’t buy from your own store.</T>
+          </View>
+        ) : null}
         <View className="gap-2.5 px-4">
           <View className="flex-row items-center gap-3.5">
-            <Avatar initial={storeInitial} color={storeColor} size={64} radius={20} fontSize={26} />
+            <Avatar initial={storeInitial} color={storeColor} uri={storeObj?.logo_url} size={64} radius={20} fontSize={26} />
             <View className="flex-1 gap-0.5">
               <T className="font-display-x text-[22px]">{storeName}</T>
               <T className="text-[13px] text-muted-2">{meta}</T>
@@ -156,15 +197,17 @@ export default function BuyerStore() {
           </View>
           <T className="text-sm leading-[21px] text-muted-2">{storeBio}</T>
           <View className="flex-row gap-2">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: following }}
-              accessibilityLabel={following ? `Following ${storeName}, tap to unfollow` : `Follow ${storeName}`}
-              onPress={handleToggleFollow}
-              className={cx('h-11 flex-1 items-center justify-center rounded-full', following ? 'border border-line-2 bg-surface' : 'bg-ink')}
-            >
-              <T className={cx('font-sans-bold text-[15px]', following ? 'text-ink' : 'text-white')}>{following ? 'Following' : 'Follow'}</T>
-            </Pressable>
+            {!ownStore ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: following }}
+                accessibilityLabel={following ? `Following ${storeName}, tap to unfollow` : `Follow ${storeName}`}
+                onPress={handleToggleFollow}
+                className={cx('h-11 flex-1 items-center justify-center rounded-full', following ? 'border border-line-2 bg-surface' : 'bg-ink')}
+              >
+                <T className={cx('font-sans-bold text-[15px]', following ? 'text-ink' : 'text-white')}>{following ? 'Following' : 'Follow'}</T>
+              </Pressable>
+            ) : null}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`View reviews for ${storeName}`}
@@ -178,24 +221,31 @@ export default function BuyerStore() {
 
         <ChipRow options={cats} value={cat} onChange={setCat} bordered="border-line-2" className="pt-4" contentPadding />
 
+        {shown.length === 0 ? (
+          <View className="px-4 pt-3.5">
+            <EmptyState title={liveProducts.length ? 'Nothing in this category' : 'No products yet'} sub={liveProducts.length ? 'Try another category.' : 'This store hasn’t added any products. Check back soon.'} />
+          </View>
+        ) : null}
         <View className="flex-row flex-wrap gap-x-3 gap-y-4 px-4 pt-3.5">
           {shown.map((p) => {
             const q = cart[p.id] ?? 0;
             return (
               <View key={p.id} style={{ width: tile }} className="gap-1.5">
-                <View style={{ backgroundColor: p.color }} className="h-[140px] rounded-2xl" />
+                <ProductImage uri={p.photo} name={p.name} className="h-[140px] w-full rounded-2xl" textClassName="text-3xl" />
                 <T className="font-sans-bold text-sm">{p.name}</T>
                 <View className="flex-row items-center justify-between">
                   <T className="font-sans-bold text-sm">{naira(p.price)}</T>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={q ? `Add another ${p.name}, ${q} in cart` : `Add ${p.name}`}
-                    onPress={() => setCart((c) => ({ ...c, [p.id]: q + 1 }))}
-                    style={q ? { backgroundColor: storeColor } : undefined}
-                    className={cx('h-10 min-w-[44px] items-center justify-center rounded-full px-2.5', !q && 'border-[1.5px] border-ink bg-surface')}
-                  >
-                    <T className={cx('font-sans-bold text-sm', q ? 'text-white' : 'text-ink')}>{q ? `${q} in cart` : '+ Add'}</T>
-                  </Pressable>
+                  {!ownStore ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={q ? `Add another ${p.name}, ${q} in cart` : `Add ${p.name}`}
+                      onPress={() => setCart((c) => ({ ...c, [p.id]: q + 1 }))}
+                      style={q ? { backgroundColor: storeColor } : undefined}
+                      className={cx('h-10 min-w-[44px] items-center justify-center rounded-full px-2.5', !q && 'border-[1.5px] border-ink bg-surface')}
+                    >
+                      <T className={cx('font-sans-bold text-sm', q ? 'text-white' : 'text-ink')}>{q ? `${q} in cart` : '+ Add'}</T>
+                    </Pressable>
+                  ) : null}
                 </View>
               </View>
             );
@@ -371,13 +421,13 @@ export default function BuyerStore() {
               reviewsList.map((r, idx) => (
                 <View key={r.id || idx} className="gap-1 border-b border-line-2 py-3">
                   <View className="flex-row items-center justify-between">
-                    <T className="font-sans-bold text-sm">{r.customer_name || r.buyer_name || 'Verified Buyer'}</T>
+                    <T className="font-sans-bold text-sm">{r.customer_name || r.buyer_name || 'Buyer'}</T>
                     <View className="flex-row items-center gap-0.5">
                       <Star size={14} color="#E9A23B" fill="#E9A23B" />
-                      <T className="font-sans-bold text-xs">{r.rating ?? 5}.0</T>
+                      <T className="font-sans-bold text-xs">{r.rating ?? '–'}</T>
                     </View>
                   </View>
-                  <T className="text-[13px] text-muted-2">{r.comment || 'Great product and quick delivery!'}</T>
+                  <T className="text-[13px] text-muted-2">{r.comment || ''}</T>
                   {r.created_at ? (
                     <T className="text-[11px] text-muted">{new Date(r.created_at).toLocaleDateString()}</T>
                   ) : null}

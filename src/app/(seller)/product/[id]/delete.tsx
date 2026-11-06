@@ -6,7 +6,8 @@ import { Trash2 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, T } from '@/components/ui';
 import { Grip, goBack } from '@/features/seller/parts';
-import { getProduct, deleteProduct } from '@/api/products';
+import { deleteProduct } from '@/api/products';
+import { useSellerProduct } from '@/features/products/useSellerProduct';
 
 export default function DeleteProduct() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -14,11 +15,7 @@ export default function DeleteProduct() {
   const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
 
-  const { data: product } = useQuery({
-    queryKey: ['product', id],
-    queryFn: () => getProduct(id!),
-    enabled: !!id,
-  });
+  const { data: product } = useSellerProduct(id);
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteProduct(id!),

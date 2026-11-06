@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { Image } from 'react-native';
+import { productPhoto } from '@/features/products/ProductImage';
 import { Tabs } from 'expo-router';
 import { queryClient } from '@/api/queryClient';
 import { getMe } from '@/api/auth';
@@ -23,7 +25,14 @@ export default function SellerTabs() {
   useEffect(() => {
     queryClient.prefetchQuery({ queryKey: ['me'], queryFn: getMe });
     queryClient.prefetchQuery({ queryKey: ['seller-store'], queryFn: getStore });
-    queryClient.prefetchQuery({ queryKey: ['products'], queryFn: () => getProducts() });
+    queryClient
+      .fetchQuery({ queryKey: ['products'], queryFn: () => getProducts() })
+      // Fetch the photos too, so they're there the moment the list opens.
+      .then((products) => products.slice(0, 30).forEach((p) => {
+        const uri = productPhoto(p);
+        if (uri) Image.prefetch(uri).catch(() => {});
+      }))
+      .catch(() => {});
     queryClient.prefetchQuery({ queryKey: ['seller-orders'], queryFn: () => getSellerOrders() });
     queryClient.prefetchQuery({ queryKey: ['wallet'], queryFn: getWalletBalance });
     queryClient.prefetchQuery({ queryKey: ['seller-wallet'], queryFn: getWalletBalance });

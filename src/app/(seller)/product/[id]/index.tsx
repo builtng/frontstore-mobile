@@ -5,10 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ban, Check, Copy, EyeOff, Pencil, Share, Trash2, type LucideIcon } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { T, cx } from '@/components/ui';
+import { Skeleton, T, cx } from '@/components/ui';
 import { formatNaira } from '@/lib/format';
 import { Grip, goBack } from '@/features/seller/parts';
-import { getProduct, updateProduct } from '@/api/products';
+import { updateProduct } from '@/api/products';
+import { useSellerProduct } from '@/features/products/useSellerProduct';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { getMe } from '@/api/auth';
 
@@ -33,11 +34,7 @@ export default function ProductActions() {
     queryFn: getMe,
   });
 
-  const { data: product } = useQuery({
-    queryKey: ['product', id],
-    queryFn: () => getProduct(id!),
-    enabled: !!id,
-  });
+  const { data: product } = useSellerProduct(id);
 
   const updateMutation = useMutation({
     mutationFn: (patch: any) => updateProduct(id!, patch),
@@ -104,8 +101,17 @@ export default function ProductActions() {
         <View className="flex-row items-center gap-3 border-b border-[#F0ECE3] px-1 pb-3.5 pt-1">
           <ProductImage uri={productPhoto(product)} name={name} className="h-[52px] w-[52px] rounded-xl" />
           <View className="flex-1 gap-0.5">
-            <T className="font-sans-bold text-base">{name}</T>
-            <T className="font-sans-bold text-sm text-green">{formatNaira(priceKobo / 100)} · {isHidden ? 'Hidden' : isOut ? 'Sold out' : 'In stock'}</T>
+            {product ? (
+              <>
+                <T className="font-sans-bold text-base">{name}</T>
+                    <T className="font-sans-bold text-sm text-green">{formatNaira(priceKobo / 100)} · {isHidden ? 'Hidden' : isOut ? 'Sold out' : 'In stock'}</T>
+              </>
+            ) : (
+              <>
+                <Skeleton className="h-4 w-3/5" />
+                <Skeleton className="mt-1.5 h-3.5 w-2/5" />
+              </>
+            )}
           </View>
         </View>
         <Row Icon={Pencil} label="Edit product" onPress={() => router.replace(`/product/${id}/edit`)} />

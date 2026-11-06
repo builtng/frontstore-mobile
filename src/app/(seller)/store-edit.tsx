@@ -4,7 +4,7 @@ import { Camera } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Screen, Skeleton, T, cx } from '@/components/ui';
+import { Button, LoadError, Screen, Skeleton, T, cx } from '@/components/ui';
 import { BackHeader, goBack } from '@/features/seller/parts';
 import { getStore, updateStore, uploadStoreLogo } from '@/api/store';
 import { initialOf } from '@/features/setup/draft';
@@ -22,18 +22,21 @@ export default function StoreEdit() {
   const queryClient = useQueryClient();
   const { data: store, isLoading } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
 
-  const [name, setName] = useState('');
-  const [bio, setBio] = useState('');
-  const [color, setColor] = useState('#0B6E4F');
-  const [logo, setLogo] = useState<string | null>(null);
+  const [name, setName] = useState<string>(store?.store_name ?? store?.name ?? '');
+  const [bio, setBio] = useState<string>(store?.store_bio ?? '');
+  const [color, setColor] = useState<string>(store?.primary_color || store?.store_color || '#0B6E4F');
+  const [logo, setLogo] = useState<string | null>(store?.logo_url ?? null);
 
+  // Fill the form once. A background refresh must never overwrite what the seller is typing.
+  const [ready, setReady] = useState(!!store);
   useEffect(() => {
-    if (!store) return;
+    if (!store || ready) return;
+    setReady(true);
     setName(store.store_name ?? store.name ?? '');
     setBio(store.store_bio ?? '');
     setColor(store.primary_color || store.store_color || '#0B6E4F');
     setLogo(store.logo_url ?? null);
-  }, [store]);
+  }, [store, ready]);
 
   const logoMutation = useMutation({
     mutationFn: uploadStoreLogo,
@@ -67,7 +70,9 @@ export default function StoreEdit() {
   return (
     <Screen>
       <BackHeader title="Edit store" fallback="/settings" />
-      {isLoading ? (
+      {!ready && !isLoading ? (
+        <View className="px-5 pt-3"><LoadError what="your store" /></View>
+      ) : !ready ? (
         <View className="gap-5 px-5 pt-3">
           <Skeleton className="h-20 w-20 rounded-[22px]" />
           <Skeleton className="h-[50px] rounded-[14px]" />

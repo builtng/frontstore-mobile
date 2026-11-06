@@ -16,7 +16,7 @@ export function normalizeStore(s: any): Store {
     store_bio: s.store_bio || s.bio || '',
     category_label: s.category_label || s.category || '',
     category: s.category_label || s.category || '',
-    location: s.location || 'Nigeria',
+    location: s.location || '',
     logo_url: s.logo_url || null,
     whatsapp_phone: s.whatsapp_phone || s.phone || null,
     is_active: s.is_active ?? true,

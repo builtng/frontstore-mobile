@@ -1,11 +1,14 @@
-import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Image, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Heart } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
 
 /** Coloured square/round avatar with a store initial. */
-export function Avatar({ initial, color, size = 48, radius = 14, fontSize = 18, className }: {
-  initial: string; color: string; size?: number; radius?: number; fontSize?: number; className?: string;
+export function Avatar({ initial, color, uri, size = 48, radius = 14, fontSize = 18, className }: {
+  initial: string; color: string; uri?: string | null; size?: number; radius?: number; fontSize?: number; className?: string;
 }) {
+  if (uri) {
+    return <Image source={{ uri }} fadeDuration={0} accessibilityIgnoresInvertColors resizeMode="cover" style={{ width: size, height: size, borderRadius: radius, backgroundColor: color }} className={className} />;
+  }
   return (
     <View style={{ width: size, height: size, borderRadius: radius, backgroundColor: color }} className={cx('items-center justify-center', className)}>
       <T style={{ fontSize, color: '#FFFFFF' }} className="font-display-x">{initial}</T>

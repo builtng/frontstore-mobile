@@ -5,9 +5,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, ChevronDown, ChevronRight, Trash2, X } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Screen, Skeleton, T, cx } from '@/components/ui';
+import { LoadError, Screen, Skeleton, T, cx } from '@/components/ui';
 import { Toggle, goBack } from '@/features/seller/parts';
-import { getProduct, updateProduct, uploadProductImage } from '@/api/products';
+import { updateProduct, uploadProductImage } from '@/api/products';
+import { useSellerProduct } from '@/features/products/useSellerProduct';
 import { ProductImage } from '@/features/products/ProductImage';
 import { formatNaira } from '@/lib/format';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
@@ -22,29 +23,28 @@ export default function EditProduct() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ['product', id],
-    queryFn: () => getProduct(id!),
-    enabled: !!id,
-  });
+  const { data: product, isLoading } = useSellerProduct(id);
 
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
+  const [name, setName] = useState(product?.name ?? '');
+  const [price, setPrice] = useState(product ? String(Math.round(product.price_kobo / 100)) : '');
   const categories = useCategories();
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState<string>((product?.category_id as any) ?? '');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [sizes, setSizes] = useState<string[]>([]);
-  const [colors, setColors] = useState<string[]>([]);
-  const [inStock, setInStock] = useState(true);
-  const [stock, setStock] = useState('');
-  const [visible, setVisible] = useState(true);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>(product?.sizes ?? []);
+  const [colors, setColors] = useState<string[]>(product?.colors ?? []);
+  const [inStock, setInStock] = useState(product ? product.stock_count > 0 : true);
+  const [stock, setStock] = useState(product && product.stock_count > 0 ? String(product.stock_count) : '');
+  const [visible, setVisible] = useState(product ? product.status !== 'hidden' : true);
+  const [photos, setPhotos] = useState<string[]>(product?.images ?? []);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Fill the form once. A background refresh must never overwrite what the seller is typing.
+  const [ready, setReady] = useState(!!product);
   useEffect(() => {
-    if (product) {
+    if (product && !ready) {
+      setReady(true);
       setName(product.name);
       setPrice(String(Math.round(product.price_kobo / 100)));
       setCategory(product.category_id ?? '');
@@ -55,7 +55,7 @@ export default function EditProduct() {
       if (product.sizes) setSizes(product.sizes);
       if (product.colors) setColors(product.colors);
     }
-  }, [product]);
+  }, [product, ready]);
 
   const addFrom = async (source: 'camera' | 'library') => {
     setErrorMsg(null);
@@ -140,7 +140,9 @@ export default function EditProduct() {
         </View>
       ) : null}
 
-      {isLoading ? (
+      {!ready && !isLoading ? (
+        <View className="px-5 pt-2"><LoadError what="this product" /></View>
+      ) : !ready ? (
         <View className="gap-4 px-5 pt-2">
           <Skeleton className="h-[110px] w-[110px] rounded-[18px]" />
           <Skeleton className="h-[50px] rounded-[14px]" />
