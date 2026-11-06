@@ -119,6 +119,7 @@ export default function StoreEdit() {
 
           <View className="gap-2.5">
             <T className="font-sans-bold text-sm">Brand colour</T>
+            {!store?.is_pro ? <T className="text-xs text-muted">Custom colours are a Pro feature.</T> : null}
             <View accessibilityRole="radiogroup" className="flex-row flex-wrap gap-3">
               {SWATCHES.map(([label, hex]) => {
                 const on = hex.toLowerCase() === color.toLowerCase();
@@ -128,8 +129,9 @@ export default function StoreEdit() {
                     accessibilityRole="radio"
                     accessibilityLabel={label}
                     accessibilityState={{ checked: on }}
+                    disabled={!store?.is_pro}
                     onPress={() => setColor(hex)}
-                    style={{ borderColor: on ? '#0E1A15' : '#D8D2C4', borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
+                    style={{ opacity: store?.is_pro ? 1 : 0.4, borderColor: on ? '#0E1A15' : '#D8D2C4', borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
                     className="rounded-full"
                   >
                     <View style={{ backgroundColor: hex }} className="h-11 w-11 rounded-full border-[3px] border-bg" />

@@ -24,6 +24,7 @@ export interface User {
 }
 
 export interface Store {
+  is_pro?: boolean;
   id: number;
   user_id: number;
   store_name: string;

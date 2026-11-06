@@ -29,8 +29,8 @@ export default function Login() {
     setErrorMsg(null);
     try {
       if (pw) {
-        await loginWithPassword(v, password);
-        router.replace('/home');
+        const res = await loginWithPassword(v, password);
+        router.replace(res.store ? '/home' : '/shop');
       } else {
         if (isEmail) {
           await sendEmailOtp(v);

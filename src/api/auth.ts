@@ -33,6 +33,7 @@ export async function verifyOtp(params: {
 
   if (data.token) {
     await setToken(data.token);
+    await setUserMode(data.store ? 'seller' : 'buyer');
     registerForPush();
   }
   return data;
@@ -61,6 +62,7 @@ export async function loginWithPassword(loginIdentifier: string, password: strin
 
   if (data.token) {
     await setToken(data.token);
+    await setUserMode(data.store ? 'seller' : 'buyer');
     registerForPush();
   }
   return data;

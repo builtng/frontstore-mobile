@@ -21,6 +21,7 @@ function paymentLabel(method: unknown): string {
   if (m.includes('ussd')) return 'USSD';
   if (m.includes('card') || m === 'paystack' || m === 'stripe') return 'Card';
   if (m === 'payment_link') return 'Payment link';
+  if (m === 'momo_agent') return 'Mobile money';
   if (['delivery', 'cod', 'cash_on_delivery', 'pay_on_delivery'].includes(m)) return 'On delivery';
   if (m === 'whatsapp') return 'WhatsApp';
   return m ? m.charAt(0).toUpperCase() + m.slice(1) : '';

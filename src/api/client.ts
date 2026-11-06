@@ -78,6 +78,19 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Login responses can carry the token next to `data`, not inside it. Keep it:
+ * losing it here means the login is never saved and the next launch asks again.
+ */
+export function unwrapPostResponse(json: any): any {
+  const data = json?.data;
+  if (data === undefined) return json;
+  if (json?.token && data && typeof data === 'object' && !Array.isArray(data)) {
+    return { ...data, token: data.token ?? json.token, is_new_user: data.is_new_user ?? json.is_new_user };
+  }
+  return data;
+}
+
 /** Wrapper helper methods matching expected API call patterns */
 export async function apiGet<T = any>(url: string, params?: Record<string, any>, config?: any): Promise<T> {
   try {
@@ -101,7 +114,7 @@ export async function apiPost<T = any>(url: string, body?: any, config?: any): P
     if (json?.status === 'error') {
       throw new ApiError(json.message || 'Request failed', res.status, json);
     }
-    return json?.data !== undefined ? json.data : json;
+    return unwrapPostResponse(json);
   } catch (err: any) {
     if (err instanceof ApiError) throw err;
     const message = err.response?.data?.message || err.message || 'Network request failed';

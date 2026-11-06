@@ -1,6 +1,6 @@
 import { apiGet, apiPost, apiPut } from './client';
 import { Store, Bank, Country, Currency } from './types';
-import { setToken } from './authStore';
+import { setToken, setUserMode } from './authStore';
 import { registerForPush } from '@/lib/push';
 
 /** Check if a store username / subdomain is available */
@@ -78,6 +78,7 @@ export async function completeStoreSetup(params: {
   const token = res.token;
   if (token) {
     await setToken(token);
+    await setUserMode('seller');
     registerForPush();
   }
 
