@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Share, View } from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Check } from 'lucide-react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import * as Clipboard from 'expo-clipboard';
+import { useQuery } from '@tanstack/react-query';
+import { getStore } from '@/api/store';
+import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, InstagramIcon, TikTokIcon, WhatsAppIcon } from '@/features/setup/parts';
 import { initialOf, toSlug, useDraft } from '@/features/setup/draft';
@@ -23,6 +26,12 @@ function QrIcon({ color }: { color: string }) {
 export default function Live() {
   const { name } = useDraft();
   const [copied, setCopied] = useState(false);
+  // Signed up without a phone: ask for the real WhatsApp number straight away.
+  const { data: store } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
+  const [askWhatsapp, setAskWhatsapp] = useState(false);
+  useEffect(() => {
+    if (store && !store.whatsapp_phone) setAskWhatsapp(true);
+  }, [store?.id]);
   const slug = toSlug(name) || 'mamav';
   const link = `frontstore.app/${slug}`;
   const fullUrl = `https://${link}`;
@@ -93,6 +102,7 @@ export default function Live() {
       <BottomBar>
         <Button title="Go to my dashboard" kind="gold" onPress={() => router.replace('/home')} />
       </BottomBar>
+      <ContactEditSheet kind={askWhatsapp ? 'whatsapp' : null} onClose={() => setAskWhatsapp(false)} />
     </Screen>
   );
 }

@@ -8,6 +8,7 @@ import { Screen, T, cx } from '@/components/ui';
 import { BackHeader, Grip, Tag } from '@/features/seller/parts';
 import { getWalletBalance, getPayoutHistory, requestWithdrawal, sendWithdrawalOtp } from '@/api/orders';
 import { formatNaira } from '@/lib/format';
+import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 
 const payoutStyle: Record<string, [string, string, string]> = {
   paid: ['Paid', '#CFE8DC', '#07261C'],
@@ -23,6 +24,12 @@ export default function Payouts() {
   const [otpCode, setOtpCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
+  const [needsEmail, setNeedsEmail] = useState(false);
+  const [addingEmail, setAddingEmail] = useState(false);
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet'],
@@ -50,12 +57,22 @@ export default function Payouts() {
   });
 
   const handlePayOutNow = async () => {
+    if (sending) return;
+    setSending(true);
+    setSendError(null);
     try {
-      await sendWithdrawalOtp();
-    } catch {
-      // Proceed to modal anyway
+      const res = await sendWithdrawalOtp();
+      setSentTo(res?.sent_to ?? null);
+      setResent(otpModal);
+      setOtpModal(true);
+    } catch (err: any) {
+      // No code went out, so don't ask for one.
+      setOtpModal(false);
+      if (err?.data?.errors?.email) setNeedsEmail(true);
+      else setSendError(err?.message || 'We couldn’t send your code. Please try again.');
+    } finally {
+      setSending(false);
     }
-    setOtpModal(true);
   };
 
   const confirmWithdrawal = () => {
@@ -79,10 +96,22 @@ export default function Payouts() {
           <T className="text-[13px] text-on-dark-2">Available to pay out</T>
           <T className="font-display-x text-[38px] tracking-[-0.8px] text-bg">{formatNaira(availKobo / 100)}</T>
           <T className="text-[13px] text-on-dark">Pending {formatNaira(pendingKobo / 100)} · Auto payout next 10:00am</T>
-          <Pressable accessibilityRole="button" onPress={handlePayOutNow} className="mt-2 h-12 items-center justify-center rounded-full bg-gold">
-            <T className="font-sans-bold text-base text-[#2A1B05]">Pay out now</T>
+          <Pressable accessibilityRole="button" onPress={handlePayOutNow} disabled={sending} className="mt-2 h-12 items-center justify-center rounded-full bg-gold flex-row gap-2">
+            {sending ? <ActivityIndicator color="#2A1B05" size="small" /> : null}
+            <T className="font-sans-bold text-base text-[#2A1B05]">{sending ? 'Sending your code…' : 'Pay out now'}</T>
           </Pressable>
+          {sendError ? <T accessibilityLiveRegion="polite" className="text-[13px] text-[#FFB4A8]">{sendError}</T> : null}
         </View>
+
+        {needsEmail ? (
+          <View className="gap-2 rounded-[20px] border border-[#F3E3C7] bg-[#FDF1E1] p-4">
+            <T className="font-sans-bold text-[#6B4210]">Add your email to get paid</T>
+            <T className="text-[13px] text-[#6B4210]">Your payout code is sent to your email, and your account doesn’t have one yet.</T>
+            <Pressable accessibilityRole="button" onPress={() => setAddingEmail(true)} className="mt-1 h-11 items-center justify-center self-start rounded-full bg-ink px-5">
+              <T className="font-sans-bold text-sm text-bg">Add email</T>
+            </Pressable>
+          </View>
+        ) : null}
 
         <View className="flex-row items-center gap-3 rounded-[20px] border border-line bg-surface px-4 py-3.5">
           <View className="h-11 w-11 items-center justify-center rounded-xl bg-mint">
@@ -132,7 +161,7 @@ export default function Payouts() {
           <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 16 }} className="gap-4 rounded-t-[28px] bg-surface px-5 pt-3">
             <Grip />
             <T className="font-display-x text-[22px]">Confirm payout</T>
-            <T className="text-sm text-muted-2">Enter the OTP sent to your WhatsApp or email to authorize withdrawal of {formatNaira(availKobo / 100)}.</T>
+            <T className="text-sm text-muted-2">{resent ? 'New code sent' : 'We sent a 6-digit code'} to {sentTo || 'your email'}. Check your spam folder too. Enter it to withdraw {formatNaira(availKobo / 100)}.</T>
 
             {errorMsg ? (
               <View className="rounded-xl bg-red-100 p-3 border border-red-200">
@@ -152,6 +181,10 @@ export default function Payouts() {
               />
             </View>
 
+            <Pressable accessibilityRole="button" onPress={handlePayOutNow} disabled={sending} hitSlop={8} className="self-start">
+              <T className="font-sans-bold text-sm text-green">{sending ? 'Sending…' : 'Didn’t get it? Send a new code'}</T>
+            </Pressable>
+
             <Pressable accessibilityRole="button" onPress={confirmWithdrawal} disabled={submitting || otpCode.length < 6} className="h-[54px] flex-row items-center justify-center gap-2 rounded-full bg-gold">
               {submitting ? <ActivityIndicator color="#2A1B05" size="small" /> : null}
               <T className="font-sans-bold text-base text-[#2A1B05]">{submitting ? 'Processing...' : 'Authorize Payout'}</T>
@@ -159,6 +192,7 @@ export default function Payouts() {
           </View>
         </View>
       </Modal>
+      <ContactEditSheet kind={addingEmail ? 'email' : null} onClose={() => { setAddingEmail(false); setNeedsEmail(false); }} />
     </Screen>
   );
 }

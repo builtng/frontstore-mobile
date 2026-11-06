@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { Link, type Href } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, T } from '@/components/ui';
@@ -40,7 +40,11 @@ function OrderCard({ o }: { o: any }) {
     : { label: 'Buy again', href: storeSlug ? `/shop/store/${storeSlug}` : '/shop' };
 
   const handleHelp = () => {
-    const rawPhone = o.store?.whatsapp_phone || o.store?.phone || '2348000000000';
+    const rawPhone = o.store?.whatsapp_phone || o.store?.phone;
+    if (!rawPhone) {
+      Alert.alert('No WhatsApp number yet', 'This store hasn’t added a WhatsApp number. Contact Frontstore support and we’ll help with your order.');
+      return;
+    }
     const cleanPhone = rawPhone.replace(/\D/g, '');
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello, I need help with my Frontstore order #${orderId}`)}`;
     Linking.openURL(url).catch(() => {});

@@ -7,6 +7,7 @@ import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
 import { ContactEditSheet, type ContactKind } from '@/features/account/ContactEditSheet';
+import { PasswordSheet } from '@/features/account/PasswordSheet';
 import { naira } from '@/lib/format';
 import { getMe } from '@/api/auth';
 import { getStore } from '@/api/store';
@@ -43,6 +44,7 @@ function Rows({ rows }: { rows: Row[] }) {
 export default function Settings() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ContactKind | null>(null);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
   const [flatFee, setFlatFee] = useState('');
   const [saving, setSaving] = useState(false);
@@ -103,10 +105,12 @@ export default function Settings() {
     { label: 'Store details and look', href: '/store-edit' },
     { label: 'Share store and QR code', href: '/share' },
   ];
+  const passwordOn = Boolean(user.has_password) && user.password_login_enabled !== false;
   const accountRows: Row[] = [
     { label: 'Switch to buyer view', href: '/switch' },
-    { label: 'WhatsApp number', value: s.whatsapp_phone || user.phone_number || 'Not set', onPress: () => setEditing('whatsapp') },
-    { label: 'Email', value: user.email || 'Not set', onPress: () => setEditing('email') },
+    { label: 'WhatsApp number', value: s.whatsapp_phone || 'Add number', onPress: () => setEditing('whatsapp') },
+    { label: 'Email', value: user.email || 'Add email', onPress: () => setEditing('email') },
+    { label: 'Log in with password', value: passwordOn ? 'On' : 'Off', onPress: () => setPasswordOpen(true) },
   ];
 
   return (
@@ -188,6 +192,13 @@ export default function Settings() {
         </View>
       </BottomSheet>
       <ContactEditSheet kind={editing} onClose={() => setEditing(null)} />
+      <PasswordSheet
+        visible={passwordOpen}
+        onClose={() => setPasswordOpen(false)}
+        hasPassword={Boolean(user.has_password)}
+        enabled={user.password_login_enabled !== false}
+        canLogIn={Boolean(user.email || (user as any).phone_verified_at)}
+      />
     </Screen>
   );
 }

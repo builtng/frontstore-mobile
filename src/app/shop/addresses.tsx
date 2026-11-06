@@ -8,7 +8,7 @@ import { AccountHeader, BottomSheet, DashedAdd, SheetField } from '@/features/bu
 import { getAddresses, addAddress, deleteAddress, setDefaultAddress } from '@/api/buyer';
 import { Address } from '@/api/types';
 
-const EMPTY = { label: 'Home', recipient_name: 'Customer', street: '', city: '', state: 'Lagos', phone_number: '', landmark: '' };
+const EMPTY = { label: 'Home', recipient_name: '', street: '', city: '', state: '', phone_number: '', landmark: '' };
 
 export default function BuyerAddresses() {
   const insets = useSafeAreaInsets();
@@ -43,15 +43,16 @@ export default function BuyerAddresses() {
   });
 
   const close = () => { setOpen(false); setForm(EMPTY); };
+  const complete = [form.recipient_name, form.street, form.city, form.state, form.phone_number].every((v) => v.trim());
 
   const save = () => {
     addMutation.mutate({
       label: form.label || 'Home',
-      recipient_name: form.recipient_name || 'Customer',
+      recipient_name: form.recipient_name.trim(),
       street: form.street.trim(),
-      city: form.city.trim() || 'Lagos',
-      state: form.state.trim() || 'Lagos',
-      phone_number: form.phone_number.trim() || '08000000000',
+      city: form.city.trim(),
+      state: form.state.trim(),
+      phone_number: form.phone_number.trim(),
       landmark: form.landmark.trim(),
       is_default: false,
     });
@@ -114,7 +115,7 @@ export default function BuyerAddresses() {
         </View>
         <SheetField label="Phone for the rider" placeholder="0803 000 0000" keyboardType="phone-pad" value={form.phone_number} onChangeText={set('phone_number')} />
         <SheetField label="Landmark (optional)" placeholder="Helps the rider find you" value={form.landmark} onChangeText={set('landmark')} />
-        <Button title="Save address" className="h-[54px]" textClassName="text-base" disabled={!form.street.trim()} onPress={save} />
+        <Button title="Save address" className="h-[54px]" textClassName="text-base" disabled={!complete} onPress={save} />
       </BottomSheet>
     </Screen>
   );

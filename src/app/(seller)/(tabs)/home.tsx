@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Switch, View } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Bell, CheckCircle, Package, Share, Sparkles, X } from 'lucide-react-native';
+import { Bell, CheckCircle, MessageCircle, Package, Plus, Share, Sparkles, X } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Screen, T, cx } from '@/components/ui';
@@ -10,6 +10,9 @@ import { getMe } from '@/api/auth';
 import { getSellerOrders, getWalletBalance } from '@/api/orders';
 import { getStore } from '@/api/store';
 import { updateStore } from '@/api/account';
+import { getProducts } from '@/api/products';
+import { ContactEditSheet } from '@/features/account/ContactEditSheet';
+import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { formatNaira } from '@/lib/format';
 
 function Stat({ label, value, delta, dark }: { label: string; value: string; delta: string; dark?: boolean }) {
@@ -25,6 +28,7 @@ function Stat({ label, value, delta, dark }: { label: string; value: string; del
 export default function Home() {
   const [copied, setCopied] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [whatsappOpen, setWhatsappOpen] = useState(false);
   const [ninaOpen, setNinaOpen] = useState(false);
   const qc = useQueryClient();
   const [ninaSaving, setNinaSaving] = useState(false);
@@ -62,12 +66,18 @@ export default function Home() {
     }
   };
 
+  const { data: products, isLoading: productsLoading } = useQuery({ queryKey: ['products'], queryFn: () => getProducts() });
+  const latestProducts = (products ?? []).slice(0, 5);
+  const needsWhatsapp = !!sellerStore && !sellerStore.whatsapp_phone;
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
   const user = authData?.user;
   const store = authData?.store;
   const storeName = store?.store_name || store?.name || 'My Store';
   const username = store?.username || store?.slug || 'mystore';
   const link = `frontstore.app/${username}`;
-  const ownerName = user?.name ? user.name.split(' ')[0] : 'Merchant';
+  const initials = storeName.split(/\s+/).filter(Boolean).slice(0, 2).map((w: string) => w[0]).join('').toUpperCase();
 
   const toShipOrders = ordersData ? ordersData.filter((o) => o.status === 'paid' || o.status === 'packed') : [];
   const balanceKobo = walletData?.available_balance_kobo ?? 0;
@@ -82,9 +92,9 @@ export default function Home() {
     <Screen>
       <ScrollView contentContainerClassName="gap-[18px] px-5 pb-8 pt-3">
         <View className="flex-row items-center justify-between">
-          <View className="gap-0.5">
-            <T className="text-sm text-muted">Good morning</T>
-            <T className="font-display text-[28px] tracking-[-0.5px]">{ownerName}</T>
+          <View className="min-w-0 flex-1 gap-0.5 pr-3">
+            <T className="text-sm text-muted">{greeting}</T>
+            <T numberOfLines={2} className="font-display text-[26px] leading-[31px] tracking-[-0.5px]">{storeName}</T>
           </View>
           <View className="flex-row gap-2">
             <Pressable
@@ -98,11 +108,28 @@ export default function Home() {
             </Pressable>
             <Link href="/switch" asChild>
               <Pressable accessibilityRole="button" accessibilityLabel="Switch account" className="h-11 w-11 items-center justify-center rounded-full bg-[#C8553D]">
-                <T className="font-sans-bold text-white">{ownerName.slice(0, 2).toUpperCase()}</T>
+                <T className="font-sans-bold text-white">{initials}</T>
               </Pressable>
             </Link>
           </View>
         </View>
+
+        {needsWhatsapp ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setWhatsappOpen(true)}
+            className="flex-row items-center gap-3 rounded-[20px] border border-[#F3E3C7] bg-[#FDF1E1] p-4"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-xl bg-white">
+              <MessageCircle size={20} color="#6B4210" />
+            </View>
+            <View className="min-w-0 flex-1 gap-0.5">
+              <T className="font-sans-bold text-[#6B4210]">Add your WhatsApp number</T>
+              <T className="text-[13px] text-[#6B4210]">Get order alerts there, and let buyers message you.</T>
+            </View>
+            <T className="font-sans-bold text-sm text-[#6B4210]">Add</T>
+          </Pressable>
+        ) : null}
 
         <View className="gap-4 rounded-[24px] bg-deep p-5">
           <View className="gap-0.5">
@@ -191,6 +218,53 @@ export default function Home() {
           )}
         </View>
 
+        <View className="flex-row items-baseline justify-between">
+          <T className="font-sans-bold text-lg">Latest products</T>
+          {latestProducts.length ? (
+            <Link href="/products" asChild>
+              <Pressable accessibilityRole="link" hitSlop={12}>
+                <T className="font-sans-semibold text-sm text-green">See all</T>
+              </Pressable>
+            </Link>
+          ) : null}
+        </View>
+        <View className="gap-2.5">
+          {productsLoading ? (
+            <View className="items-center rounded-[18px] border border-line bg-surface p-6">
+              <ActivityIndicator color="#0B6E4F" />
+            </View>
+          ) : latestProducts.length ? (
+            latestProducts.map((p) => (
+              <Link key={p.id} href={`/product/${p.id}`} asChild>
+                <Pressable accessibilityRole="button" className="flex-row items-center gap-3 rounded-[18px] border border-line bg-surface p-3">
+                  <ProductImage uri={productPhoto(p)} name={p.name} className="h-12 w-12 rounded-xl" textClassName="text-base" />
+                  <View className="min-w-0 flex-1 gap-0.5">
+                    <T numberOfLines={1} className="font-sans-bold">{p.name}</T>
+                    <T className="text-[13px] text-muted">{p.stock_count > 0 ? `${p.stock_count} in stock` : 'Sold out'}{p.status === 'hidden' ? ' · Hidden' : ''}</T>
+                  </View>
+                  <T className="font-sans-bold text-green">{formatNaira(p.price_kobo / 100)}</T>
+                </Pressable>
+              </Link>
+            ))
+          ) : (
+            <View className="items-center gap-3 rounded-[18px] border border-line bg-surface p-5">
+              <View className="h-12 w-12 items-center justify-center rounded-2xl bg-bg">
+                <Package size={22} color="#5B6660" />
+              </View>
+              <View className="items-center gap-0.5">
+                <T className="font-sans-bold">No products yet</T>
+                <T className="text-center text-[13px] text-muted">Snap a photo and your first product is ready to sell.</T>
+              </View>
+              <Link href="/add-product" asChild>
+                <Pressable accessibilityRole="button" className="h-11 flex-row items-center gap-1.5 rounded-full bg-ink px-5">
+                  <Plus size={16} color="#F6F3EC" strokeWidth={2.4} />
+                  <T className="font-sans-bold text-sm text-bg">Add a product</T>
+                </Pressable>
+              </Link>
+            </View>
+          )}
+        </View>
+
         <Link href="/payouts" asChild>
           <Pressable accessibilityRole="button" className="flex-row items-center justify-between rounded-[20px] bg-ink px-[18px] py-4">
             <View className="gap-0.5">
@@ -201,6 +275,8 @@ export default function Home() {
           </Pressable>
         </Link>
       </ScrollView>
+
+      <ContactEditSheet kind={whatsappOpen ? 'whatsapp' : null} onClose={() => setWhatsappOpen(false)} />
 
       {/* Notifications BottomSheet */}
       <BottomSheet visible={notificationsOpen} onClose={() => setNotificationsOpen(false)}>

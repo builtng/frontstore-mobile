@@ -16,7 +16,7 @@ const COPY = {
     send: '/store/whatsapp-phone/send-otp',
     verify: '/store/whatsapp-phone/verify-otp',
     param: 'whatsapp_phone',
-    sub: 'Orders and customer messages go to this number. We send a code to confirm it.',
+    sub: 'Orders and customer messages go to this number. We send a code to it on WhatsApp to confirm it’s yours.',
   },
   email: {
     title: 'Email',
@@ -81,7 +81,7 @@ export function ContactEditSheet({ kind, onClose }: { kind: ContactKind | null; 
         <T className="font-display text-xl">{c.title}</T>
         {codeSent ? (
           <>
-            <T className="text-sm text-muted-2">Enter the 6-digit code we sent for {value.trim()}.</T>
+            <T className="text-sm text-muted-2">Enter the 6-digit code we sent to {value.trim()}{kind === 'whatsapp' ? ' on WhatsApp' : ''}.</T>
             <SheetField label="Code" keyboardType="number-pad" maxLength={6} value={code} onChangeText={(v) => setCode(v.replace(/\D/g, ''))} />
             {error ? <T accessibilityLiveRegion="polite" className="text-[13px] text-danger">{error}</T> : null}
             <Button title={busy ? 'Confirming…' : 'Confirm'} className="h-[50px]" disabled={busy || code.length !== 6} onPress={verify} />
