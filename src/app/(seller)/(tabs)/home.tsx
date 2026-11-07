@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Switch, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Bell, CheckCircle, MessageCircle, Package, Plus, Share, Sparkles, X } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
@@ -9,7 +9,6 @@ import { BottomSheet } from '@/features/buyer/account';
 import { getMe } from '@/api/auth';
 import { getSellerOrders, getWalletBalance } from '@/api/orders';
 import { getStore } from '@/api/store';
-import { updateStore } from '@/api/account';
 import { getProducts } from '@/api/products';
 import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
@@ -26,8 +25,8 @@ function Stat({ label, value, delta, dark, loading }: { label: string; value: st
         </View>
       ) : (
         <>
-          <T className={cx('font-display text-[28px]', dark && 'text-bg')}>{value}</T>
-          <T className={cx('font-sans-bold text-xs', dark ? 'text-[#F3D9A8]' : 'text-green')}>{delta}</T>
+          <T numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5} className={cx('font-display text-[28px]', dark && 'text-bg')}>{value}</T>
+          <T numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} className={cx('font-sans-bold text-xs', dark ? 'text-[#F3D9A8]' : 'text-green')}>{delta}</T>
         </>
       )}
     </View>
@@ -38,10 +37,7 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [whatsappOpen, setWhatsappOpen] = useState(false);
-  const [ninaOpen, setNinaOpen] = useState(false);
   const qc = useQueryClient();
-  const [ninaSaving, setNinaSaving] = useState(false);
-  const [ninaError, setNinaError] = useState('');
 
   const { data: authData, isLoading: authLoading } = useQuery({
     queryKey: ['me'],
@@ -60,20 +56,6 @@ export default function Home() {
 
   // The store's real assistant setting (same switch as the web dashboard). It answers buyers only on Pro and above.
   const { data: sellerStore, isLoading: sellerStoreLoading } = useQuery({ queryKey: ['seller-store'], queryFn: getStore });
-  const ninaAvailable = Boolean((sellerStore as any)?.nina_available);
-  const ninaActive = ninaAvailable && Boolean((sellerStore as any)?.nina_enabled);
-  const setNina = async (on: boolean) => {
-    setNinaSaving(true);
-    setNinaError('');
-    try {
-      await updateStore({ nina_enabled: on });
-      await qc.invalidateQueries({ queryKey: ['seller-store'] });
-    } catch (e: any) {
-      setNinaError(e?.message || 'Could not save. Please try again.');
-    } finally {
-      setNinaSaving(false);
-    }
-  };
 
   const { data: products, isLoading: productsLoading, isError: productsError, refetch: refetchProducts } = useQuery({ queryKey: ['products'], queryFn: () => getProducts() });
   const latestProducts = (products ?? []).slice(0, 5);
@@ -171,38 +153,12 @@ export default function Home() {
         <View className="flex-row gap-3">
           <Stat loading={ordersLoading} label="Total Orders" value={String(ordersData?.length ?? 0)} delta={`${ordersData?.length ?? 0} total`} />
           <Stat loading={ordersLoading} label="To Ship" value={String(toShipOrders.length)} delta={`${toShipOrders.length} pending`} dark />
-          <Stat loading={walletLoading} label="Available" value={formatNaira(balanceKobo / 100)} delta="Paystack" />
+          <Link href="/payouts" asChild>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Payout, ${formatNaira(balanceKobo / 100)} available`} className="flex-1">
+              <Stat loading={walletLoading} label="Payout" value={formatNaira(balanceKobo / 100)} delta="Withdraw" />
+            </Pressable>
+          </Link>
         </View>
-
-        {/* Nina AI Status Banner */}
-        {sellerStoreLoading ? (
-          <Skeleton className="h-[92px] rounded-[20px]" />
-        ) : (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Open Nina AI Agent settings"
-          onPress={() => setNinaOpen(true)}
-          className="flex-row items-center justify-between rounded-[20px] border border-teal/30 bg-deep p-4"
-        >
-          <View className="flex-1 gap-1">
-            <View className="flex-row items-center gap-2">
-              <View className={cx('h-2 w-2 rounded-full', ninaActive ? 'bg-[#64FFDA]' : 'bg-muted')} />
-              <T className="font-sans-bold text-xs tracking-wider text-[#64FFDA] uppercase">
-                {ninaActive ? 'Shopping assistant on' : ninaAvailable ? 'Shopping assistant off' : 'Shopping assistant'}
-              </T>
-            </View>
-            <T className="font-sans-bold text-sm text-white">
-              {ninaActive ? 'Answering buyer questions on your store' : ninaAvailable ? 'Tap to turn it on' : 'Included in Pro and Business'}
-            </T>
-            <T className="text-xs text-on-dark-2">
-              Sizes, delivery and stock questions, day and night
-            </T>
-          </View>
-          <View className="h-10 w-10 items-center justify-center rounded-xl bg-teal/10">
-            <T className="text-lg">⚡</T>
-          </View>
-        </Pressable>
-        )}
 
         <View className="flex-row items-baseline justify-between">
           <T className="font-sans-bold text-lg">To ship</T>
@@ -280,15 +236,6 @@ export default function Home() {
           )}
         </View>
 
-        <Link href="/payouts" asChild>
-          <Pressable accessibilityRole="button" className="flex-row items-center justify-between rounded-[20px] bg-ink px-[18px] py-4">
-            <View className="gap-0.5">
-              <T className="text-xs text-on-dark-2">Frontstore Pay Balance</T>
-              {walletLoading ? <Skeleton className="mt-1 h-6 w-24 bg-white/15" /> : <T className="font-display-x text-[22px] text-bg">{formatNaira(balanceKobo / 100)}</T>}
-            </View>
-            <T className="font-sans-bold text-sm text-gold">Payouts →</T>
-          </Pressable>
-        </Link>
       </ScrollView>
 
       <ContactEditSheet kind={whatsappOpen ? 'whatsapp' : null} onClose={() => setWhatsappOpen(false)} />
@@ -324,44 +271,6 @@ export default function Home() {
         </View>
       </BottomSheet>
 
-      {/* Nina AI Controls BottomSheet */}
-      <BottomSheet visible={ninaOpen} onClose={() => setNinaOpen(false)}>
-        <View className="gap-3 py-1">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <Sparkles size={20} color="#0B6E4F" />
-              <T className="font-display text-xl">Nina AI Assistant</T>
-            </View>
-            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setNinaOpen(false)}>
-              <X size={20} color="#0E1A15" />
-            </Pressable>
-          </View>
-          <T className="text-sm leading-[21px] text-muted-2">
-            Answers buyer questions about sizes, delivery and stock on your store, day and night, using your product details.
-          </T>
-
-          {ninaAvailable ? (
-            <View className="flex-row items-center justify-between rounded-2xl border border-line bg-surface p-4">
-              <View className="flex-1 pr-3">
-                <T className="font-sans-bold text-[15px]">Show the assistant on my store</T>
-                <T className="text-xs text-muted-2">{ninaActive ? 'On' : 'Off'}</T>
-              </View>
-              <Switch value={ninaActive} disabled={ninaSaving} onValueChange={setNina} trackColor={{ false: '#D9D9D9', true: '#22A35A' }} />
-            </View>
-          ) : (
-            <View className="rounded-2xl border border-line bg-surface p-4">
-              <T className="text-sm text-deep">The shopping assistant is included in the Pro and Business plans.</T>
-            </View>
-          )}
-          {ninaError ? <T className="text-[13px] text-danger">{ninaError}</T> : null}
-
-          <Button
-            title="Done"
-            className="mt-1 h-[50px]"
-            onPress={() => setNinaOpen(false)}
-          />
-        </View>
-      </BottomSheet>
     </Screen>
   );
 }
