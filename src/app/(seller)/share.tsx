@@ -83,7 +83,9 @@ export default function ShareStore() {
     );
   }
 
-  const photos = live.map((p) => productPhoto(p)).filter(Boolean).slice(0, 4) as string[];
+  const brand = store?.primary_color || '#0B6E4F';
+  const tiles = live.slice(0, 4);
+  const place = store?.location || '';
 
   return (
     <Screen>
@@ -98,50 +100,61 @@ export default function ShareStore() {
         {mode === 'product' && !product ? (
           <EmptyState title="No products to share yet" sub="Add a product and you can share its own link here." action="Add a product" href="/add-product" />
         ) : (
+          // A small copy of the store page: its colour, logo, name and real products.
           <View
-            style={{ shadowColor: '#0E1A15', shadowOpacity: 0.25, shadowRadius: 24, shadowOffset: { width: 0, height: 24 }, elevation: 12 }}
-            className="h-[400px] w-[230px] gap-3.5 self-center rounded-[26px] bg-deep p-[22px]"
+            style={{ shadowColor: '#0E1A15', shadowOpacity: 0.22, shadowRadius: 24, shadowOffset: { width: 0, height: 18 }, elevation: 12 }}
+            className="w-[268px] self-center overflow-hidden rounded-[26px] bg-[#F6F3EC]"
           >
-            <T className="font-sans-bold text-[11px] uppercase tracking-[1.3px] text-saffron">
-              {mode === 'qr' ? 'Scan to shop' : 'Now taking orders'}
-            </T>
-            <T numberOfLines={2} className="font-display text-[26px] leading-[28px] tracking-[-0.6px] text-bg">
-              {mode === 'product' && product ? product.name : storeName}
-            </T>
+            <View style={{ backgroundColor: brand }} className="h-[54px]" />
+            <View className="-mt-8 gap-1 px-4">
+              <View className="self-start rounded-[18px] border-[3px] border-[#F6F3EC]">
+                <Avatar initial={storeName[0] || ''} color={brand} uri={store?.logo_url} size={56} radius={15} fontSize={22} />
+              </View>
+              <T numberOfLines={1} className="font-display text-[19px] tracking-[-0.3px] text-ink">{storeName}</T>
+              <T numberOfLines={1} className="text-[12px] text-muted">
+                {mode === 'qr' ? 'Scan to shop' : place ? `${place} · Now taking orders` : 'Now taking orders'}
+              </T>
+            </View>
 
-            {mode === 'qr' ? (
-              <View className="flex-1 items-center justify-center">
-                <View className="rounded-2xl bg-white p-3">
-                  <QRCode value={storeUrl} size={150} />
-                </View>
-              </View>
-            ) : mode === 'product' && product ? (
-              <View className="flex-1 gap-2">
-                <ProductImage uri={productPhoto(product)} name={product.name} className="flex-1 rounded-xl" textClassName="text-5xl" />
-                <T className="font-sans-bold text-[17px] text-saffron">{formatNaira(product.price_kobo / 100)}</T>
-              </View>
-            ) : photos.length ? (
-              <View className="flex-1 gap-2">
-                {[0, 2].map((row) => (
-                  <View key={row} className="flex-1 flex-row gap-2">
-                    {[row, row + 1].map((i) =>
-                      photos[i] ? (
-                        <ProductImage key={i} uri={photos[i]} className="flex-1 rounded-xl" />
-                      ) : (
-                        <View key={i} className="flex-1 rounded-xl bg-white/10" />
-                      ),
-                    )}
+            <View className="h-[232px] px-4 pt-3">
+              {mode === 'qr' ? (
+                <View className="flex-1 items-center justify-center">
+                  <View className="rounded-2xl bg-white p-3">
+                    <QRCode value={storeUrl} size={168} color="#0E1A15" />
                   </View>
-                ))}
-              </View>
-            ) : (
-              <View className="flex-1 items-center justify-center">
-                <Avatar initial={storeName[0] || ''} color={store?.primary_color || '#0B6E4F'} uri={store?.logo_url} size={110} radius={28} fontSize={44} />
-              </View>
-            )}
+                </View>
+              ) : mode === 'product' && product ? (
+                <View className="flex-1 overflow-hidden rounded-2xl bg-white">
+                  <ProductImage uri={productPhoto(product)} name={product.name} className="flex-1" textClassName="text-5xl" />
+                  <View className="gap-0.5 p-3">
+                    <T numberOfLines={1} className="font-sans-bold text-[14px] text-ink">{product.name}</T>
+                    <T className="font-sans-bold text-[14px]" style={{ color: brand }}>{formatNaira(product.price_kobo / 100)}</T>
+                  </View>
+                </View>
+              ) : tiles.length ? (
+                <View className="flex-1 flex-row flex-wrap content-start gap-2">
+                  {tiles.map((p) => (
+                    <View key={p.id} className="w-[114px] overflow-hidden rounded-xl bg-white">
+                      <ProductImage uri={productPhoto(p)} name={p.name} className="h-[70px] w-full" />
+                      <View className="px-2 py-1.5">
+                        <T numberOfLines={1} className="font-sans-bold text-[11px] text-ink">{p.name}</T>
+                        <T className="font-sans-bold text-[11px]" style={{ color: brand }}>{formatNaira(p.price_kobo / 100)}</T>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View className="flex-1 items-center justify-center gap-2 rounded-2xl bg-white">
+                  <Avatar initial={storeName[0] || ''} color={brand} uri={store?.logo_url} size={84} radius={22} fontSize={34} />
+                  <T className="text-[12px] text-muted">New products coming soon</T>
+                </View>
+              )}
+            </View>
 
-            <View className="rounded-xl bg-bg px-3 py-2.5">
-              <T numberOfLines={1} className="text-center font-sans-bold text-xs">frontstore.app/{username}</T>
+            <View className="p-4">
+              <View style={{ backgroundColor: brand }} className="rounded-full px-3 py-2.5">
+                <T numberOfLines={1} className="text-center font-sans-bold text-xs text-white">Shop at frontstore.app/{username}</T>
+              </View>
             </View>
           </View>
         )}
