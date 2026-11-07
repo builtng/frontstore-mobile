@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Bell, CheckCircle, MessageCircle, Package, Plus, Share, Sparkles, X } from 'lucide-react-native';
-import * as Clipboard from 'expo-clipboard';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, EmptyState, LoadError, Screen, Skeleton, SkeletonRows, T, cx } from '@/components/ui';
 import { BottomSheet } from '@/features/buyer/account';
@@ -34,7 +33,6 @@ function Stat({ label, value, delta, dark, loading }: { label: string; value: st
 }
 
 export default function Home() {
-  const [copied, setCopied] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [whatsappOpen, setWhatsappOpen] = useState(false);
   const qc = useQueryClient();
@@ -73,11 +71,6 @@ export default function Home() {
   const toShipOrders = ordersData ? ordersData.filter((o) => o.status === 'paid' || o.status === 'packed') : [];
   const balanceKobo = walletData?.available_balance_kobo ?? 0;
 
-  const copy = async () => {
-    await Clipboard.setStringAsync(`https://${link}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
-  };
 
   return (
     <Screen>
@@ -141,9 +134,11 @@ export default function Home() {
                 <T className="font-sans-bold text-sm text-deep">Share store</T>
               </Pressable>
             </Link>
-            <Pressable accessibilityRole="button" onPress={copy} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
-              <T className="font-sans-semibold text-sm text-bg">{copied ? 'Copied' : 'Copy'}</T>
-            </Pressable>
+            <Link href="/payouts" asChild>
+              <Pressable accessibilityRole="button" className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
+                <T className="font-sans-semibold text-sm text-bg">Payout</T>
+              </Pressable>
+            </Link>
             <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug: username } })} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
               <T className="font-sans-semibold text-sm text-bg">Preview</T>
             </Pressable>
@@ -153,11 +148,7 @@ export default function Home() {
         <View className="flex-row gap-3">
           <Stat loading={ordersLoading} label="Total Orders" value={String(ordersData?.length ?? 0)} delta={`${ordersData?.length ?? 0} total`} />
           <Stat loading={ordersLoading} label="To Ship" value={String(toShipOrders.length)} delta={`${toShipOrders.length} pending`} dark />
-          <Link href="/payouts" asChild>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Payout, ${formatNaira(balanceKobo / 100)} available`} className="flex-1">
-              <Stat loading={walletLoading} label="Payout" value={formatNaira(balanceKobo / 100)} delta="Withdraw" />
-            </Pressable>
-          </Link>
+          <Stat loading={walletLoading} label="Available" value={formatNaira(balanceKobo / 100)} delta="Ready to pay out" />
         </View>
 
         <View className="flex-row items-baseline justify-between">
