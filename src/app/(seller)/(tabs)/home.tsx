@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Bell, CheckCircle, Package, Plus, Share, Sparkles, X } from 'lucide-react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -11,12 +11,12 @@ import { getStore } from '@/api/store';
 import { getProducts } from '@/api/products';
 import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
-import { formatNaira } from '@/lib/format';
+import { compactNaira, formatNaira } from '@/lib/format';
 import { WhatsAppIcon } from '@/features/setup/parts';
 
 function Stat({ label, value, delta, dark, loading }: { label: string; value: string; delta: string; dark?: boolean; loading?: boolean }) {
   return (
-    <View className={cx('flex-1 gap-0.5 rounded-[20px] p-4', dark ? 'bg-green' : 'border border-line bg-surface')}>
+    <View className={cx('flex-1 gap-0.5 rounded-[20px] p-3.5', dark ? 'bg-green' : 'border border-line bg-surface')}>
       <T className={cx('text-xs', dark ? 'text-[#D7EAE1]' : 'text-muted')}>{label}</T>
       {loading ? (
         <View className="gap-2 pt-1.5">
@@ -25,8 +25,8 @@ function Stat({ label, value, delta, dark, loading }: { label: string; value: st
         </View>
       ) : (
         <>
-          <T numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5} className={cx('font-display text-[28px]', dark && 'text-bg')}>{value}</T>
-          <T numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} className={cx('font-sans-bold text-xs', dark ? 'text-[#F3D9A8]' : 'text-green')}>{delta}</T>
+          <T numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5} className={cx('font-display text-[24px]', dark && 'text-bg')}>{value}</T>
+          <T numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} className={cx('font-sans-bold text-[11px]', dark ? 'text-[#F3D9A8]' : 'text-green')}>{delta}</T>
         </>
       )}
     </View>
@@ -34,6 +34,7 @@ function Stat({ label, value, delta, dark, loading }: { label: string; value: st
 }
 
 export default function Home() {
+  const narrow = useWindowDimensions().width < 360;
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [whatsappOpen, setWhatsappOpen] = useState(false);
   const qc = useQueryClient();
@@ -131,16 +132,16 @@ export default function Home() {
           <View className="flex-row gap-2">
             <Link href="/share" asChild>
               <Pressable accessibilityRole="button" className="h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-full bg-saffron">
-                <Share size={16} color="#07261C" strokeWidth={2.2} />
-                <T className="font-sans-bold text-sm text-deep">Share store</T>
+                {narrow ? null : <Share size={16} color="#07261C" strokeWidth={2.2} />}
+                <T numberOfLines={1} className="font-sans-bold text-sm text-deep">{narrow ? 'Share' : 'Share store'}</T>
               </Pressable>
             </Link>
             <Link href="/payouts" asChild>
-              <Pressable accessibilityRole="button" className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
+              <Pressable accessibilityRole="button" className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-3.5">
                 <T className="font-sans-semibold text-sm text-bg">Payout</T>
               </Pressable>
             </Link>
-            <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug: username } })} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-4">
+            <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug: username } })} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-3.5">
               <T className="font-sans-semibold text-sm text-bg">Preview</T>
             </Pressable>
           </View>
@@ -149,8 +150,15 @@ export default function Home() {
         <View className="flex-row gap-3">
           <Stat loading={ordersLoading} label="Total Orders" value={String(ordersData?.length ?? 0)} delta={`${ordersData?.length ?? 0} total`} />
           <Stat loading={ordersLoading} label="To Ship" value={String(toShipOrders.length)} delta={`${toShipOrders.length} pending`} dark />
-          <Stat loading={walletLoading} label="Available" value={formatNaira(balanceKobo / 100)} delta="Ready to pay out" />
+          {narrow ? null : (
+            <Stat loading={walletLoading} label="Available" value={compactNaira(balanceKobo / 100)} delta="To withdraw" />
+          )}
         </View>
+        {narrow ? (
+          <View className="flex-row">
+            <Stat loading={walletLoading} label="Available" value={compactNaira(balanceKobo / 100)} delta="To withdraw" />
+          </View>
+        ) : null}
 
         <View className="flex-row items-baseline justify-between">
           <T className="font-sans-bold text-lg">To ship</T>

@@ -191,7 +191,7 @@ export default function BuyerStore() {
           <View className="flex-row items-center gap-3.5">
             <Avatar initial={storeInitial} color={storeColor} uri={storeObj?.logo_url} size={64} radius={20} fontSize={26} />
             <View className="flex-1 gap-0.5">
-              <T className="font-display-x text-[22px]">{storeName}</T>
+              <T numberOfLines={2} className="font-display-x text-[20px] leading-[24px]">{storeName}</T>
               <T className="text-[13px] text-muted-2">{meta}</T>
             </View>
           </View>
@@ -232,7 +232,7 @@ export default function BuyerStore() {
             return (
               <View key={p.id} style={{ width: tile }} className="gap-1.5">
                 <ProductImage uri={p.photo} name={p.name} className="h-[140px] w-full rounded-2xl" textClassName="text-3xl" />
-                <T className="font-sans-bold text-sm">{p.name}</T>
+                <T numberOfLines={2} className="min-h-[36px] font-sans-bold text-sm">{p.name}</T>
                 <View className="flex-row items-center justify-between">
                   <T className="font-sans-bold text-sm">{naira(p.price)}</T>
                   {!ownStore ? (

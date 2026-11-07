@@ -31,10 +31,14 @@ export function normalizeOrder(o: any): Order {
   };
 }
 
-export function normalizeProduct(p: any): Product {
+export function normalizeProduct(p: any, categories: { id: any; name: string }[] = []): Product {
   if (!p) return p;
+  // The API sends category as text, an object, or only a category_id: always end up with text.
+  const fromId = categories.find((c) => String(c.id) === String(p.category_id))?.name;
+  const category = typeof p.category === 'object' && p.category !== null ? p.category.name ?? null : p.category ?? fromId ?? null;
   return {
     ...p,
+    category,
     store: p.store ? normalizeStore(p.store) : p.store,
   };
 }
@@ -91,7 +95,7 @@ export async function searchMarketplace(query: string): Promise<{ stores: Store[
   const payload = res?.data || res || {};
   return {
     stores: (payload.stores || []).map(normalizeStore),
-    products: (payload.products || []).map(normalizeProduct),
+    products: (payload.products || []).map((p: any) => normalizeProduct(p)),
   };
 }
 
@@ -100,7 +104,7 @@ export async function getPublicStore(slug: string): Promise<{ store: Store; prod
   const res = await apiGet<{ store: any; products: any[]; reviews: any[] }>(`/public/store/${slug}`);
   return {
     store: normalizeStore(res.store || { slug, name: slug }),
-    products: (res.products || []).map(normalizeProduct),
+    products: (res.products || []).map((p: any) => normalizeProduct(p, (res as any).categories || [])),
     reviews: res.reviews || [],
   };
 }
@@ -234,7 +238,7 @@ export async function getSavedProducts(): Promise<Product[]> {
     let rawList: any[] = [];
     if (Array.isArray(data)) rawList = data;
     else if (data && Array.isArray(data.data)) rawList = data.data;
-    return rawList.map(normalizeProduct);
+    return rawList.map((p: any) => normalizeProduct(p));
   } catch {
     return [];
   }
