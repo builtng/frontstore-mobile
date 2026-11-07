@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Bell, CheckCircle, MessageCircle, Package, Plus, Share, Sparkles, X } from 'lucide-react-native';
+import { Bell, CheckCircle, Package, Plus, Share, Sparkles, X } from 'lucide-react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, EmptyState, LoadError, Screen, Skeleton, SkeletonRows, T, cx } from '@/components/ui';
 import { BottomSheet } from '@/features/buyer/account';
@@ -12,6 +12,7 @@ import { getProducts } from '@/api/products';
 import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { formatNaira } from '@/lib/format';
+import { WhatsAppIcon } from '@/features/setup/parts';
 
 function Stat({ label, value, delta, dark, loading }: { label: string; value: string; delta: string; dark?: boolean; loading?: boolean }) {
   return (
@@ -109,7 +110,7 @@ export default function Home() {
             className="flex-row items-center gap-3 rounded-[20px] border border-[#F3E3C7] bg-[#FDF1E1] p-4"
           >
             <View className="h-10 w-10 items-center justify-center rounded-xl bg-white">
-              <MessageCircle size={20} color="#6B4210" />
+              <WhatsAppIcon size={22} />
             </View>
             <View className="min-w-0 flex-1 gap-0.5">
               <T className="font-sans-bold text-[#6B4210]">Add your WhatsApp number</T>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Linking, Platform, Pressable, ScrollView, Share, View } from 'react-native';
-import { Copy, MessageCircle, Share2 } from 'lucide-react-native';
+import { Copy, Share2 } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
@@ -12,6 +12,7 @@ import { getProducts } from '@/api/products';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { Avatar } from '@/features/buyer/parts';
 import { formatNaira } from '@/lib/format';
+import { WhatsAppIcon } from '@/features/setup/parts';
 import type { Product } from '@/api/types';
 
 type Mode = 'status' | 'qr' | 'product';
@@ -24,7 +25,7 @@ const modes: Array<[Mode, string]> = [
 function Action({ label, onPress, dark, children }: { label: string; onPress: () => void; dark?: boolean; children: React.ReactNode }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} className="flex-1 items-center gap-1.5">
-      <View className={cx('h-14 w-14 items-center justify-center rounded-[18px]', dark ? 'bg-green' : 'border border-line-2 bg-surface')}>
+      <View className={cx('h-14 w-14 items-center justify-center rounded-[18px]', dark ? 'bg-[#25D366]' : 'border border-line-2 bg-surface')}>
         {children}
       </View>
       <T className="text-center font-sans-semibold text-xs">{label}</T>
@@ -176,7 +177,7 @@ export default function ShareStore() {
 
             <View className="flex-row gap-2.5">
               <Action label="WhatsApp" dark onPress={shareWhatsApp}>
-                <MessageCircle size={24} color="#FFFFFF" strokeWidth={2} />
+                <WhatsAppIcon size={26} color="#FFFFFF" />
               </Action>
               <Action label="Share to any app" onPress={shareAnywhere}>
                 <Share2 size={22} color="#0E1A15" strokeWidth={2} />
