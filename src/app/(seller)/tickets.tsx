@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
-import { AlertTriangle, Check, ChevronDown, ChevronUp, QrCode, Ticket, X } from 'lucide-react-native';
+import { AlertTriangle, Check, ChevronDown, ChevronUp, Plus, QrCode, Ticket, X } from 'lucide-react-native';
+import { router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { LoadError, Screen, SkeletonRows, T, cx } from '@/components/ui';
 import { BackHeader } from '@/features/seller/parts';
@@ -102,7 +103,15 @@ export default function Tickets() {
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-        <BackHeader title="Event tickets" fallback="/settings" />
+        <BackHeader
+          title="Event tickets"
+          fallback="/settings"
+          right={
+            <Pressable accessibilityRole="button" accessibilityLabel="New event" onPress={() => router.push('/ticket/new')} hitSlop={6} className="h-10 w-10 items-center justify-center rounded-full bg-green">
+              <Plus size={20} color="#FFFFFF" strokeWidth={2.4} />
+            </Pressable>
+          }
+        />
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-3.5 px-5 pb-8 pt-1" showsVerticalScrollIndicator={false}>
           <View className="gap-3 rounded-[24px] bg-panel p-4">
             <T className="font-display text-lg text-white">Check someone in</T>
@@ -146,7 +155,8 @@ export default function Tickets() {
             <View className="items-center gap-2 rounded-[22px] border border-line bg-surface px-6 py-8">
               <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-mint"><Ticket size={24} color={C.accent} strokeWidth={2} /></View>
               <T className="text-center font-sans-bold text-base">No events yet</T>
-              <T className="text-center text-sm leading-5 text-muted">Create a ticket product on the Frontstore website. Buyers get a code and QR, and you check them in here.</T>
+              <T className="text-center text-sm leading-5 text-muted">Sell tickets for a class, show or pop-up. Buyers get a code and QR, and you scan them in here.</T>
+              <Pressable accessibilityRole="button" onPress={() => router.push('/ticket/new')} className="mt-1 h-11 justify-center rounded-xl bg-ink px-5"><T className="font-sans-bold text-sm text-bg">Create an event</T></Pressable>
             </View>
           )}
         </ScrollView>

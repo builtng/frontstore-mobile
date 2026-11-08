@@ -81,6 +81,11 @@ export interface Product {
   color?: string | null;
   stock_count: number;
   status: 'live' | 'preorder' | 'hidden';
+  /** product (default) or ticket for an event. */
+  type?: 'product' | 'ticket' | 'service' | 'bundle' | 'subscription';
+  /** Tickets: when and where the event is (ISO date-time). */
+  event_date?: string | null;
+  event_location?: string | null;
   /** Keep selling when stock hits 0 (backend stock_status = preorder). */
   allow_preorder?: boolean;
   is_featured?: boolean;

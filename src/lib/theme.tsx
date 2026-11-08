@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Appearance, View } from 'react-native';
+import { Appearance, Platform, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePathname, router } from 'expo-router';
 import { vars } from 'nativewind';
@@ -69,6 +69,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     prevDark.current = dark;
   }
   Object.assign(C, dark ? DARK : LIGHT);
+
+  // Web: sheets and pop-ups render outside this View, so put the variables on the page root too.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    for (const [k, v] of Object.entries(dark ? DARK : LIGHT)) document.documentElement.style.setProperty(`--c-${k}`, rgb(v));
+  }, [dark]);
 
   useEffect(() => {
     const to = returnTo.current;

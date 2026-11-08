@@ -76,6 +76,9 @@ function toBackendProduct(p: Partial<Product>, existing: ProductVariant[] = []):
   // Pre-orders are separate from showing / hiding, so a hidden product keeps the setting.
   if (p.allow_preorder !== undefined) out.stock_status = p.allow_preorder ? 'preorder' : 'in_stock';
   if (p.category_id !== undefined) out.category_id = p.category_id;
+  if (p.type !== undefined) out.type = p.type;
+  if (p.event_date !== undefined) out.event_date = p.event_date;
+  if (p.event_location !== undefined) out.event_location = p.event_location;
   const sizes = p.sizes ?? [];
   const colors = p.colors ?? [];
   if (sizes.length || colors.length) {

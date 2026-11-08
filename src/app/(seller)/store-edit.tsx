@@ -15,7 +15,7 @@ const SWATCHES: Array<[string, string]> = [
   ['Terracotta', '#C8553D'], ['Forest', '#1E5E3A'], ['Indigo', '#2F5D8A'], ['Plum', '#7B3F61'], ['Ochre', '#8A5A12'], ['Ink', '#0E1A15'],
 ];
 
-const inputBox = 'rounded-[14px] border border-line-2 bg-surface px-3.5 font-sans text-base text-ink';
+const inputBox = 'rounded-[14px] border border-line bg-surface px-3.5 font-sans-semibold text-base text-ink';
 
 /** Edit an existing store: logo (uploads right away), name, bio, brand colour. */
 export default function StoreEdit() {
@@ -80,45 +80,47 @@ export default function StoreEdit() {
           <Skeleton className="h-24 rounded-[14px]" />
         </View>
       ) : (
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-5 px-5 pb-6 pt-3">
-          <View className="flex-row items-center gap-4">
-            <View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={logo ? 'Change logo' : 'Add logo'}
-              onPress={pickLogo}
-              disabled={logoMutation.isPending}
-              style={{ backgroundColor: color }}
-              className="h-20 w-20 items-center justify-center overflow-hidden rounded-[22px]"
-            >
-              {logo ? (
-                <Image source={{ uri: logo }} className="h-full w-full" resizeMode="cover" />
-              ) : (
-                <T className="font-sans-bold text-3xl text-white">{initialOf(name)}</T>
-              )}
-              {logoMutation.isPending ? (
-                <View className="absolute inset-0 items-center justify-center bg-[rgba(14,26,21,0.45)]">
-                  <ActivityIndicator color="#FFFFFF" />
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-[18px] px-5 pb-6 pt-1.5">
+          {/* Live preview, as buyers see the top of the store. Tap the logo to change it. */}
+          <View className="overflow-hidden rounded-[22px] border border-line bg-surface">
+            <View style={{ backgroundColor: color }} className="h-[70px]" />
+            <View className="gap-1 px-4 pb-4">
+              <View className="-mt-[30px] self-start">
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={logo ? 'Change logo' : 'Add logo'}
+                  onPress={pickLogo}
+                  disabled={logoMutation.isPending}
+                  className="h-[60px] w-[60px] items-center justify-center overflow-hidden rounded-2xl border-4 border-surface bg-panel"
+                >
+                  {logo ? (
+                    <Image source={{ uri: logo }} className="h-full w-full" resizeMode="cover" />
+                  ) : (
+                    <T className="font-display-x text-xl text-white">{initialOf(name)}</T>
+                  )}
+                  {logoMutation.isPending ? (
+                    <View className="absolute inset-0 items-center justify-center bg-[rgba(14,26,21,0.45)]">
+                      <ActivityIndicator color="#FFFFFF" />
+                    </View>
+                  ) : null}
+                </Pressable>
+                <View pointerEvents="none" className="absolute -bottom-1 -right-1 h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-green">
+                  <Camera size={11} color="#FFFFFF" strokeWidth={2.4} />
                 </View>
-              ) : null}
-            </Pressable>
-            <View pointerEvents="none" className="absolute -bottom-1 -right-1 h-7 w-7 items-center justify-center rounded-full border-2 border-bg bg-panel">
-              <Camera size={13} color="#FFFFFF" strokeWidth={2.4} />
-            </View>
-            </View>
-            <View className="shrink gap-0.5">
-              <T className="font-sans-bold text-[15px]">Logo</T>
-              <T className="text-[13px] text-muted">{logoMutation.isPending ? 'Uploading…' : 'Tap to choose a square image'}</T>
+              </View>
+              <T numberOfLines={1} className="mt-1.5 font-display text-[17px]">{name.trim() || 'Your store'}</T>
+              {bio.trim() ? <T numberOfLines={2} className="text-[13px] text-muted">{bio.trim()}</T> : null}
+              <T className="text-xs text-faint">{logoMutation.isPending ? 'Uploading logo…' : 'Tap the logo to change it'}</T>
             </View>
           </View>
 
           <View className="gap-1.5">
-            <T className="font-sans-bold text-sm">Store name</T>
+            <T className="font-sans-bold text-[13px] text-muted">Store name</T>
             <TextInput value={name} onChangeText={setName} maxLength={100} accessibilityLabel="Store name" className={cx(inputBox, 'h-[50px]')} />
           </View>
 
           <View className="gap-1.5">
-            <T className="font-sans-bold text-sm">About your store</T>
+            <T className="font-sans-bold text-[13px] text-muted">About your store</T>
             <TextInput
               value={bio}
               onChangeText={setBio}
@@ -133,7 +135,7 @@ export default function StoreEdit() {
           </View>
 
           <View className="gap-2.5">
-            <T className="font-sans-bold text-sm">Brand colour</T>
+            <T className="font-sans-bold text-[13px] text-muted">Brand colour</T>
             {!store?.is_pro ? <T className="text-xs text-muted">Custom colours are a Pro feature.</T> : null}
             <View accessibilityRole="radiogroup" className="flex-row flex-wrap gap-3">
               {SWATCHES.map(([label, hex]) => {
@@ -146,11 +148,9 @@ export default function StoreEdit() {
                     accessibilityState={{ checked: on }}
                     disabled={!store?.is_pro}
                     onPress={() => setColor(hex)}
-                    style={{ opacity: store?.is_pro ? 1 : 0.4, borderColor: on ? C.ink : C['line-2'], borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
-                    className="rounded-full"
-                  >
-                    <View style={{ backgroundColor: hex }} className="h-11 w-11 rounded-full border-[3px] border-bg" />
-                  </Pressable>
+                    style={{ opacity: store?.is_pro ? 1 : 0.4, backgroundColor: hex, borderColor: on ? C.ink : C.surface }}
+                    className="h-11 w-11 rounded-full border-[3px]"
+                  />
                 );
               })}
             </View>
@@ -160,7 +160,7 @@ export default function StoreEdit() {
         </ScrollView>
       )}
 
-      <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 6 }} className="border-t border-line bg-bg px-5 pt-3">
+      <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 6 }} className="px-5 pt-3">
         <Button
           title={saveMutation.isPending ? 'Saving…' : 'Save changes'}
           disabled={!canSave}
