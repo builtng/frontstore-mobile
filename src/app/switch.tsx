@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
 import { getMe } from '@/api/auth';
 import { setUserMode } from '@/api/authStore';
@@ -21,29 +20,32 @@ export default function Switch() {
   const user = me?.user;
   const sellerStore = me?.store;
 
-  const buyerName = user?.name || '';
+  const buyerName = user?.name || user?.email || 'Your shopping account';
   const buyerInitials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() : 'FS';
 
-  const sellerName = sellerStore?.store_name || sellerStore?.name || '';
+  const hasStore = !!sellerStore;
+  const sellerName = sellerStore?.store_name || sellerStore?.name || (hasStore ? 'Your store' : 'Open your free store');
   const sellerInitial = (sellerName || 'S')[0].toUpperCase();
   const sellerColor = sellerStore?.primary_color || sellerStore?.store_color || '#0B6E4F';
 
   const accounts = [
     { id: 'shop' as Mode, kind: 'Shopping', name: buyerName, sub: 'Buyer Mode', ini: buyerInitials, av: '#0E1A15', radius: 24 },
-    { id: 'sell' as Mode, kind: 'Selling', name: sellerName, sub: 'Seller Mode', ini: sellerInitial, av: sellerColor, radius: 14 },
+    { id: 'sell' as Mode, kind: 'Selling', name: sellerName, sub: hasStore ? 'Seller Mode' : 'Sell in minutes, free', ini: hasStore ? sellerInitial : '+', av: sellerColor, radius: 14 },
   ];
 
   const close = () => (router.canGoBack() ? router.back() : router.replace(current === 'shop' ? '/shop' : '/home'));
 
   const go = async () => {
-    await setUserMode(sel === 'shop' ? 'buyer' : 'seller');
     if (sel === current) return close();
+    // No store yet: set one up first, and only become a seller once it exists.
+    if (sel === 'sell' && !hasStore) return router.replace('/store-name');
+    await setUserMode(sel === 'shop' ? 'buyer' : 'seller');
     router.dismissTo(sel === 'shop' ? '/shop' : '/home');
   };
 
   const goLabel = sel === 'shop'
     ? (current === 'shop' ? 'Stay in shopping' : 'Switch to shopping')
-    : (current === 'sell' ? 'Stay in selling' : 'Switch to selling');
+    : (current === 'sell' ? 'Stay in selling' : hasStore ? 'Switch to selling' : 'Open my store');
 
   return (
     <View className="flex-1 justify-end bg-transparent">
@@ -88,14 +90,6 @@ export default function Switch() {
           );
         })}
 
-        <Link href="/store-name" asChild>
-          <Pressable accessibilityRole="button" className="flex-row items-center gap-3 rounded-[18px] border-[1.5px] border-dashed border-[#B9B1A0] p-3.5">
-            <View className="h-12 w-12 items-center justify-center rounded-[14px] bg-cream">
-              <Plus size={22} color="#0E1A15" strokeWidth={2} />
-            </View>
-            <T className="font-sans-bold text-base">Open another store</T>
-          </Pressable>
-        </Link>
 
         <Pressable accessibilityRole="button" onPress={go} className="h-[54px] items-center justify-center rounded-full bg-deep">
           <T className="font-sans-bold text-base text-white">{goLabel}</T>

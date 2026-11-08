@@ -83,6 +83,8 @@ export async function completeStoreSetup(params: {
   }
 
   const store = res.store || res.data?.store;
+  // A shopper who opens a store becomes a seller too, even when no new token comes back.
+  if (store) await setUserMode('seller');
   return { store: store as Store, token };
 }
 
