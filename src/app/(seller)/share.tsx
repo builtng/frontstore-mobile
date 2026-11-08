@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Linking, Pressable, ScrollView, Share, View } from 'react-native';
+import { Image, Linking, Pressable, ScrollView, Share, View } from 'react-native';
 import { router } from 'expo-router';
-import { Share2 } from 'lucide-react-native';
+import { Check, Copy, Share2 } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
@@ -31,6 +31,12 @@ async function openApp(appUrl: string, webUrl: string) {
   }
 }
 
+/** Rough brightness of a #RRGGBB colour, 0 (black) to 1 (white). */
+function luminance(hex: string) {
+  const n = parseInt(hex.slice(1), 16);
+  return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+}
+
 export default function ShareStore() {
   const [copied, setCopied] = useState(false);
   const [note, setNote] = useState<string | null>(null);
@@ -43,6 +49,8 @@ export default function ShareStore() {
   const username = store?.username || store?.slug || '';
   const url = `https://frontstore.app/${username}`;
   const message = `Shop ${storeName}. Now taking orders: ${url}`;
+  // The card takes the store's own colour when it's dark enough for white text.
+  const brand = /^#[0-9a-f]{6}$/i.test(store?.primary_color || '') && luminance(store.primary_color) < 0.5 ? store.primary_color : '#1E5E3A';
 
   const copy = async () => {
     await Clipboard.setStringAsync(url);
@@ -73,20 +81,25 @@ export default function ShareStore() {
           </>
         ) : (
           <>
-            <View className="items-center gap-2 pt-2">
-              <View className="rounded-3xl border border-line bg-white p-4">
-                <QRCode value={url} size={196} color="#0E1A15" />
+            <View style={{ backgroundColor: brand }} className="items-center gap-3.5 rounded-[28px] px-5 pb-5 pt-6">
+              <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border-[3px] border-white/90 bg-ink">
+                {store?.logo_url ? <Image source={{ uri: store.logo_url }} className="h-full w-full" /> : <T className="font-display-x text-base text-white">{(storeName || 'S')[0].toUpperCase()}</T>}
               </View>
-              <T className="text-center text-[13px] text-muted">Customers scan this to open your store. Print it or take a screenshot.</T>
+              <T numberOfLines={1} className="text-center font-display text-xl text-white">{storeName}</T>
+              <View className="rounded-3xl bg-white p-4">
+                <QRCode value={url} size={180} color="#0E1A15" />
+              </View>
+              <View className="w-full flex-row items-center gap-2 rounded-full bg-white/15 py-1.5 pl-4 pr-1.5">
+                <T numberOfLines={1} className="flex-1 font-sans-bold text-sm text-white">frontstore.app/{username}</T>
+                <Pressable accessibilityRole="button" accessibilityLabel="Copy store link" onPress={copy} className="h-[38px] flex-row items-center gap-1.5 rounded-full bg-white px-3.5">
+                  {copied ? <Check size={14} color="#1E5E3A" strokeWidth={2.6} /> : <Copy size={14} color="#1E5E3A" strokeWidth={2.2} />}
+                  <T className="font-sans-bold text-[13px] text-green">{copied ? 'Copied' : 'Copy'}</T>
+                </Pressable>
+              </View>
             </View>
+            <T className="-mt-2 text-center text-[13px] text-muted">Customers scan the code to open your store. Screenshot it for your stall or packaging.</T>
 
-            <View className="h-[52px] flex-row items-center justify-between rounded-[14px] border border-line bg-surface pl-4 pr-1.5">
-              <T numberOfLines={1} className="mr-2 flex-1 font-sans-semibold">frontstore.app/{username}</T>
-              <Pressable accessibilityRole="button" accessibilityLabel="Copy store link" onPress={copy} className="h-10 justify-center rounded-[10px] bg-ink px-4">
-                <T className="font-sans-bold text-sm text-bg">{copied ? 'Copied' : 'Copy'}</T>
-              </Pressable>
-            </View>
-
+            <T className="font-sans-bold text-[15px]">Share to</T>
             <View className="flex-row">
               <Action label="WhatsApp" bg="#25D366" onPress={whatsapp}>
                 <WhatsAppIcon size={24} color="#FFFFFF" />
