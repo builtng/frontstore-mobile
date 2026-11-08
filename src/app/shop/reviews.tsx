@@ -14,7 +14,7 @@ function Stars({ n, gap = 2 }: { n: number; gap?: number }) {
   return (
     <View accessible accessibilityLabel={n ? `${n} out of 5 stars` : 'Not rated'} style={{ gap }} className="flex-row">
       {[1, 2, 3, 4, 5].map((i) => {
-        const c = i <= n ? '#E9A23B' : '#E3DED2';
+        const c = i <= n ? '#E9A23B' : '#E7E9E4';
         return <Star key={i} size={16} color={c} fill={c} strokeWidth={0} />;
       })}
     </View>
@@ -78,7 +78,7 @@ export default function BuyerMyReviews() {
                     </View>
                     <Stars n={r.stars} />
                   </View>
-                  {r.text ? <T className="text-sm leading-[21px] text-[#33403A]">{r.text}</T> : null}
+                  {r.text ? <T className="text-sm leading-[21px] text-[#26322D]">{r.text}</T> : null}
                   {r.reply ? (
                     <View className="rounded-xl bg-bg px-3 py-2.5">
                       <T className="font-sans-bold text-[13px] leading-[19px]">{r.store} replied</T>

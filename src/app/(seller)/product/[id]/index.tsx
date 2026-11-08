@@ -14,7 +14,7 @@ import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { getMe } from '@/api/auth';
 
 function Row({ Icon, label, onPress, danger, className }: { Icon: LucideIcon; label: string; onPress: () => void; danger?: boolean; className?: string }) {
-  const color = danger ? '#A8321E' : '#0E1A15';
+  const color = danger ? '#9A2C14' : '#0E1A15';
   return (
     <Pressable accessibilityRole="button" onPress={onPress} className={cx('h-[52px] flex-row items-center gap-3.5 px-2', className)}>
       <Icon size={20} color={color} strokeWidth={2} />
@@ -98,7 +98,7 @@ export default function ProductActions() {
         className="gap-1.5 rounded-t-[28px] bg-surface px-4 pt-2.5"
       >
         <Grip className="mb-2" />
-        <View className="flex-row items-center gap-3 border-b border-[#F0ECE3] px-1 pb-3.5 pt-1">
+        <View className="flex-row items-center gap-3 border-b border-[#E7E9E4] px-1 pb-3.5 pt-1">
           <ProductImage uri={productPhoto(product)} name={name} className="h-[52px] w-[52px] rounded-xl" />
           <View className="flex-1 gap-0.5">
             {product ? (
@@ -119,7 +119,7 @@ export default function ProductActions() {
         <Row Icon={copied ? Check : Copy} label={copied ? 'Link copied!' : 'Copy product link'} onPress={copyProductLink} />
         <Row Icon={Ban} label={isOut ? 'Mark as in stock' : 'Mark as sold out'} onPress={toggleSoldOut} />
         <Row Icon={EyeOff} label={isHidden ? 'Show on store' : 'Hide from store'} onPress={toggleHide} />
-        <Row Icon={Trash2} label="Delete product" danger className="border-t border-[#F0ECE3]" onPress={() => router.replace(`/product/${id}/delete`)} />
+        <Row Icon={Trash2} label="Delete product" danger className="border-t border-[#E7E9E4]" onPress={() => router.replace(`/product/${id}/delete`)} />
         <Pressable accessibilityRole="button" onPress={close} className="mt-1.5 h-[52px] items-center justify-center rounded-full bg-cream">
           <T className="font-sans-bold text-base">Cancel</T>
         </Pressable>

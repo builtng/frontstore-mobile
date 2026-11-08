@@ -71,12 +71,12 @@ export default function Products() {
           {isLoading ? <Skeleton className="h-3.5 w-16" /> : <T className="text-sm text-muted">{items.length} {items.length === 1 ? 'product' : 'products'}</T>}
         </View>
         <View className="h-12 flex-row items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5">
-          <Search size={18} color="#5B6660" strokeWidth={2} />
+          <Search size={18} color="#5F6B65" strokeWidth={2} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Search products"
-            placeholderTextColor="#5B6660"
+            placeholderTextColor="#5F6B65"
             accessibilityLabel="Search products"
             returnKeyType="search"
             className="h-full flex-1 font-sans text-base text-ink"
@@ -95,8 +95,8 @@ export default function Products() {
           <SkeletonRows count={5} />
         ) : items.map((p) => {
           const inStock = p.stock_count > 0;
-          const bg = inStock ? '#CFE8DC' : '#ECE8DF';
-          const fg = inStock ? '#07261C' : '#4A524E';
+          const bg = inStock ? '#CFE5D7' : '#E9ECE7';
+          const fg = inStock ? '#1E5E3A' : '#4A524E';
           const label = p.status === 'preorder' ? 'Pre-order' : inStock ? 'In stock' : 'Sold out';
 
           return (
@@ -121,7 +121,7 @@ export default function Products() {
                 onPress={() => open(p)}
                 className="h-11 w-9 items-center justify-center"
               >
-                <EllipsisVertical size={18} color="#5B6660" strokeWidth={2.4} />
+                <EllipsisVertical size={18} color="#5F6B65" strokeWidth={2.4} />
               </Pressable>
             </Pressable>
           );
@@ -130,7 +130,7 @@ export default function Products() {
           <LoadError what="your products" onRetry={() => refetch()} />
         ) : !apiProducts?.length ? (
           <EmptyState
-            icon={<Package size={22} color="#5B6660" />}
+            icon={<Package size={22} color="#5F6B65" />}
             title="No products yet"
             sub="Snap a photo and your first product is ready to sell."
             action="Add a product"

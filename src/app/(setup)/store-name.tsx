@@ -171,12 +171,12 @@ export default function StoreName() {
             </View>
             {checking ? (
               <View className="flex-row items-center gap-1.5">
-                <ActivityIndicator size="small" color="#0B6E4F" />
+                <ActivityIndicator size="small" color="#1E5E3A" />
                 <T className="font-sans-medium text-[13px] text-muted">Checking availability...</T>
               </View>
             ) : available === true && slug.length >= 3 ? (
               <View className="flex-row items-center gap-1.5">
-                <Check size={14} color="#0B6E4F" strokeWidth={3} />
+                <Check size={14} color="#1E5E3A" strokeWidth={3} />
                 <T className="font-sans-bold text-[13px] text-green">Available</T>
               </View>
             ) : available === false ? (
@@ -206,7 +206,7 @@ export default function StoreName() {
                   </View>
                 ) : null}
               </View>
-              <ChevronDown size={18} color="#5B6660" strokeWidth={2} />
+              <ChevronDown size={18} color="#5F6B65" strokeWidth={2} />
             </Pressable>
           </View>
         </ScrollView>

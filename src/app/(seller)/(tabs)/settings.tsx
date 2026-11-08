@@ -30,7 +30,7 @@ function Rows({ rows }: { rows: Row[] }) {
           accessibilityLabel={r.value ? `${r.label}, ${r.value}` : r.label}
           disabled={!r.href && !r.onPress}
           onPress={() => (r.href ? router.push(r.href) : r.onPress?.())}
-          className={cx('min-h-[52px] flex-row items-center gap-3.5 px-4', i < rows.length - 1 && 'border-b border-[#F0ECE3]')}
+          className={cx('min-h-[52px] flex-row items-center gap-3.5 px-4', i < rows.length - 1 && 'border-b border-[#E7E9E4]')}
         >
           <T className="flex-1 font-sans-semibold text-[15px]">{r.label}</T>
           {r.loading ? <Skeleton className="h-3.5 w-14" /> : r.value ? <T className="text-sm text-muted">{r.value}</T> : null}
@@ -168,7 +168,7 @@ export default function Settings() {
           <Pressable
             accessibilityRole="link"
             onPress={() => Linking.openURL(supportWa ? `https://wa.me/${supportWa}` : `mailto:${supportEmail}`)}
-            className="min-h-[52px] flex-row items-center justify-between border-b border-[#F0ECE3] px-4"
+            className="min-h-[52px] flex-row items-center justify-between border-b border-[#E7E9E4] px-4"
           >
             <T className="font-sans-semibold text-[15px]">{supportWa ? 'Help on WhatsApp' : 'Email support'}</T>
             <ChevronRight size={16} color="#8A918D" strokeWidth={2} />
@@ -191,7 +191,7 @@ export default function Settings() {
         <View className="gap-3 py-1">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <Truck size={20} color="#0B6E4F" />
+              <Truck size={20} color="#1E5E3A" />
               <T className="font-display text-xl">Delivery fee</T>
             </View>
             <Pressable accessibilityRole="button" accessibilityLabel="Close" hitSlop={8} onPress={() => setDeliveryOpen(false)}>

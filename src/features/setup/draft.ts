@@ -31,7 +31,7 @@ let draft: SetupDraft = {
   country_code: 'NG',
   country_name: 'Nigeria',
   currency_code: 'NGN',
-  color: '#0B6E4F',
+  color: '#1E5E3A',
   category: 'Fashion',
 };
 const listeners = new Set<() => void>();

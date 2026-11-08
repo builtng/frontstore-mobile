@@ -130,15 +130,15 @@ export default function OrderDetail() {
           <View className="flex-row items-center justify-between">
             <Tag
               label={isPaid ? `Paid${order.payment_method ? ` · ${order.payment_method}` : ''}` : 'Awaiting payment'}
-              bg={isPaid ? '#CFE8DC' : '#FBEFD9'}
-              fg={isPaid ? '#07261C' : '#7A4B06'}
+              bg={isPaid ? '#CFE5D7' : '#FBEFD9'}
+              fg={isPaid ? '#1E5E3A' : '#7A4B06'}
             />
-            <Tag label={isRefunded ? 'Refunded' : STEP_LABELS[stepIdx]} bg={isRefunded ? '#FBE7E2' : '#CFE8DC'} fg={isRefunded ? '#A8321E' : '#07261C'} />
+            <Tag label={isRefunded ? 'Refunded' : STEP_LABELS[stepIdx]} bg={isRefunded ? '#FDECE8' : '#CFE5D7'} fg={isRefunded ? '#9A2C14' : '#1E5E3A'} />
           </View>
           <View className="flex-row gap-1.5" accessibilityLabel={`Progress: ${STEP_LABELS[stepIdx]}`}>
             {STEPS.map((label, i) => (
               <View key={label} className="flex-1 gap-1.5">
-                <View style={{ backgroundColor: i <= stepIdx ? '#0B6E4F' : '#E3DED2' }} className="h-[5px] rounded-full" />
+                <View style={{ backgroundColor: i <= stepIdx ? '#1E5E3A' : '#E7E9E4' }} className="h-[5px] rounded-full" />
                 <T style={{ color: i <= stepIdx ? '#0E1A15' : '#8A918D' }} className="font-sans-bold text-xs">{STEP_LABELS[i]}</T>
               </View>
             ))}
@@ -233,7 +233,7 @@ export default function OrderDetail() {
                 className="h-12 flex-row items-center justify-between rounded-xl border border-line-2 bg-surface px-3"
               >
                 <T className="text-base">{reason}</T>
-                <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
+                <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
               </Pressable>
 
               <SearchableSelectModal

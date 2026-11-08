@@ -99,7 +99,7 @@ function ReadingCard({ onSkip }: { onSkip: () => void }) {
 }
 
 function Ghost({ stage }: { stage: AiStage }) {
-  const bar = stage === 'reading' ? '#DCE9E2' : '#ECE8DF';
+  const bar = stage === 'reading' ? '#DCE9E2' : '#E9ECE7';
   return (
     <View className="gap-2.5">
       {GHOST.map((g) => (
@@ -109,7 +109,7 @@ function Ghost({ stage }: { stage: AiStage }) {
         </View>
       ))}
       <View className="flex-row items-center justify-center gap-2">
-        <Lock size={15} color="#0B6E4F" strokeWidth={2} />
+        <Lock size={15} color="#1E5E3A" strokeWidth={2} />
         <T className="font-sans-semibold text-sm text-muted">
           {stage === 'reading' ? 'Filling in from your photos…' : 'Add a photo to unlock the form'}
         </T>
@@ -137,7 +137,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
     <View className="gap-3.5">
       <View className="flex-row items-center justify-between gap-2 rounded-[14px] bg-mint px-3 py-2.5">
         <View className="shrink flex-row items-center gap-2">
-          <SparkleIcon size={15} color="#0B6E4F" />
+          <SparkleIcon size={15} color="#1E5E3A" />
           <T className="shrink font-sans-semibold text-[13px] text-deep">{aiError ?? (p.name ? 'Filled in by Nina AI. Check it.' : 'Fill in the details.')}</T>
         </View>
         <Pressable
@@ -156,7 +156,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
           value={p.name}
           onChangeText={(v) => update({ name: v })}
           accessibilityLabel="Product name"
-          placeholderTextColor="#8A928E"
+          placeholderTextColor="#8A948F"
           className={cx(inputBox, 'h-[50px] px-3.5 font-sans text-base text-ink')}
         />
       </View>
@@ -184,7 +184,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
             className={cx(inputBox, 'h-[50px] flex-row items-center justify-between px-3')}
           >
             <T className="text-[15px]" numberOfLines={1}>{categories.nameOf(p.categoryId) || 'Select'}</T>
-            <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
+            <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
           </Pressable>
         </View>
       </View>
@@ -263,7 +263,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
             onChangeText={(v) => update({ stock: v.replace(/\D/g, '').slice(0, 5) })}
             keyboardType="number-pad"
             placeholder="How many in stock"
-            placeholderTextColor="#8A928E"
+            placeholderTextColor="#8A948F"
             accessibilityLabel="How many in stock"
             className="h-11 rounded-xl border border-[#C9A56A] bg-surface px-3 font-sans text-base text-ink"
           />
@@ -284,12 +284,12 @@ export function AiProductFlow({ flow }: { flow: Flow }) {
           accessibilityLabel="Take a photo or choose from gallery"
           onPress={photos.pick}
           disabled={photos.uploading}
-          className="h-[210px] items-center justify-center gap-2.5 rounded-[22px] border-2 border-dashed border-[#B9B1A0] bg-surface"
+          className="h-[210px] items-center justify-center gap-2.5 rounded-[22px] border-2 border-dashed border-[#BFC7C1] bg-surface"
         >
           <View className="h-14 w-14 items-center justify-center rounded-full bg-mint">
-            {photos.uploading ? <ActivityIndicator color="#0B6E4F" /> : <Camera size={26} color="#0B6E4F" strokeWidth={2} />}
+            {photos.uploading ? <ActivityIndicator color="#1E5E3A" /> : <Camera size={26} color="#1E5E3A" strokeWidth={2} />}
           </View>
-          <T className="font-sans-bold text-base text-[#33403A]">{photos.uploading ? 'Uploading…' : 'Take a photo or choose from gallery'}</T>
+          <T className="font-sans-bold text-base text-[#26322D]">{photos.uploading ? 'Uploading…' : 'Take a photo or choose from gallery'}</T>
           <T className="text-[13px] text-muted">Up to 3 photos · Nina AI fills in the rest</T>
         </Pressable>
       ) : (
@@ -316,9 +316,9 @@ export function AiProductFlow({ flow }: { flow: Flow }) {
               accessibilityLabel="Add photo"
               onPress={photos.pick}
               disabled={photos.uploading}
-              className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#B9B1A0] bg-surface"
+              className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#BFC7C1] bg-surface"
             >
-              {photos.uploading ? <ActivityIndicator color="#0B6E4F" /> : <T className="text-[22px] text-muted">+</T>}
+              {photos.uploading ? <ActivityIndicator color="#1E5E3A" /> : <T className="text-[22px] text-muted">+</T>}
             </Pressable>
           ) : null}
         </View>

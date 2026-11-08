@@ -26,7 +26,7 @@ export default function Switch() {
   const hasStore = !!sellerStore;
   const sellerName = sellerStore?.store_name || sellerStore?.name || (hasStore ? 'Your store' : 'Open your free store');
   const sellerInitial = (sellerName || 'S')[0].toUpperCase();
-  const sellerColor = sellerStore?.primary_color || sellerStore?.store_color || '#0B6E4F';
+  const sellerColor = sellerStore?.primary_color || sellerStore?.store_color || '#1E5E3A';
 
   const accounts = [
     { id: 'shop' as Mode, kind: 'Shopping', name: buyerName, sub: 'Buyer Mode', ini: buyerInitials, av: '#0E1A15', radius: 24 },
@@ -85,7 +85,7 @@ export default function Switch() {
                 <T className="font-sans-bold text-base">{a.name}</T>
                 <T className="text-[13px] text-muted">{a.sub}</T>
               </View>
-              <View className={cx('h-[22px] w-[22px] rounded-full', on ? 'border-[7px] border-green' : 'border-[1.5px] border-[#B9B1A0]')} />
+              <View className={cx('h-[22px] w-[22px] rounded-full', on ? 'border-[7px] border-green' : 'border-[1.5px] border-[#BFC7C1]')} />
             </Pressable>
           );
         })}

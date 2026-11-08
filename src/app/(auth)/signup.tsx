@@ -56,7 +56,7 @@ export default function Signup() {
               accessibilityLabel="Email address"
               returnKeyType="go"
               onSubmitEditing={() => valid && next()}
-              left={<Mail size={18} color="#0B6E4F" strokeWidth={2} />}
+              left={<Mail size={18} color="#1E5E3A" strokeWidth={2} />}
             />
           </Labelled>
         </ScrollView>

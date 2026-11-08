@@ -129,7 +129,7 @@ export function SearchableSelectModal({
             {/* Results List */}
             {loading ? (
               <View className="h-48 items-center justify-center gap-2">
-                <ActivityIndicator size="small" color="#0B6E4F" />
+                <ActivityIndicator size="small" color="#1E5E3A" />
                 <T className="text-xs text-muted">Loading options...</T>
               </View>
             ) : filtered.length === 0 ? (

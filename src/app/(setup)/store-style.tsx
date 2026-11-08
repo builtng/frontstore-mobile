@@ -6,7 +6,7 @@ import { BottomBar, Heading, Progress, StepHeader } from '@/features/setup/parts
 import { initialOf, toSlug, updateDraft, useDraft } from '@/features/setup/draft';
 
 const SWATCHES: Array<[string, string]> = [
-  ['Terracotta', '#C8553D'], ['Forest', '#0B6E4F'], ['Indigo', '#2F5D8A'], ['Plum', '#7B3F61'], ['Ochre', '#8A5A12'], ['Ink', '#0E1A15'],
+  ['Terracotta', '#C8553D'], ['Forest', '#1E5E3A'], ['Indigo', '#2F5D8A'], ['Plum', '#7B3F61'], ['Ochre', '#8A5A12'], ['Ink', '#0E1A15'],
 ];
 const CATS = ['Fashion', 'Food', 'Beauty', 'Gadgets', 'Home', 'Other'];
 
@@ -62,7 +62,7 @@ export default function StoreStyle() {
                   accessibilityLabel={label}
                   accessibilityState={{ checked: on }}
                   onPress={() => updateDraft({ color: hex })}
-                  style={{ borderColor: on ? '#0E1A15' : '#D8D2C4', borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
+                  style={{ borderColor: on ? '#0E1A15' : '#D9DED9', borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
                   className="rounded-full"
                 >
                   <View style={{ backgroundColor: hex }} className="h-11 w-11 rounded-full border-[3px] border-bg" />

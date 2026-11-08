@@ -70,7 +70,7 @@ export default function BuyerAddresses() {
             <View key={a.id} className={cx('gap-2 rounded-[20px] bg-surface p-4', isDef ? 'border-2 border-green' : 'border border-line')}>
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-1.5">
-                  <MapPin size={18} color="#0B6E4F" strokeWidth={2} />
+                  <MapPin size={18} color="#1E5E3A" strokeWidth={2} />
                   <T className="font-sans-bold text-[15px] text-green">{a.label || 'Address'}</T>
                 </View>
                 {isDef ? (
@@ -79,11 +79,11 @@ export default function BuyerAddresses() {
                   </View>
                 ) : null}
               </View>
-              <T className="text-sm leading-[21px] text-[#33403A]">
+              <T className="text-sm leading-[21px] text-[#26322D]">
                 <T className="font-sans-bold text-sm text-ink">{a.recipient_name}</T>
                 {`\n${a.street}${a.city ? `, ${a.city}` : ''}\n${a.phone_number}`}
               </T>
-              <View className="flex-row items-center gap-4 border-t border-[#F0ECE3] pt-2">
+              <View className="flex-row items-center gap-4 border-t border-[#E7E9E4] pt-2">
                 <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${a.label} address`} hitSlop={12} onPress={() => deleteMutation.mutate(typeof a.id === 'number' ? a.id : Number(a.id))}>
                   <T className="font-sans-bold text-sm text-danger">Remove</T>
                 </Pressable>

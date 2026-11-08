@@ -126,12 +126,12 @@ export default function AddProduct() {
           <Pressable
             accessibilityRole="button"
             onPress={pickImages}
-            className="h-[210px] items-center justify-center gap-2.5 rounded-[22px] border-2 border-dashed border-[#B9B1A0] bg-surface"
+            className="h-[210px] items-center justify-center gap-2.5 rounded-[22px] border-2 border-dashed border-[#BFC7C1] bg-surface"
           >
             <View className="h-14 w-14 items-center justify-center rounded-full bg-mint">
-              <Camera size={26} color="#0B6E4F" strokeWidth={2} />
+              <Camera size={26} color="#1E5E3A" strokeWidth={2} />
             </View>
-            <T className="font-sans-bold text-base text-[#33403A]">Take a photo or choose from gallery</T>
+            <T className="font-sans-bold text-base text-[#26322D]">Take a photo or choose from gallery</T>
             <T className="text-[13px] text-muted">Up to 3 photos · Nina AI fills in the rest</T>
           </Pressable>
         ) : (
@@ -147,7 +147,7 @@ export default function AddProduct() {
               </View>
             ))}
             {photos.length < 3 ? (
-              <Pressable accessibilityRole="button" onPress={pickImages} className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#B9B1A0] bg-surface">
+              <Pressable accessibilityRole="button" onPress={pickImages} className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#BFC7C1] bg-surface">
                 <T className="text-[22px] text-muted">+</T>
               </Pressable>
             ) : null}
@@ -176,11 +176,11 @@ export default function AddProduct() {
             {ghost.map((g) => (
               <View key={g} className="gap-2 rounded-[14px] border border-sand bg-surface px-3.5 py-3">
                 <T className="font-sans-bold text-[11px] uppercase tracking-[0.9px] text-[#A7ADA9]">{g}</T>
-                <View style={{ backgroundColor: reading ? '#DCE9E2' : '#ECE8DF' }} className="h-[9px] w-[55%] rounded-full" />
+                <View style={{ backgroundColor: reading ? '#DCE9E2' : '#E9ECE7' }} className="h-[9px] w-[55%] rounded-full" />
               </View>
             ))}
             <View className="flex-row items-center justify-center gap-2">
-              <Lock size={15} color="#0B6E4F" strokeWidth={2} />
+              <Lock size={15} color="#1E5E3A" strokeWidth={2} />
               <T className="font-sans-semibold text-sm text-muted">{reading ? 'Filling in from your photos…' : 'Add a photo to unlock the form'}</T>
             </View>
           </View>
@@ -218,7 +218,7 @@ export default function AddProduct() {
                   className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-3"
                 >
                   <T className="text-[15px]" numberOfLines={1}>{categories.nameOf(category) || 'Select'}</T>
-                  <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
+                  <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
                 </Pressable>
               </View>
             </View>

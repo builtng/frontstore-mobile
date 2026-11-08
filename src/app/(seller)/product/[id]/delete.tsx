@@ -56,8 +56,8 @@ export default function DeleteProduct() {
         className="absolute bottom-0 left-0 right-0 gap-[18px] rounded-t-[28px] bg-surface px-5 pt-3"
       >
         <Grip />
-        <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-[#FBE7E2]">
-          <Trash2 size={26} color="#A8321E" strokeWidth={2} />
+        <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-[#FDECE8]">
+          <Trash2 size={26} color="#9A2C14" strokeWidth={2} />
         </View>
         <View className="gap-2">
           <T className="font-display text-2xl tracking-[-0.24px]">Delete "{name}"?</T>
@@ -75,7 +75,7 @@ export default function DeleteProduct() {
           </View>
         </View>
         <View className="rounded-[14px] border border-dashed border-line-2 px-3.5 py-3">
-          <T className="text-sm leading-[21px] text-[#33403A]">
+          <T className="text-sm leading-[21px] text-[#26322D]">
             Just out of stock?{' '}
             <T accessibilityRole="link" onPress={() => router.replace(`/product/${id}`)} className="font-sans-bold text-sm text-green">
               Hide it instead

@@ -12,7 +12,7 @@ type Mode = 'shop' | 'sell';
 
 const OPTIONS: Array<{ id: Mode; title: string; body: string; color: string; icon: string }> = [
   { id: 'shop', title: 'I want to shop', body: 'Discover Nigerian stores, pay safely and track every order in one place.', color: '#C8553D', icon: 'M6 3h12l1 18H5zM9 7a3 3 0 0 0 6 0' },
-  { id: 'sell', title: 'I want to sell', body: 'Open your store in minutes, get paid online and manage orders from your phone.', color: '#0B6E4F', icon: 'M3 9l1.5-5h15L21 9M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M5 12v8h14v-8' },
+  { id: 'sell', title: 'I want to sell', body: 'Open your store in minutes, get paid online and manage orders from your phone.', color: '#1E5E3A', icon: 'M3 9l1.5-5h15L21 9M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M5 12v8h14v-8' },
 ];
 
 export default function ChooseMode() {
@@ -84,7 +84,7 @@ export default function ChooseMode() {
                     <Glyph d={o.icon} />
                   </View>
                   <View
-                    style={{ borderWidth: on ? 7 : 1.5, borderColor: on ? '#0B6E4F' : '#B9B1A0' }}
+                    style={{ borderWidth: on ? 7 : 1.5, borderColor: on ? '#1E5E3A' : '#BFC7C1' }}
                     className="h-6 w-6 rounded-full"
                   />
                 </View>

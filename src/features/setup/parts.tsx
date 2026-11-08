@@ -123,7 +123,7 @@ export const RingInput = forwardRef<TextInput, TextInputProps & { left?: React.R
           {left}
           <TextInput
             ref={innerRef}
-            placeholderTextColor="#8A928E"
+            placeholderTextColor="#8A948F"
             onFocus={(e) => { setFocused(true); onFocus?.(e); }}
             onBlur={(e) => { setFocused(false); onBlur?.(e); }}
             className={cx('h-full flex-1 text-ink', inputClassName ?? 'font-sans text-base')}

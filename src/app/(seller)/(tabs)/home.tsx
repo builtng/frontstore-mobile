@@ -108,16 +108,16 @@ export default function Home() {
           <Pressable
             accessibilityRole="button"
             onPress={() => setWhatsappOpen(true)}
-            className="flex-row items-center gap-3 rounded-[20px] border border-[#F3E3C7] bg-[#FDF1E1] p-4"
+            className="flex-row items-center gap-3 rounded-[20px] border border-[#FDF1E1] bg-[#FDF1E1] p-4"
           >
             <View className="h-10 w-10 items-center justify-center rounded-xl bg-white">
               <WhatsAppIcon size={22} />
             </View>
             <View className="min-w-0 flex-1 gap-0.5">
-              <T className="font-sans-bold text-[#6B4210]">Add your WhatsApp number</T>
-              <T className="text-[13px] text-[#6B4210]">Get order alerts there, and let buyers message you.</T>
+              <T className="font-sans-bold text-[#8A4A06]">Add your WhatsApp number</T>
+              <T className="text-[13px] text-[#8A4A06]">Get order alerts there, and let buyers message you.</T>
             </View>
-            <T className="font-sans-bold text-sm text-[#6B4210]">Add</T>
+            <T className="font-sans-bold text-sm text-[#8A4A06]">Add</T>
           </Pressable>
         ) : null}
 
@@ -132,7 +132,7 @@ export default function Home() {
           <View className="flex-row gap-2">
             <Link href="/share" asChild>
               <Pressable accessibilityRole="button" className="h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-full bg-saffron">
-                <Share size={16} color="#07261C" strokeWidth={2.2} />
+                <Share size={16} color="#1E5E3A" strokeWidth={2.2} />
                 <T numberOfLines={1} className="font-sans-bold text-sm text-deep">Share store</T>
               </Pressable>
             </Link>
@@ -187,7 +187,7 @@ export default function Home() {
             ))
           ) : (
             <EmptyState
-              icon={<CheckCircle size={22} color="#5B6660" />}
+              icon={<CheckCircle size={22} color="#5F6B65" />}
               title="You’re all caught up"
               sub="Paid orders waiting to be packed will show here."
             />
@@ -224,7 +224,7 @@ export default function Home() {
             ))
           ) : (
             <EmptyState
-              icon={<Package size={22} color="#5B6660" />}
+              icon={<Package size={22} color="#5F6B65" />}
               title="No products yet"
               sub="Snap a photo and your first product is ready to sell."
               action="Add a product"
@@ -249,8 +249,8 @@ export default function Home() {
           <View className="gap-2.5 pt-1">
             {toShipOrders.length > 0 ? (
               <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
-                <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#F3E3C7]">
-                  <CheckCircle size={18} color="#6B4210" />
+                <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#FDF1E1]">
+                  <CheckCircle size={18} color="#8A4A06" />
                 </View>
                 <View className="flex-1 gap-0.5">
                   <T className="font-sans-bold text-sm">{toShipOrders.length} Orders Ready to Ship</T>

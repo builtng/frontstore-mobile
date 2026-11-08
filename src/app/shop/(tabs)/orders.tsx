@@ -10,7 +10,7 @@ import { Order } from '@/api/types';
 
 const STATUS = {
   out: { label: 'Out for delivery', bg: '#DCE7F3', fg: '#1F3F66' },
-  done: { label: 'Delivered', bg: '#CFE8DC', fg: '#07261C' },
+  done: { label: 'Delivered', bg: '#CFE5D7', fg: '#1E5E3A' },
   paid: { label: 'Paid', bg: '#FEF3C7', fg: '#92400E' },
   refunded: { label: 'Refunded', bg: '#FEE2E2', fg: '#991B1B' },
 } as const;
@@ -21,7 +21,7 @@ function OrderCard({ o }: { o: any }) {
   const orderId = o.id;
   const storeName = o.store?.name || o.store?.store_name || 'Store';
   const storeInitial = storeName[0] ?? 'S';
-  const storeColor = o.store?.primary_color || o.store?.store_color || '#0B6E4F';
+  const storeColor = o.store?.primary_color || o.store?.store_color || '#1E5E3A';
   const totalAmount = o.total_amount;
   const statusKey = o.order_status === 'shipped' || o.order_status === 'processing'
     ? 'out'
@@ -70,7 +70,7 @@ function OrderCard({ o }: { o: any }) {
         </View>
         <T className="font-sans-bold text-base">{naira(totalAmount)}</T>
       </View>
-      <T className="text-sm text-[#33403A]">{itemsText}</T>
+      <T className="text-sm text-[#26322D]">{itemsText}</T>
       <View className="flex-row items-center justify-between">
         <View style={{ backgroundColor: st.bg }} className="rounded-full px-2.5 py-[5px]">
           <T style={{ color: st.fg }} className="font-sans-bold text-xs">{st.label}</T>
@@ -108,7 +108,7 @@ export default function BuyerOrders() {
     <Screen>
       <ScrollView
         contentContainerClassName="gap-3.5 px-4 pb-6 pt-3"
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#0B6E4F" />}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#1E5E3A" />}
       >
         <T className="font-display-x text-[30px] tracking-[-0.6px]">My orders</T>
         <Segmented<Tab>

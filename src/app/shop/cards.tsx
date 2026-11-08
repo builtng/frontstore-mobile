@@ -57,7 +57,7 @@ export default function BuyerCards() {
       <ScrollView contentContainerClassName="gap-3 px-4 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         {list.map((c) => {
           const isDef = c.is_default;
-          const bg = c.brand.toLowerCase() === 'visa' ? '#0E1A15' : '#0B6E4F';
+          const bg = c.brand.toLowerCase() === 'visa' ? '#0E1A15' : '#1E5E3A';
           return (
             <View key={c.id} className="gap-2">
               <View
@@ -96,7 +96,7 @@ export default function BuyerCards() {
         <DashedAdd label="+ Add a card" onPress={() => setOpen(true)} />
         <View className="flex-row items-start gap-2.5 rounded-2xl bg-mint px-4 py-3.5">
           <View className="pt-0.5">
-            <Lock size={16} color="#0B6E4F" strokeWidth={2} />
+            <Lock size={16} color="#1E5E3A" strokeWidth={2} />
           </View>
           <T className="flex-1 text-sm leading-[21px] text-deep">
             Cards are saved by Paystack. Frontstore never sees or stores your full card number. You approve every payment with your bank.

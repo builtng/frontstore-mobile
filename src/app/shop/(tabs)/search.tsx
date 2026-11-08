@@ -64,7 +64,7 @@ export default function BuyerSearch() {
     const displayName = s.name || s.store_name || 'Store';
     const displaySlug = s.slug || s.username || String(s.id);
     const displayInitial = displayName[0] || 'S';
-    const displayColor = s.primary_color || s.store_color || '#0B6E4F';
+    const displayColor = s.primary_color || s.store_color || '#1E5E3A';
     const itemsCount = (s as any).items_count ?? (s as any).items ?? 0;
     const rating = (s as any).reviews_avg_rating ?? (s as any).rating;
     const isVerified = (s as any).is_verified;
@@ -123,7 +123,7 @@ export default function BuyerSearch() {
     <Screen>
       <View className="gap-3.5 px-4 pt-3 pb-2">
         <View className={cx('h-[50px] flex-row items-center gap-2.5 rounded-[14px] border-[1.5px] bg-surface pl-3.5 pr-3', focused || q ? 'border-green' : 'border-line')}>
-          <Search size={18} color="#5B6660" strokeWidth={2} />
+          <Search size={18} color="#5F6B65" strokeWidth={2} />
           <TextInput
             ref={input}
             value={q}
@@ -131,7 +131,7 @@ export default function BuyerSearch() {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder="Search stores, categories or location"
-            placeholderTextColor="#8A928E"
+            placeholderTextColor="#8A948F"
             accessibilityLabel="Search"
             returnKeyType="search"
             autoCorrect={false}
@@ -172,7 +172,7 @@ export default function BuyerSearch() {
         ListFooterComponent={
           isFetchingNextPage ? (
             <View className="items-center py-4">
-              <ActivityIndicator size="small" color="#0B6E4F" />
+              <ActivityIndicator size="small" color="#1E5E3A" />
               <T className="mt-1 text-xs text-muted">Loading more stores...</T>
             </View>
           ) : null
@@ -180,7 +180,7 @@ export default function BuyerSearch() {
         ListEmptyComponent={
           isLoading ? (
             <View className="items-center py-16">
-              <ActivityIndicator size="large" color="#0B6E4F" />
+              <ActivityIndicator size="large" color="#1E5E3A" />
               <T className="mt-2 text-sm text-muted">Loading stores...</T>
             </View>
           ) : (

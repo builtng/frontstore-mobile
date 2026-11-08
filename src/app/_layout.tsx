@@ -55,7 +55,7 @@ export default function RootLayout() {
       {loaded && restored ? (
         <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F6F3EC' } }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F4F5F2' } }}>
         <Stack.Screen name="(seller)/product/[id]/index" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="switch" options={{ presentation: 'transparentModal', animation: 'fade' }} />
       </Stack>

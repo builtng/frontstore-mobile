@@ -11,5 +11,5 @@ const TabBar = makeTabBar([
 ]);
 
 export default function BuyerTabs() {
-  return <Tabs tabBar={(p: any) => <TabBar {...p} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: '#F6F3EC' } }} />;
+  return <Tabs tabBar={(p: any) => <TabBar {...p} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: '#F4F5F2' } }} />;
 }

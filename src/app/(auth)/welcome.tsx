@@ -8,14 +8,14 @@ import { setHasSeenOnboarding } from '@/api/authStore';
 
 const slides = [
   { step: 'Step 1 · Build', title: 'Your shop, ready in minutes.', body: 'Snap a photo, add a price and sizes. Your store goes live the moment you save.', bg: '#E7DCC8' },
-  { step: 'Step 2 · Share', title: 'One link. Everywhere you sell.', body: 'Put your store link and QR code on Instagram, WhatsApp Status, TikTok and your packaging.', bg: '#CFE8DC' },
+  { step: 'Step 2 · Share', title: 'One link. Everywhere you sell.', body: 'Put your store link and QR code on Instagram, WhatsApp Status, TikTok and your packaging.', bg: '#CFE5D7' },
   { step: 'Step 3 · Get paid', title: 'Customers pay online. You just deliver.', body: 'Card, bank transfer or USSD - money lands in your account and the order shows up here.', bg: '#F3C77A' },
 ];
 
 const QR = '1110111101010111101111000010001010100101111011110';
 
 const shadow = (o: number, r: number, y: number): ViewStyle => ({
-  shadowColor: '#07261C', shadowOpacity: o, shadowRadius: r, shadowOffset: { width: 0, height: y }, elevation: Math.round(y / 2),
+  shadowColor: '#1E5E3A', shadowOpacity: o, shadowRadius: r, shadowOffset: { width: 0, height: y }, elevation: Math.round(y / 2),
 });
 
 function BuildArt() {
@@ -209,7 +209,7 @@ export default function Welcome() {
               hitSlop={{ top: 18, bottom: 18 }}
               className="px-[3px]"
             >
-              <View style={{ width: k === i ? 28 : 8, backgroundColor: k === i ? '#0E1A15' : '#D8D2C4' }} className="h-2 rounded-[9px]" />
+              <View style={{ width: k === i ? 28 : 8, backgroundColor: k === i ? '#0E1A15' : '#D9DED9' }} className="h-2 rounded-[9px]" />
             </Pressable>
           ))}
         </View>

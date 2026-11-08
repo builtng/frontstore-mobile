@@ -56,7 +56,7 @@ export default function BuyerProfile() {
     <Screen>
       <ScrollView
         contentContainerClassName="gap-3.5 px-4 pb-6 pt-3"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#0B6E4F" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#1E5E3A" />}
       >
         <View className="flex-row items-center gap-3.5">
           <View className="h-[60px] w-[60px] items-center justify-center rounded-full bg-ink">
@@ -71,7 +71,7 @@ export default function BuyerProfile() {
         {sellerStore ? (
           <Link href="/switch?from=shop" asChild>
             <Pressable accessibilityRole="button" accessibilityLabel={`Switch to selling, ${sellerStore.store_name || sellerStore.name || 'Store'}`} className="flex-row items-center gap-3 rounded-[20px] bg-deep p-4">
-              <Avatar initial={(sellerStore.store_name || sellerStore.name || 'S')[0]} color={sellerStore.primary_color ?? sellerStore.store_color ?? '#0B6E4F'} size={44} radius={13} fontSize={16} />
+              <Avatar initial={(sellerStore.store_name || sellerStore.name || 'S')[0]} color={sellerStore.primary_color ?? sellerStore.store_color ?? '#1E5E3A'} size={44} radius={13} fontSize={16} />
               <View className="flex-1">
                 <T className="text-xs text-on-dark-2">Switch to selling</T>
                 <T className="font-sans-bold text-base text-bg">{sellerStore.store_name || sellerStore.name}</T>
@@ -111,11 +111,11 @@ export default function BuyerProfile() {
               accessibilityRole="button"
               accessibilityLabel={r.value ? `${r.label}, ${r.value}` : r.label}
               onPress={r.href ? () => router.push(r.href!) : undefined}
-              className={cx('min-h-[52px] flex-row items-center gap-3 px-4', i < ROWS.length - 1 && 'border-b border-[#F0ECE3]')}
+              className={cx('min-h-[52px] flex-row items-center gap-3 px-4', i < ROWS.length - 1 && 'border-b border-[#E7E9E4]')}
             >
               <T className="flex-1 font-sans-semibold text-[15px]">{r.label}</T>
               {r.value ? <T className="text-[13px] text-muted">{r.value}</T> : null}
-              <ChevronRight size={16} color="#5B6660" strokeWidth={2} />
+              <ChevronRight size={16} color="#5F6B65" strokeWidth={2} />
             </Pressable>
           ))}
         </View>

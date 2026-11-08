@@ -176,8 +176,8 @@ export default function EditProduct() {
             <ProductImage name={name} className="h-[110px] w-[110px] rounded-[18px]" textClassName="text-2xl" />
           )}
           {photos.length < MAX_PHOTOS ? (
-            <Pressable accessibilityRole="button" accessibilityLabel="Add photo" onPress={addPhoto} disabled={uploading} className="h-[110px] w-[110px] items-center justify-center gap-1.5 rounded-[18px] border-[1.5px] border-dashed border-[#B9B1A0] bg-surface">
-              {uploading ? <ActivityIndicator color="#0B6E4F" /> : <Camera size={22} color="#5B6660" strokeWidth={2} />}
+            <Pressable accessibilityRole="button" accessibilityLabel="Add photo" onPress={addPhoto} disabled={uploading} className="h-[110px] w-[110px] items-center justify-center gap-1.5 rounded-[18px] border-[1.5px] border-dashed border-[#BFC7C1] bg-surface">
+              {uploading ? <ActivityIndicator color="#1E5E3A" /> : <Camera size={22} color="#5F6B65" strokeWidth={2} />}
               <T className="font-sans-semibold text-[13px] text-muted">{uploading ? 'Uploading…' : 'Add photo'}</T>
             </Pressable>
           ) : null}
@@ -205,7 +205,7 @@ export default function EditProduct() {
               className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-3"
             >
               <T className="text-[15px]" numberOfLines={1}>{categories.nameOf(category) || 'Select'}</T>
-              <ChevronDown size={16} color="#5B6660" strokeWidth={2} />
+              <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
             </Pressable>
           </View>
         </View>
@@ -260,7 +260,7 @@ export default function EditProduct() {
                 onChangeText={(v) => setStock(v.replace(/\D/g, '').slice(0, 5))}
                 keyboardType="number-pad"
                 placeholder="1"
-                placeholderTextColor="#8A928E"
+                placeholderTextColor="#8A948F"
                 accessibilityLabel="How many in stock"
                 className="h-10 w-24 rounded-xl border border-line-2 bg-surface px-3 text-right font-sans-semibold text-base text-ink"
               />
@@ -281,7 +281,7 @@ export default function EditProduct() {
           onPress={() => router.push(`/product/${id}/delete`)}
           className="h-[54px] w-[54px] items-center justify-center rounded-full border-[1.5px] border-[#E7B3A8] bg-surface"
         >
-          <Trash2 size={22} color="#A8321E" strokeWidth={2} />
+          <Trash2 size={22} color="#9A2C14" strokeWidth={2} />
         </Pressable>
         <Pressable accessibilityRole="button" onPress={save} disabled={submitting || uploading} className="h-[54px] flex-1 flex-row items-center justify-center gap-2 rounded-full bg-deep">
           {submitting ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}

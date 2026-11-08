@@ -11,9 +11,9 @@ import { formatNaira } from '@/lib/format';
 import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 
 const payoutStyle: Record<string, [string, string, string]> = {
-  paid: ['Paid', '#CFE8DC', '#07261C'],
-  processing: ['Processing', '#F3E3C7', '#6B4210'],
-  failed: ['Failed - retrying', '#FBE7E2', '#A8321E'],
+  paid: ['Paid', '#CFE5D7', '#1E5E3A'],
+  processing: ['Processing', '#FDF1E1', '#8A4A06'],
+  failed: ['Failed - retrying', '#FDECE8', '#9A2C14'],
 };
 
 export default function Payouts() {
@@ -104,9 +104,9 @@ export default function Payouts() {
         </View>
 
         {needsEmail ? (
-          <View className="gap-2 rounded-[20px] border border-[#F3E3C7] bg-[#FDF1E1] p-4">
-            <T className="font-sans-bold text-[#6B4210]">Add your email to get paid</T>
-            <T className="text-[13px] text-[#6B4210]">Your payout code is sent to your email, and your account doesn’t have one yet.</T>
+          <View className="gap-2 rounded-[20px] border border-[#FDF1E1] bg-[#FDF1E1] p-4">
+            <T className="font-sans-bold text-[#8A4A06]">Add your email to get paid</T>
+            <T className="text-[13px] text-[#8A4A06]">Your payout code is sent to your email, and your account doesn’t have one yet.</T>
             <Pressable accessibilityRole="button" onPress={() => setAddingEmail(true)} className="mt-1 h-11 items-center justify-center self-start rounded-full bg-ink px-5">
               <T className="font-sans-bold text-sm text-bg">Add email</T>
             </Pressable>
@@ -115,7 +115,7 @@ export default function Payouts() {
 
         <View className="flex-row items-center gap-3 rounded-[20px] border border-line bg-surface px-4 py-3.5">
           <View className="h-11 w-11 items-center justify-center rounded-xl bg-mint">
-            <Landmark size={20} color="#0B6E4F" strokeWidth={2} />
+            <Landmark size={20} color="#1E5E3A" strokeWidth={2} />
           </View>
           <View className="flex-1">
             <T className="font-sans-bold text-[15px]">{accHolder}</T>
@@ -137,7 +137,7 @@ export default function Payouts() {
             history.map((r, i) => {
               const [label, bg, fg] = payoutStyle[r.status] || payoutStyle.paid;
               return (
-                <View key={i} className={cx('flex-row items-center justify-between px-4 py-3.5', i < history.length - 1 && 'border-b border-[#F0ECE3]')}>
+                <View key={i} className={cx('flex-row items-center justify-between px-4 py-3.5', i < history.length - 1 && 'border-b border-[#E7E9E4]')}>
                   <View className="gap-0.5">
                     <T className="font-sans-bold text-[15px]">{formatNaira(r.amount_kobo / 100)}</T>
                     <T className="text-xs text-muted">{r.date} · {r.orders_count} orders</T>

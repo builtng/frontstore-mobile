@@ -20,7 +20,7 @@ function EmptyOrders() {
       <View className="h-[140px] w-40">
         <View style={{ transform: [{ rotate: '-6deg' }] }} className="absolute left-5 top-5 h-[110px] w-[120px] rounded-[24px] bg-[#E7DCC8]" />
         <View className="absolute left-5 top-[14px] h-[110px] w-[120px] items-center justify-center rounded-[24px] border border-line bg-surface">
-          <ShoppingBag size={44} color="#0B6E4F" strokeWidth={1.6} />
+          <ShoppingBag size={44} color="#1E5E3A" strokeWidth={1.6} />
         </View>
       </View>
       <T className="text-center font-display-x text-2xl">No orders yet</T>
@@ -95,12 +95,12 @@ export default function Orders() {
           })}
         </View>
         <View className="h-11 flex-row items-center gap-2 rounded-xl border border-line bg-surface px-3">
-          <Search size={16} color="#5B6660" strokeWidth={2} />
+          <Search size={16} color="#5F6B65" strokeWidth={2} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Search orders or customers"
-            placeholderTextColor="#5B6660"
+            placeholderTextColor="#5F6B65"
             accessibilityLabel="Search orders"
             returnKeyType="search"
             className="h-full min-w-0 flex-1 font-sans text-base text-ink"
@@ -134,7 +134,7 @@ export default function Orders() {
                   </View>
                 </View>
               </View>
-              <T className="text-sm leading-5 text-[#33403A]">{o.items_summary || 'Order items'}</T>
+              <T className="text-sm leading-5 text-[#26322D]">{o.items_summary || 'Order items'}</T>
               <View className="flex-row gap-2">
                 <Link href={href} asChild>
                   <Pressable accessibilityRole="button" className="h-11 flex-1 items-center justify-center rounded-full border border-line-2 bg-surface">

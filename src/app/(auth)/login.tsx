@@ -70,7 +70,7 @@ export default function Login() {
               returnKeyType="go"
               onSubmitEditing={submit}
               left={
-                isEmail ? <Mail size={20} color="#0B6E4F" strokeWidth={2} /> : isPhone ? <WhatsAppIcon size={20} color="#0B6E4F" /> : undefined
+                isEmail ? <Mail size={20} color="#1E5E3A" strokeWidth={2} /> : isPhone ? <WhatsAppIcon size={20} color="#1E5E3A" /> : undefined
               }
             />
             <T className="text-sm leading-5 text-muted-2" accessibilityLiveRegion="polite">{hint}</T>

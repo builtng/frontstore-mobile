@@ -56,7 +56,7 @@ export default function Live() {
       <StatusBar style="light" />
       <ScrollView contentContainerClassName="gap-6 px-5 pt-8 pb-4">
         <View className="h-16 w-16 items-center justify-center rounded-full bg-leaf">
-          <Check size={30} color="#07261C" strokeWidth={2.6} />
+          <Check size={30} color="#1E5E3A" strokeWidth={2.6} />
         </View>
         <View className="gap-2.5">
           <T accessibilityRole="header" className="font-display-x text-[36px] leading-[38px] tracking-[-1px] text-bg">Your store is live.</T>
@@ -91,7 +91,7 @@ export default function Live() {
             {targets.map(({ label, Icon, onPress }) => (
               <Pressable key={label} accessibilityRole="button" accessibilityLabel={`Share to ${label}`} onPress={onPress} className="flex-1 items-center gap-1.5">
                 <View className="h-[52px] w-[52px] items-center justify-center rounded-2xl bg-bg/10">
-                  <Icon color="#F6F3EC" />
+                  <Icon color="#F4F5F2" />
                 </View>
                 <T className="font-sans-semibold text-xs text-bg">{label}</T>
               </Pressable>

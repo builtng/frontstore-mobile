@@ -81,7 +81,7 @@ export default function BuyerTrack() {
             return (
               <View key={title} className="flex-row gap-3.5" accessibilityLabel={`${title}, ${sub}${on ? ', done' : ''}`}>
                 <View className="items-center">
-                  <View className={cx('h-[22px] w-[22px] rounded-full', on ? 'bg-green' : 'border-2 border-[#B9B1A0] bg-surface')} />
+                  <View className={cx('h-[22px] w-[22px] rounded-full', on ? 'bg-green' : 'border-2 border-[#BFC7C1] bg-surface')} />
                   <View
                     className={cx('min-h-6 w-0.5 flex-1', last ? 'bg-transparent' : i < doneStep - 1 ? 'bg-green' : 'bg-line')}
                   />

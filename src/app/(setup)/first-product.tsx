@@ -34,8 +34,8 @@ export default function FirstProduct() {
         name: draft.owner_name || draft.name || 'Frontstore Merchant',
         store_name: draft.name || 'My Store',
         username: toSlug(draft.name || 'mystore'),
-        store_color: draft.color || '#0B6E4F',
-        primary_color: draft.color || '#0B6E4F',
+        store_color: draft.color || '#1E5E3A',
+        primary_color: draft.color || '#1E5E3A',
         category: draft.category || 'Fashion',
         country_code: draft.country_code || 'NG',
         currency_code: draft.currency_code || 'NGN',
@@ -139,7 +139,7 @@ export default function FirstProduct() {
             <AiProductFlow flow={flow} />
           ) : account === 'creating' ? (
             <View accessibilityLiveRegion="polite" className="h-[210px] items-center justify-center gap-3 rounded-[22px] bg-surface">
-              <ActivityIndicator color="#0B6E4F" />
+              <ActivityIndicator color="#1E5E3A" />
               <T className="font-sans-semibold text-sm text-muted">Creating your store…</T>
             </View>
           ) : (

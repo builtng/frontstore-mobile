@@ -108,7 +108,7 @@ export default function Payout() {
       subtitle: `Code: ${b.code}`,
       icon: (
         <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint/50">
-          <Landmark size={18} color="#0B6E4F" strokeWidth={2} />
+          <Landmark size={18} color="#1E5E3A" strokeWidth={2} />
         </View>
       ),
       metadata: b,
@@ -147,12 +147,12 @@ export default function Payout() {
               className="h-[54px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-4"
             >
               <View className="flex-1 flex-row items-center gap-2.5 pr-2">
-                <Landmark size={18} color="#0B6E4F" strokeWidth={2} />
+                <Landmark size={18} color="#1E5E3A" strokeWidth={2} />
                 <T className="text-base font-sans-medium text-ink flex-1" numberOfLines={1}>
                   {selectedBank?.name || (loadingBanks ? 'Loading banks...' : 'Select bank')}
                 </T>
               </View>
-              <ChevronDown size={18} color="#5B6660" strokeWidth={2} />
+              <ChevronDown size={18} color="#5F6B65" strokeWidth={2} />
             </Pressable>
           </Labelled>
 
@@ -170,7 +170,7 @@ export default function Payout() {
 
           {resolving ? (
             <View className="flex-row items-center gap-2 py-2">
-              <ActivityIndicator size="small" color="#0B6E4F" />
+              <ActivityIndicator size="small" color="#1E5E3A" />
               <T className="text-sm text-muted">Verifying account with bank...</T>
             </View>
           ) : accountName ? (
@@ -179,7 +179,7 @@ export default function Payout() {
                 <Check size={16} color="#FFFFFF" strokeWidth={3} />
               </View>
               <View className="flex-1">
-                <T className="text-xs text-[#33403A]">Verified account name</T>
+                <T className="text-xs text-[#26322D]">Verified account name</T>
                 <T className="font-sans-bold text-base text-ink" numberOfLines={1}>
                   {accountName}
                 </T>

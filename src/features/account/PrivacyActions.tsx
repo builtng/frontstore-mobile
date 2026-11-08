@@ -57,7 +57,7 @@ export function PrivacyActions() {
           <T className="font-display text-xl">Delete your account?</T>
 
           {previewLoading || !preview ? (
-            <ActivityIndicator color="#0B6E4F" />
+            <ActivityIndicator color="#1E5E3A" />
           ) : !preview.can_delete ? (
             <View className="gap-2">
               <T className="text-[15px] leading-[22px] text-muted-2">Before you can delete your account:</T>

@@ -56,7 +56,7 @@ export default function BuyerHome() {
               onPress={() => router.replace({ pathname: '/choose-mode', params: { setup_token: setup_token || '', initial_mode: 'shop' } })}
               className="flex-row items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5"
             >
-              <RefreshCw size={12} color="#0B6E4F" />
+              <RefreshCw size={12} color="#1E5E3A" />
               <T className="font-sans-bold text-xs text-green">Change to Selling</T>
             </Pressable>
           </View>
@@ -87,7 +87,7 @@ export default function BuyerHome() {
 
         <Link href="/shop/search" asChild>
           <Pressable accessibilityRole="search" className="h-12 flex-row items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5">
-            <Search size={18} color="#5B6660" strokeWidth={2} />
+            <Search size={18} color="#5F6B65" strokeWidth={2} />
             <T className="text-[15px] text-muted">Search stores and products</T>
           </Pressable>
         </Link>
@@ -136,7 +136,7 @@ export default function BuyerHome() {
               const displayName = s.name || s.store_name || 'Store';
               const displaySlug = s.slug || s.username || String(s.id);
               const displayInitial = displayName[0] || 'S';
-              const displayColor = s.primary_color || s.store_color || '#0B6E4F';
+              const displayColor = s.primary_color || s.store_color || '#1E5E3A';
               return (
                 <Link key={displaySlug} href={`/shop/store/${displaySlug}`} asChild>
                   <Pressable accessibilityRole="link" accessibilityLabel={displayName} className="w-[76px] items-center gap-1.5">

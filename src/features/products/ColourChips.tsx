@@ -40,7 +40,7 @@ export function ColourChips({ value, onChange }: { value: string[]; onChange: (c
             accessibilityLabel="Add colour"
             accessibilityState={{ expanded: adding }}
             onPress={() => setAdding(!adding)}
-            className="rounded-xl border border-dashed border-[#B9B1A0] px-3.5 py-[9px]"
+            className="rounded-xl border border-dashed border-[#BFC7C1] px-3.5 py-[9px]"
           >
             <T className="font-sans-bold text-sm text-muted">{adding ? 'Done' : '+ Add'}</T>
           </Pressable>
@@ -62,7 +62,7 @@ export function ColourChips({ value, onChange }: { value: string[]; onChange: (c
             onSubmitEditing={() => add(typed)}
             returnKeyType="done"
             placeholder="Other colour, e.g. Saffron"
-            placeholderTextColor="#8A928E"
+            placeholderTextColor="#8A948F"
             accessibilityLabel="Colour name"
             className={cx('h-11 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base text-ink')}
           />

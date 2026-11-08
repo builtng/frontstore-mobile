@@ -12,7 +12,7 @@ const cx = (...c: Array<string | false | null | undefined>) => c.filter(Boolean)
  */
 // Any text colour class passed in. NativeWind does not guarantee that a later colour class wins
 // over an earlier one, so the default ink colour is only added when no colour is given.
-const TEXT_COLOR = /(^|\s)text-(bg|surface|surface-2|sand|cream|ink|green|deep|mint|mint-2|leaf|saffron|gold|peach|line|line-2|muted|muted-2|on-dark|on-dark-2|danger|white|black|transparent|\[#)/;
+const TEXT_COLOR = /(^|\s)text-(bg|surface|surface-2|sand|cream|ink|green|green-2|deep|night|mint|mint-2|leaf|saffron|gold|peach|line|line-2|muted|muted-2|faint|faint-2|placeholder|terra|warn-fg|info-fg|on-dark|on-dark-2|danger|white|black|transparent|\[#)/;
 const FONT_FAMILY = /(^|\s)font-(sans|display)/;
 
 export function T({ className = '', ...rest }: TextProps & { className?: string }) {
@@ -24,7 +24,7 @@ export function T({ className = '', ...rest }: TextProps & { className?: string 
   );
 }
 
-/** Full-screen page with safe areas and the cream background. */
+/** Full-screen page with safe areas and the app background. */
 export function Screen({ className, edges = ['top'], children, ...rest }: ViewProps & { className?: string; edges?: Edge[] }) {
   return (
     <SafeAreaView edges={edges} className={cx('flex-1 bg-bg', className)} {...rest}>
@@ -36,14 +36,14 @@ export function Screen({ className, edges = ['top'], children, ...rest }: ViewPr
 type BtnKind = 'primary' | 'dark' | 'outline' | 'gold' | 'ghost' | 'danger';
 const BTN: Record<BtnKind, [string, string]> = {
   primary: ['bg-deep', 'text-white'],
-  dark: ['bg-ink', 'text-bg'],
-  outline: ['border-[1.5px] border-deep bg-transparent', 'text-deep'],
+  dark: ['bg-ink', 'text-white'],
+  outline: ['border-[1.5px] border-line bg-surface', 'text-ink'],
   gold: ['bg-gold', 'text-[#2A1B05]'],
   ghost: ['bg-transparent', 'text-deep'],
   danger: ['bg-danger', 'text-white'],
 };
 
-/** Pill button. Pass `href` to navigate, or `onPress`. */
+/** Main button: 54px tall, 16px corners. Pass `href` to navigate, or `onPress`. */
 export function Button({
   title, kind = 'primary', href, className, textClassName, disabled, left, right, ...rest
 }: PressableProps & { title: string; kind?: BtnKind; href?: Href; className?: string; textClassName?: string; left?: React.ReactNode; right?: React.ReactNode }) {
@@ -52,11 +52,11 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
-      className={cx('h-14 flex-row items-center justify-center gap-2 rounded-full px-6', box, disabled && 'opacity-40', className)}
+      className={cx('h-[54px] flex-row items-center justify-center gap-2 rounded-2xl px-6', box, disabled && 'opacity-40', className)}
       {...rest}
     >
       {left}
-      <T className={cx('font-sans-bold text-[17px]', txt, textClassName)}>{title}</T>
+      <T className={cx('font-sans-bold text-base', txt, textClassName)}>{title}</T>
       {right}
     </Pressable>
   );
@@ -69,11 +69,11 @@ export const Field = forwardRef<TextInput, TextInputProps & { label?: string; cl
 ) {
   return (
     <View className="gap-1.5">
-      {label ? <T className="font-sans-bold text-sm">{label}</T> : null}
+      {label ? <T className="font-sans-bold text-[13px] text-muted">{label}</T> : null}
       <TextInput
         ref={ref}
-        placeholderTextColor="#8A928E"
-        className={cx('h-[52px] rounded-[14px] border border-line-2 bg-surface px-4 font-sans text-base text-ink', className)}
+        placeholderTextColor="#8A948F"
+        className={cx('h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink', className)}
         {...rest}
       />
       {hint ? <T className="text-[13px] text-muted">{hint}</T> : null}
@@ -83,7 +83,7 @@ export const Field = forwardRef<TextInput, TextInputProps & { label?: string; cl
 
 /** Rounded white card. */
 export function Card({ className, ...rest }: ViewProps & { className?: string }) {
-  return <View className={cx('rounded-[20px] border border-line bg-surface', className)} {...rest} />;
+  return <View className={cx('rounded-[22px] border border-line bg-surface', className)} {...rest} />;
 }
 
 /** Frontstore main logo mark. */
@@ -115,7 +115,7 @@ export { cx };
 
 /** A calm grey shape where text will appear. It doesn't pulse, so nothing flickers. */
 export function Skeleton({ className }: { className?: string }) {
-  return <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className={cx('rounded-lg bg-[#E9E4D9]', className)} />;
+  return <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className={cx('rounded-lg bg-sand', className)} />;
 }
 
 /** Placeholder list rows, shaped like the real ones so the page doesn't jump. */
@@ -123,7 +123,7 @@ export function SkeletonRows({ count = 3 }: { count?: number }) {
   return (
     <View className="gap-2.5">
       {Array.from({ length: count }, (_, i) => (
-        <View key={i} className="flex-row items-center gap-3 rounded-[18px] border border-line bg-surface p-3">
+        <View key={i} className="flex-row items-center gap-3 rounded-[22px] border border-line bg-surface p-3">
           <Skeleton className="h-12 w-12 rounded-xl" />
           <View className="flex-1 gap-2">
             <Skeleton className="h-3.5 w-3/5" />
@@ -145,13 +145,13 @@ export function EmptyState({ icon, title, sub, action, onAction, href }: {
   href?: Href;
 }) {
   return (
-    <View className="items-center gap-3 rounded-[18px] border border-line bg-surface px-5 py-6">
+    <View className="items-center gap-3 rounded-[22px] border border-line bg-surface px-5 py-6">
       {icon ? <View className="h-12 w-12 items-center justify-center rounded-2xl bg-bg">{icon}</View> : null}
       <View className="items-center gap-1">
         <T className="text-center font-sans-bold text-[15px]">{title}</T>
         {sub ? <T className="text-center text-[13px] text-muted">{sub}</T> : null}
       </View>
-      {action ? <Button title={action} kind="dark" href={href} onPress={onAction} className="h-11 px-5" textClassName="text-sm" /> : null}
+      {action ? <Button title={action} kind="dark" href={href} onPress={onAction} className="h-11 rounded-xl px-5" textClassName="text-sm" /> : null}
     </View>
   );
 }

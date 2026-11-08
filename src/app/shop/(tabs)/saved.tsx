@@ -36,7 +36,7 @@ export default function BuyerSaved() {
     <Screen>
       <ScrollView
         contentContainerClassName="gap-3.5 px-4 pb-6 pt-3"
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#0B6E4F" />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#1E5E3A" />}
       >
         <T className="font-display-x text-[30px] tracking-[-0.6px]">Saved</T>
         <Segmented<Tab>
@@ -82,7 +82,7 @@ export default function BuyerSaved() {
               {liveFollowedStores.map((s) => {
                 const storeName = s.name || s.store_name || 'Store';
                 const storeSlug = s.slug || s.username || String(s.id);
-                const storeColor = s.primary_color || s.store_color || '#0B6E4F';
+                const storeColor = s.primary_color || s.store_color || '#1E5E3A';
                 return (
                   <Link key={storeSlug} href={`/shop/store/${storeSlug}`} asChild>
                     <Pressable accessibilityRole="link" accessibilityLabel={storeName} className="flex-row items-center gap-3 rounded-[18px] border border-line bg-surface p-3">

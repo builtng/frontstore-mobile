@@ -11,7 +11,7 @@ import { initialOf } from '@/features/setup/draft';
 
 // Same brand colours as store setup.
 const SWATCHES: Array<[string, string]> = [
-  ['Terracotta', '#C8553D'], ['Forest', '#0B6E4F'], ['Indigo', '#2F5D8A'], ['Plum', '#7B3F61'], ['Ochre', '#8A5A12'], ['Ink', '#0E1A15'],
+  ['Terracotta', '#C8553D'], ['Forest', '#1E5E3A'], ['Indigo', '#2F5D8A'], ['Plum', '#7B3F61'], ['Ochre', '#8A5A12'], ['Ink', '#0E1A15'],
 ];
 
 const inputBox = 'rounded-[14px] border border-line-2 bg-surface px-3.5 font-sans text-base text-ink';
@@ -24,7 +24,7 @@ export default function StoreEdit() {
 
   const [name, setName] = useState<string>(store?.store_name ?? store?.name ?? '');
   const [bio, setBio] = useState<string>(store?.store_bio ?? '');
-  const [color, setColor] = useState<string>(store?.primary_color || store?.store_color || '#0B6E4F');
+  const [color, setColor] = useState<string>(store?.primary_color || store?.store_color || '#1E5E3A');
   const [logo, setLogo] = useState<string | null>(store?.logo_url ?? null);
 
   // Fill the form once. A background refresh must never overwrite what the seller is typing.
@@ -34,7 +34,7 @@ export default function StoreEdit() {
     setReady(true);
     setName(store.store_name ?? store.name ?? '');
     setBio(store.store_bio ?? '');
-    setColor(store.primary_color || store.store_color || '#0B6E4F');
+    setColor(store.primary_color || store.store_color || '#1E5E3A');
     setLogo(store.logo_url ?? null);
   }, [store, ready]);
 
@@ -125,7 +125,7 @@ export default function StoreEdit() {
               multiline
               textAlignVertical="top"
               placeholder="What you sell and what makes it special"
-              placeholderTextColor="#8A928E"
+              placeholderTextColor="#8A948F"
               accessibilityLabel="About your store"
               className={cx(inputBox, 'min-h-[96px] py-2.5 leading-[22px]')}
             />
@@ -145,7 +145,7 @@ export default function StoreEdit() {
                     accessibilityState={{ checked: on }}
                     disabled={!store?.is_pro}
                     onPress={() => setColor(hex)}
-                    style={{ opacity: store?.is_pro ? 1 : 0.4, borderColor: on ? '#0E1A15' : '#D8D2C4', borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
+                    style={{ opacity: store?.is_pro ? 1 : 0.4, borderColor: on ? '#0E1A15' : '#D9DED9', borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
                     className="rounded-full"
                   >
                     <View style={{ backgroundColor: hex }} className="h-11 w-11 rounded-full border-[3px] border-bg" />
