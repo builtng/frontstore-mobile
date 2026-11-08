@@ -125,7 +125,7 @@ export function usePhotoDraft(onDraft: (draft: AiProductDraftResult) => void) {
   };
 
   return {
-    stage, photos, uploading, error, pick, remove, reread, skip,
+    stage, photos, uploading, error, pick, addFrom, remove, reread, skip,
     canAddMore: photos.length < MAX_PHOTOS,
     imageUrls: photos.map((p) => p.url),
   };

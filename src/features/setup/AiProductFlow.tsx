@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Easing, Image, Pressable, TextInput, View } from 'react-native';
-import { Camera, ChevronDown, Lock } from 'lucide-react-native';
+import { Camera, Check, ChevronDown, ImageIcon, Type } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
 import { SparkleIcon } from './parts';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
@@ -10,9 +10,6 @@ import { usePhotoDraft, type PhotoStage } from '@/features/products/usePhotoDraf
 
 export type AiStage = PhotoStage;
 
-// The progress bar is decorative; the real wait is however long the AI takes.
-const READ_MS = 15000;
-const GHOST = ['Product name', 'Price', 'Category', 'Description'];
 const SIZES = ['S', 'M', 'L', 'XL'];
 
 export type AiProduct = {
@@ -49,10 +46,11 @@ export function useAiProduct() {
 
 type Flow = ReturnType<typeof useAiProduct>;
 
+/** Small amber "AI" mark on fields Nina filled in. */
 function Tag({ label }: { label: string }) {
   return (
-    <View className="rounded-md bg-mint px-[7px] py-0.5">
-      <T className="font-sans-bold text-[11px] text-green">{label}</T>
+    <View className="rounded-md bg-warn-bg px-1.5 py-px">
+      <T className="font-sans-bold text-[11px] text-warn-fg">{label}</T>
     </View>
   );
 }
@@ -60,65 +58,120 @@ function Tag({ label }: { label: string }) {
 function FieldLabel({ label, tag }: { label: string; tag: string }) {
   return (
     <View className="flex-row items-center gap-2">
-      <T className="font-sans-bold text-sm">{label}</T>
+      <T className="font-sans-bold text-[13px] text-muted">{label}</T>
       <Tag label={tag} />
     </View>
   );
 }
 
-function ReadingCard({ onSkip }: { onSkip: () => void }) {
-  const progress = useRef(new Animated.Value(0.1)).current;
+/** The checklist under the photo while Nina works. Steps tick over on a timer; the real wait is the AI's. */
+const STEPS = ['Looking at the item and its colours', 'Matching it to a category', 'Writing the name and description', 'Suggesting a price from similar items'];
+const STEP_MS = 3500;
+
+function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
+  const v = pos[0] === 't' ? { top: 22 } : { bottom: 22 };
+  const h = pos[1] === 'l' ? { left: 22 } : { right: 22 };
+  const b = {
+    borderColor: '#FFFFFF',
+    borderTopWidth: pos[0] === 't' ? 3 : 0,
+    borderBottomWidth: pos[0] === 'b' ? 3 : 0,
+    borderLeftWidth: pos[1] === 'l' ? 3 : 0,
+    borderRightWidth: pos[1] === 'r' ? 3 : 0,
+    [`border${pos[0] === 't' ? 'Top' : 'Bottom'}${pos[1] === 'l' ? 'Left' : 'Right'}Radius`]: 10,
+  };
+  return <View style={{ position: 'absolute', width: 28, height: 28, ...v, ...h, ...b }} />;
+}
+
+function Reading({ uri, onSkip }: { uri?: string; onSkip: () => void }) {
+  const [step, setStep] = useState(0);
+  const scan = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    const a = Animated.timing(progress, { toValue: 1, duration: READ_MS, easing: Easing.out(Easing.quad), useNativeDriver: false });
+    const t = setInterval(() => setStep((n) => Math.min(n + 1, STEPS.length - 1)), STEP_MS);
+    const a = Animated.loop(Animated.sequence([
+      Animated.timing(scan, { toValue: 1, duration: 1400, easing: Easing.inOut(Easing.quad), useNativeDriver: false }),
+      Animated.timing(scan, { toValue: 0, duration: 1400, easing: Easing.inOut(Easing.quad), useNativeDriver: false }),
+    ]));
     a.start();
-    return () => a.stop();
-  }, [progress]);
-  const width = progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
+    return () => { clearInterval(t); a.stop(); };
+  }, [scan]);
+  const top = scan.interpolate({ inputRange: [0, 1], outputRange: ['18%', '82%'] });
 
   return (
-    <View className="gap-2.5 rounded-[20px] bg-ink p-4" accessibilityLiveRegion="polite">
-      <View className="flex-row items-center gap-2">
-        <SparkleIcon size={16} />
-        <T className="font-sans-bold text-[15px] text-bg">Nina AI is reading your photos…</T>
+    <View className="gap-3.5" accessibilityLiveRegion="polite">
+      <View className="h-[260px] overflow-hidden rounded-[28px] bg-[#10251B]">
+        {uri ? <Image source={{ uri }} className="h-full w-full" resizeMode="cover" /> : null}
+        <Animated.View style={{ position: 'absolute', left: 30, right: 30, top, height: 2, backgroundColor: '#FFFFFF', shadowColor: '#FFFFFF', shadowOpacity: 1, shadowRadius: 6, elevation: 3 }} />
+        <Corner pos="tl" /><Corner pos="tr" /><Corner pos="bl" /><Corner pos="br" />
+        <View className="absolute bottom-5 self-center flex-row items-center gap-1.5 rounded-full bg-[rgba(14,26,21,0.75)] px-3.5 py-2">
+          <SparkleIcon size={14} color="#F3C77A" />
+          <T className="font-sans-bold text-[13px] text-white">Nina is reading your photo</T>
+        </View>
       </View>
-      <View className="h-1.5 overflow-hidden rounded-full bg-[#33504A]">
-        <Animated.View style={{ width }} className="h-1.5 rounded-full bg-leaf" />
+      <View className="gap-3 rounded-[22px] border border-line bg-surface p-4">
+        {STEPS.map((label, i) => {
+          const done = i < step;
+          const doing = i === step;
+          return (
+            <View key={label} className="flex-row items-center gap-3">
+              <View className={cx('h-[26px] w-[26px] items-center justify-center rounded-full', done ? 'bg-green' : doing ? 'bg-mint' : 'bg-sand')}>
+                {done ? <Check size={14} color="#FFFFFF" strokeWidth={3} /> : doing ? <ActivityIndicator size="small" color="#1E5E3A" /> : null}
+              </View>
+              <T className={cx('flex-1 text-[15px]', done ? 'font-sans-bold' : doing ? 'font-sans-medium' : 'font-sans-bold text-muted')}>{label}</T>
+            </View>
+          );
+        })}
       </View>
-      <T className="text-sm text-on-dark">Looking at the item, brand and colour</T>
-      <T className="text-sm text-on-dark-2">… Checking prices in Nigeria</T>
-      <Pressable
-        accessibilityRole="button"
-        onPress={onSkip}
-        hitSlop={{ top: 4, bottom: 4 }}
-        className="h-[38px] justify-center self-start rounded-full border border-bg/30 px-3.5"
-      >
-        <T className="font-sans-semibold text-[13px] text-bg">Skip - fill in myself</T>
+      <Pressable accessibilityRole="button" onPress={onSkip} className="min-h-11 items-center justify-center">
+        <T className="font-sans-bold text-sm text-green">Skip, I’ll fill it in myself</T>
       </Pressable>
     </View>
   );
 }
 
-function Ghost({ stage }: { stage: AiStage }) {
-  const bar = stage === 'reading' ? '#DCE9E2' : '#E9ECE7';
+/** The dark camera stage from the design, with Gallery / shutter / Type it underneath. */
+function Snap({ flow }: { flow: Flow }) {
+  const { photos } = flow;
   return (
-    <View className="gap-2.5">
-      {GHOST.map((g) => (
-        <View key={g} className="gap-2 rounded-[14px] border border-sand bg-surface px-3.5 py-3">
-          <T className="font-sans-bold text-[11px] uppercase tracking-[0.9px] text-[#A7ADA9]">{g}</T>
-          <View style={{ backgroundColor: bar }} className="h-[9px] w-[55%] rounded-full" />
+    <View className="gap-3.5">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Take a photo"
+        onPress={() => photos.addFrom('camera')}
+        disabled={photos.uploading}
+        className="h-[300px] items-center justify-center overflow-hidden rounded-[28px] bg-[#10251B]"
+      >
+        <View style={{ position: 'absolute', top: 40, right: 40, bottom: 40, left: 40, borderRadius: 22, borderWidth: 2, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.35)' }} />
+        <View className="items-center gap-2.5 px-14">
+          <View className="h-16 w-16 items-center justify-center rounded-[22px] bg-white/10">
+            {photos.uploading ? <ActivityIndicator color="#FFFFFF" /> : <Camera size={28} color="#FFFFFF" strokeWidth={1.9} />}
+          </View>
+          <T className="text-center font-display text-xl text-white">{photos.uploading ? 'Uploading…' : 'Snap your product'}</T>
+          <T className="text-center text-sm leading-5 text-[#B8CCC1]">Good light, plain background. Nina will write the name, price and description.</T>
         </View>
-      ))}
-      <View className="flex-row items-center justify-center gap-2">
-        <Lock size={15} color="#1E5E3A" strokeWidth={2} />
-        <T className="font-sans-semibold text-sm text-muted">
-          {stage === 'reading' ? 'Filling in from your photos…' : 'Add a photo to unlock the form'}
-        </T>
+        <View className="absolute left-4 top-4 flex-row items-center gap-1.5 rounded-full bg-gold px-2.5 py-1.5">
+          <SparkleIcon size={12} color="#2A1B05" />
+          <T className="font-sans-bold text-xs text-[#2A1B05]">AI on</T>
+        </View>
+      </Pressable>
+      <View className="flex-row items-center gap-3">
+        <Pressable accessibilityRole="button" onPress={() => photos.addFrom('library')} disabled={photos.uploading} className="h-[52px] min-w-0 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-line bg-surface">
+          <ImageIcon size={18} color="#0E1A15" strokeWidth={2} />
+          <T className="font-sans-bold text-sm">Gallery</T>
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Take photo" onPress={() => photos.addFrom('camera')} disabled={photos.uploading} className="h-[72px] w-[72px] items-center justify-center rounded-full border-[5px] border-green bg-surface">
+          <View className="h-[50px] w-[50px] rounded-full bg-green" />
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={photos.skip} className="h-[52px] min-w-0 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-line bg-surface">
+          <Type size={18} color="#0E1A15" strokeWidth={2} />
+          <T className="font-sans-bold text-sm">Type it</T>
+        </Pressable>
       </View>
+      {photos.error ? <T className="text-center text-sm text-danger">{photos.error}</T> : null}
     </View>
   );
 }
 
-const inputBox = 'rounded-[14px] border border-line-2 bg-surface';
+const inputBox = 'rounded-[14px] border border-line bg-surface';
 
 function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduct; update: Flow['update']; onRedo: () => void; aiError: string | null }) {
   const [sizesOpen, setSizesOpen] = useState(p.sizes.length > 0);
@@ -135,16 +188,16 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
 
   return (
     <View className="gap-3.5">
-      <View className="flex-row items-center justify-between gap-2 rounded-[14px] bg-mint px-3 py-2.5">
+      <View className="flex-row items-center justify-between gap-2 rounded-[14px] bg-mint px-3.5 py-3">
         <View className="shrink flex-row items-center gap-2">
-          <SparkleIcon size={15} color="#1E5E3A" />
-          <T className="shrink font-sans-semibold text-[13px] text-deep">{aiError ?? (p.name ? 'Filled in by Nina AI. Check it.' : 'Fill in the details.')}</T>
+          <SparkleIcon size={15} color="#14532D" />
+          <T className="shrink text-[13px] leading-[19px] text-[#14532D]">{aiError ?? (p.name ? 'Nina filled this in. Check it, then publish.' : 'Fill in the details.')}</T>
         </View>
         <Pressable
           accessibilityRole="button"
           onPress={onRedo}
           hitSlop={{ top: 6, bottom: 6 }}
-          className="h-8 justify-center rounded-full border border-[#9CC7B2] bg-surface px-3"
+          className="h-8 justify-center rounded-full bg-surface px-3"
         >
           <T className="font-sans-bold text-xs text-green">Read again</T>
         </Pressable>
@@ -157,13 +210,13 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
           onChangeText={(v) => update({ name: v })}
           accessibilityLabel="Product name"
           placeholderTextColor="#8A948F"
-          className={cx(inputBox, 'h-[50px] px-3.5 font-sans text-base text-ink')}
+          className={cx(inputBox, 'h-[50px] px-3.5 font-sans-semibold text-base text-ink')}
         />
       </View>
 
       <View className="flex-row gap-2.5">
-        <View className="w-[140px] gap-1.5">
-          <FieldLabel label="Price" tag="Suggested" />
+        <View className="min-w-0 flex-1 gap-1.5">
+          <FieldLabel label="Price" tag="AI" />
           <View className={cx(inputBox, 'h-[50px] flex-row items-center gap-1.5 px-3.5')}>
             <T className="font-sans-bold text-base">₦</T>
             <TextInput
@@ -183,7 +236,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
             onPress={() => setCategoryModalOpen(true)}
             className={cx(inputBox, 'h-[50px] flex-row items-center justify-between px-3')}
           >
-            <T className="text-[15px]" numberOfLines={1}>{categories.nameOf(p.categoryId) || 'Select'}</T>
+            <T className="flex-1 font-sans-semibold text-base" numberOfLines={1}>{categories.nameOf(p.categoryId) || 'Select'}</T>
             <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
           </Pressable>
         </View>
@@ -219,24 +272,24 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
         <ColourChips value={p.colours} onChange={(colours) => update({ colours })} />
       </View>
 
-      <View className="gap-2.5 rounded-2xl bg-peach p-3.5">
-        <T className="font-sans-bold text-sm text-[#3D2608]">Add what a photo can't show</T>
+      <View className="gap-2.5 rounded-2xl border border-line bg-surface p-3.5">
+        <T className="font-sans-bold text-sm">Add what a photo can’t show</T>
         <View className="flex-row gap-2">
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ expanded: sizesOpen }}
             onPress={() => setSizesOpen(!sizesOpen)}
-            className="rounded-xl border border-dashed border-[#C9A56A] bg-surface px-3 py-[9px]"
+            className="rounded-xl border border-dashed border-line-2 bg-bg px-3 py-[9px]"
           >
-            <T className="font-sans-bold text-sm text-[#3D2608]">{p.sizes.length ? `Sizes: ${p.sizes.join(', ')}` : '+ Sizes'}</T>
+            <T className="font-sans-bold text-sm text-ink">{p.sizes.length ? `Sizes: ${p.sizes.join(', ')}` : '+ Sizes'}</T>
           </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ expanded: stockOpen }}
             onPress={() => setStockOpen(!stockOpen)}
-            className="flex-1 rounded-xl border border-dashed border-[#C9A56A] bg-surface px-3 py-[9px]"
+            className="flex-1 rounded-xl border border-dashed border-line-2 bg-bg px-3 py-[9px]"
           >
-            <T className="font-sans-bold text-sm text-[#3D2608]">{p.stock ? `${p.stock} in stock` : '+ How many in stock'}</T>
+            <T className="font-sans-bold text-sm text-ink">{p.stock ? `${p.stock} in stock` : '+ How many in stock'}</T>
           </Pressable>
         </View>
         {sizesOpen ? (
@@ -249,9 +302,9 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: on }}
                   onPress={() => toggleSize(s)}
-                  className={cx('h-11 min-w-[44px] items-center justify-center rounded-xl px-3', on ? 'bg-ink' : 'border border-[#C9A56A] bg-surface')}
+                  className={cx('h-11 min-w-[44px] items-center justify-center rounded-xl px-3', on ? 'bg-ink' : 'border border-line bg-surface')}
                 >
-                  <T className={cx('font-sans-bold text-sm', on ? 'text-bg' : 'text-[#3D2608]')}>{s}</T>
+                  <T className={cx('font-sans-bold text-sm', on ? 'text-white' : 'text-ink')}>{s}</T>
                 </Pressable>
               );
             })}
@@ -265,7 +318,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
             placeholder="How many in stock"
             placeholderTextColor="#8A948F"
             accessibilityLabel="How many in stock"
-            className="h-11 rounded-xl border border-[#C9A56A] bg-surface px-3 font-sans text-base text-ink"
+            className="h-11 rounded-xl border border-line bg-surface px-3 font-sans text-base text-ink"
           />
         ) : null}
       </View>
@@ -273,64 +326,43 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
   );
 }
 
-/** The photo tile row + AI states. Render inside a ScrollView. */
+/** The photo-first flow: camera stage, Nina reading, then the filled form. Render inside a ScrollView. */
 export function AiProductFlow({ flow }: { flow: Flow }) {
   const { stage, product, update, photos } = flow;
+  if (stage === 'empty' && photos.photos.length === 0) return <Snap flow={flow} />;
+  if (stage === 'reading') return <Reading uri={photos.photos[0]?.uri} onSkip={photos.skip} />;
   return (
     <>
-      {photos.photos.length === 0 ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Take a photo or choose from gallery"
-          onPress={photos.pick}
-          disabled={photos.uploading}
-          className="h-[210px] items-center justify-center gap-2.5 rounded-[22px] border-2 border-dashed border-[#BFC7C1] bg-surface"
-        >
-          <View className="h-14 w-14 items-center justify-center rounded-full bg-mint">
-            {photos.uploading ? <ActivityIndicator color="#1E5E3A" /> : <Camera size={26} color="#1E5E3A" strokeWidth={2} />}
-          </View>
-          <T className="font-sans-bold text-base text-[#26322D]">{photos.uploading ? 'Uploading…' : 'Take a photo or choose from gallery'}</T>
-          <T className="text-[13px] text-muted">Up to 3 photos · Nina AI fills in the rest</T>
-        </Pressable>
-      ) : (
-        <View className="flex-row gap-2">
-          {photos.photos.map((ph, k) => (
-            <Pressable
-              key={ph.uri}
-              accessibilityRole="button"
-              accessibilityLabel={`${k === 0 ? 'Cover photo' : `Photo ${k + 1}`}, remove`}
-              onLongPress={() => photos.remove(ph.uri)}
-              className="h-[92px] w-[92px] overflow-hidden rounded-2xl bg-sand"
-            >
-              <Image source={{ uri: ph.uri }} className="h-full w-full" resizeMode="cover" />
-              {k === 0 ? (
-                <View className="absolute bottom-1.5 left-1.5 rounded-full bg-surface px-[7px] py-0.5">
-                  <T className="font-sans-bold text-[10px]">Cover</T>
-                </View>
-              ) : null}
-            </Pressable>
-          ))}
-          {photos.canAddMore ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Add photo"
-              onPress={photos.pick}
-              disabled={photos.uploading}
-              className="h-[92px] flex-1 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#BFC7C1] bg-surface"
-            >
-              {photos.uploading ? <ActivityIndicator color="#1E5E3A" /> : <T className="text-[22px] text-muted">+</T>}
-            </Pressable>
-          ) : null}
-        </View>
-      )}
-
-      {photos.error && stage !== 'filled' ? <T className="text-sm text-danger">{photos.error}</T> : null}
-      {stage === 'reading' ? <ReadingCard onSkip={photos.skip} /> : null}
-      {stage === 'filled' ? (
-        <FilledForm product={product} update={update} onRedo={photos.reread} aiError={photos.error} />
-      ) : (
-        <Ghost stage={stage} />
-      )}
+      <View className="flex-row gap-2">
+        {photos.photos.map((ph, k) => (
+          <Pressable
+            key={ph.uri}
+            accessibilityRole="button"
+            accessibilityLabel={`${k === 0 ? 'Cover photo' : `Photo ${k + 1}`}. Long press to remove.`}
+            onLongPress={() => photos.remove(ph.uri)}
+            className="h-[92px] w-[92px] overflow-hidden rounded-[18px] bg-sand"
+          >
+            <Image source={{ uri: ph.uri }} className="h-full w-full" resizeMode="cover" />
+            {k === 0 ? (
+              <View className="absolute bottom-1.5 left-1.5 rounded-md bg-black/55 px-1.5 py-0.5">
+                <T className="font-sans-bold text-[10px] text-white">COVER</T>
+              </View>
+            ) : null}
+          </Pressable>
+        ))}
+        {photos.canAddMore ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Add photo"
+            onPress={photos.pick}
+            disabled={photos.uploading}
+            className="h-[92px] w-[92px] items-center justify-center rounded-[18px] border-[1.5px] border-dashed border-[#BFC7C1]"
+          >
+            {photos.uploading ? <ActivityIndicator color="#1E5E3A" /> : <Camera size={22} color="#5F6B65" strokeWidth={2} />}
+          </Pressable>
+        ) : null}
+      </View>
+      <FilledForm product={product} update={update} onRedo={photos.reread} aiError={photos.error} />
     </>
   );
 }
