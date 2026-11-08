@@ -11,6 +11,7 @@ function normalizeProduct(p: any): Product {
     compare_at_price_kobo: p.compare_at_price_kobo ?? (p.compare_at_price != null ? Math.round(Number(p.compare_at_price) * 100) : null),
     stock_count: p.stock_count ?? stock,
     status: p.status ?? status,
+    allow_preorder: p.allow_preorder ?? p.stock_status === 'preorder',
     images: p.images ?? p.image_urls ?? [],
     category: typeof p.category === 'object' ? p.category?.name ?? null : p.category ?? null,
     sizes: p.sizes ?? uniq((p.variants ?? []).map((v: any) => v.size)),
@@ -72,6 +73,8 @@ function toBackendProduct(p: Partial<Product>, existing: ProductVariant[] = []):
     out.is_draft = p.status === 'hidden';
     if (p.status === 'preorder') out.stock_status = 'preorder';
   }
+  // Pre-orders are separate from showing / hiding, so a hidden product keeps the setting.
+  if (p.allow_preorder !== undefined) out.stock_status = p.allow_preorder ? 'preorder' : 'in_stock';
   if (p.category_id !== undefined) out.category_id = p.category_id;
   const sizes = p.sizes ?? [];
   const colors = p.colors ?? [];

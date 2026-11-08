@@ -1,20 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { EllipsisVertical, Package, Search } from 'lucide-react-native';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { EmptyState, LoadError, Screen, Skeleton, SkeletonRows, T } from '@/components/ui';
+import { EllipsisVertical, Package, Search, X } from 'lucide-react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { EmptyState, LoadError, Screen, Skeleton, SkeletonRows, T, cx } from '@/components/ui';
 import { formatNaira } from '@/lib/format';
-import { Chip } from '@/features/seller/parts';
-import { getProducts, restoreProduct } from '@/api/products';
+import { Segmented, Toggle } from '@/features/seller/parts';
+import { getProducts, restoreProduct, updateProduct } from '@/api/products';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { Product } from '@/api/types';
 
-type Filter = 'all' | 'in' | 'out' | 'hidden';
+type Filter = 'all' | 'in' | 'low' | 'out';
+const LOW = 3;
+
+/** Stock pill text and colours (design: green in stock, amber low, grey sold out). */
+function stockPill(p: Product) {
+  if (p.status === 'preorder') return { label: 'Pre-order', bg: '#EEF2FF', fg: '#3730A3' };
+  if (p.stock_count <= 0) return { label: 'Sold out', bg: '#F1F2F4', fg: '#4B5563' };
+  if (p.stock_count <= LOW) return { label: `Only ${p.stock_count} left`, bg: '#FDF1E1', fg: '#8A4A06' };
+  return { label: `${p.stock_count} in stock`, bg: '#E6F2EA', fg: '#1E5E3A' };
+}
 
 export default function Products() {
   const { deleted, deletedId } = useLocalSearchParams<{ deleted?: string; deletedId?: string }>();
   const [query, setQuery] = useState('');
+  const [searching, setSearching] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [toast, setToast] = useState<string | null>(null);
 
@@ -23,6 +33,19 @@ export default function Products() {
   const { data: apiProducts, isLoading, isError, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: () => getProducts(),
+  });
+
+  // Show / hide in store, straight from the list. The switch moves at once and rolls back if saving fails.
+  const visibility = useMutation({
+    mutationFn: ({ p, show }: { p: Product; show: boolean }) => updateProduct(p.id, { status: show ? 'live' : 'hidden' }),
+    onMutate: async ({ p, show }) => {
+      await queryClient.cancelQueries({ queryKey: ['products'] });
+      const before = queryClient.getQueryData<Product[]>(['products']);
+      queryClient.setQueryData<Product[]>(['products'], (list) => list?.map((x) => (x.id === p.id ? { ...x, status: show ? 'live' : 'hidden' } : x)));
+      return { before };
+    },
+    onError: (_e, _v, ctx) => { if (ctx?.before) queryClient.setQueryData(['products'], ctx.before); },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   });
 
   useEffect(() => {
@@ -48,87 +71,91 @@ export default function Products() {
     router.setParams({ deleted: undefined, deletedId: undefined });
   };
 
+  const all = (apiProducts ?? []).filter((p) => !(toast && p.name === toast));
+  const hiddenCount = all.filter((p) => p.status === 'hidden').length;
   const items = useMemo(() => {
-    if (!apiProducts) return [];
     const q = query.trim().toLowerCase();
-    return apiProducts.filter((p) => {
-      if (toast && p.name === toast) return false;
-      if (q && !p.name.toLowerCase().includes(q)) return false;
-      if (filter === 'in') return p.stock_count > 0 && p.status !== 'hidden';
-      if (filter === 'out') return p.stock_count === 0 && p.status !== 'hidden';
-      if (filter === 'hidden') return p.status === 'hidden';
+    return all.filter((p) => {
+      if (q) return p.name.toLowerCase().includes(q);
+      if (filter === 'in') return p.stock_count > LOW;
+      if (filter === 'low') return p.stock_count > 0 && p.stock_count <= LOW;
+      if (filter === 'out') return p.stock_count <= 0;
       return true;
     });
-  }, [apiProducts, query, filter, toast]);
-
-  const open = (p: Product) => router.push(`/product/${p.id}`);
+  }, [all, query, filter]);
 
   return (
     <Screen>
-      <View className="gap-4 px-5 pt-3">
-        <View className="flex-row items-center justify-between">
-          <T className="font-display text-[32px] tracking-[-0.6px]">Products</T>
-          {isLoading ? <Skeleton className="h-3.5 w-16" /> : <T className="text-sm text-muted">{items.length} {items.length === 1 ? 'product' : 'products'}</T>}
+      <View className="flex-row items-end justify-between gap-3 px-5 pb-3 pt-1.5">
+        <View className="min-w-0 flex-1 gap-0.5">
+          {isLoading ? <Skeleton className="h-3.5 w-28" /> : (
+            <T numberOfLines={1} className="text-sm text-muted">{all.length} {all.length === 1 ? 'product' : 'products'}{hiddenCount ? ` · ${hiddenCount} hidden` : ''}</T>
+          )}
+          <T accessibilityRole="header" className="font-display-x text-[30px] tracking-[-0.6px]">Products</T>
         </View>
-        <View className="h-12 flex-row items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5">
-          <Search size={18} color="#5F6B65" strokeWidth={2} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search products"
-            placeholderTextColor="#5F6B65"
-            accessibilityLabel="Search products"
-            returnKeyType="search"
-            className="h-full flex-1 font-sans text-base text-ink"
-          />
-        </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
-          <Chip label="All" on={filter === 'all'} onPress={() => setFilter('all')} />
-          <Chip label="In stock" on={filter === 'in'} onPress={() => setFilter('in')} />
-          <Chip label="Sold out" on={filter === 'out'} onPress={() => setFilter('out')} />
-          <Chip label="Hidden" on={filter === 'hidden'} onPress={() => setFilter('hidden')} />
-        </ScrollView>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={searching ? 'Close search' : 'Search products'}
+          onPress={() => { setSearching(!searching); setQuery(''); }}
+          className="h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-surface"
+        >
+          {searching ? <X size={19} color="#0E1A15" strokeWidth={2} /> : <Search size={19} color="#0E1A15" strokeWidth={2} />}
+        </Pressable>
+      </View>
+      <View className="px-5 pb-3">
+        {searching ? (
+          <View className="h-11 flex-row items-center gap-2 rounded-[14px] border-[1.5px] border-line bg-surface px-3">
+            <Search size={16} color="#5F6B65" strokeWidth={2} />
+            <TextInput
+              autoFocus
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search products"
+              placeholderTextColor="#8A948F"
+              accessibilityLabel="Search products"
+              returnKeyType="search"
+              className="h-full min-w-0 flex-1 font-sans text-base text-ink"
+            />
+          </View>
+        ) : (
+          <Segmented value={filter} onChange={setFilter} options={[['all', 'All'], ['in', 'In stock'], ['low', 'Low'], ['out', 'Sold out']] as const} />
+        )}
       </View>
 
-      <ScrollView contentContainerClassName="gap-2.5 px-5 pb-28 pt-4">
+      <ScrollView contentContainerClassName="px-5 pb-28" showsVerticalScrollIndicator={false}>
+        {visibility.error ? (
+          <View className="mb-2.5 rounded-2xl bg-danger-bg p-3"><T className="text-sm text-danger">Couldn’t change that product. Check your connection and try again.</T></View>
+        ) : null}
         {isLoading ? (
           <SkeletonRows count={5} />
-        ) : items.map((p) => {
-          const inStock = p.stock_count > 0;
-          const bg = inStock ? '#CFE5D7' : '#E9ECE7';
-          const fg = inStock ? '#1E5E3A' : '#4A524E';
-          const label = p.status === 'preorder' ? 'Pre-order' : inStock ? 'In stock' : 'Sold out';
-
-          return (
-            <Pressable
-              key={p.id}
-              onLongPress={() => open(p)}
-              accessibilityHint="Long press for product options"
-              className="flex-row items-center gap-3 rounded-[18px] border border-line bg-surface p-3"
-            >
-              <ProductImage uri={productPhoto(p)} name={p.name} className="h-14 w-14 rounded-xl" />
-              <View className="min-w-0 flex-1 gap-[3px]">
-                <T className="font-sans-bold" numberOfLines={1}>{p.name}</T>
-                <T className="font-sans-bold text-sm text-green">{formatNaira(p.price_kobo / 100)}</T>
-                <T className="text-xs text-muted">{p.stock_count} units left</T>
-              </View>
-              <View style={{ backgroundColor: bg }} className="rounded-full px-2.5 py-[5px]">
-                <T style={{ color: fg }} className="font-sans-bold text-xs">{label}</T>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`More options for ${p.name}`}
-                onPress={() => open(p)}
-                className="h-11 w-9 items-center justify-center"
-              >
-                <EllipsisVertical size={18} color="#5F6B65" strokeWidth={2.4} />
-              </Pressable>
-            </Pressable>
-          );
-        })}
-        {isLoading || items.length > 0 ? null : isError && !apiProducts ? (
+        ) : items.length ? (
+          <View className="overflow-hidden rounded-[22px] border border-line bg-surface">
+            {items.map((p, i) => {
+              const pill = stockPill(p);
+              const shown = p.status !== 'hidden';
+              return (
+                <View key={p.id} style={{ opacity: shown ? 1 : 0.5 }} className={cx('flex-row items-center gap-3 px-3.5 py-3', i > 0 && 'border-t border-line')}>
+                  <ProductImage uri={productPhoto(p)} name={p.name} className="h-14 w-14 rounded-[14px]" />
+                  <Pressable accessibilityRole="button" accessibilityLabel={`Edit ${p.name}`} onPress={() => router.push(`/product/${p.id}/edit`)} className="min-w-0 flex-1 gap-[3px]">
+                    <T numberOfLines={1} className="font-sans-bold text-[15px]">{p.name}</T>
+                    <View className="flex-row flex-wrap items-center gap-2">
+                      <T className="font-sans-bold text-sm">{formatNaira(p.price_kobo / 100)}</T>
+                      <View style={{ backgroundColor: pill.bg }} className="rounded-full px-2 py-0.5">
+                        <T style={{ color: pill.fg }} className="font-sans-bold text-[11px]">{pill.label}</T>
+                      </View>
+                    </View>
+                  </Pressable>
+                  <Toggle label={`Show ${p.name} in store`} value={shown} onChange={(v) => visibility.mutate({ p, show: v })} />
+                  <Pressable accessibilityRole="button" accessibilityLabel={`More actions for ${p.name}`} onPress={() => router.push(`/product/${p.id}`)} className="h-[34px] w-[34px] items-center justify-center rounded-full">
+                    <EllipsisVertical size={18} color="#5F6B65" strokeWidth={2.2} />
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+        ) : isError && !apiProducts ? (
           <LoadError what="your products" onRetry={() => refetch()} />
-        ) : !apiProducts?.length ? (
+        ) : !all.length ? (
           <EmptyState
             icon={<Package size={22} color="#5F6B65" />}
             title="No products yet"
@@ -140,8 +167,8 @@ export default function Products() {
           <EmptyState title={`Nothing matches “${query.trim()}”`} sub="Try a different word." action="Clear search" onAction={() => setQuery('')} />
         ) : (
           <EmptyState
-            title={filter === 'in' ? 'Nothing in stock' : filter === 'out' ? 'Nothing is sold out' : 'No hidden products'}
-            sub={filter === 'in' ? 'Update your stock so buyers can order.' : filter === 'out' ? 'Products that run out will show here.' : 'Products you hide from your store will show here.'}
+            title={filter === 'in' ? 'Nothing well stocked' : filter === 'low' ? 'Nothing running low' : 'Nothing is sold out'}
+            sub={filter === 'in' ? 'Update your stock so buyers can order.' : filter === 'low' ? `Products with ${LOW} or fewer left show here.` : 'Products that run out will show here.'}
           />
         )}
       </ScrollView>
@@ -153,9 +180,9 @@ export default function Products() {
           style={{ shadowColor: '#0E1A15', shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 12 }, elevation: 8 }}
           className="absolute bottom-5 left-4 right-4 flex-row items-center justify-between rounded-2xl bg-ink py-3.5 pl-[18px] pr-3.5"
         >
-          <T className="text-[15px] text-bg">Product deleted</T>
-          <Pressable accessibilityRole="button" onPress={undo} className="h-11 justify-center rounded-full px-3.5">
-            <T className="font-sans-bold text-[15px] text-gold">Undo</T>
+          <T numberOfLines={1} className="mr-2 flex-1 font-sans-semibold text-sm text-white">{toast} deleted</T>
+          <Pressable accessibilityRole="button" onPress={undo} className="h-9 justify-center rounded-full bg-gold px-3.5">
+            <T className="font-sans-bold text-[13px] text-[#2A1B05]">Undo</T>
           </Pressable>
         </View>
       ) : null}

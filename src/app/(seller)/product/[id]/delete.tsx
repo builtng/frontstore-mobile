@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, T } from '@/components/ui';
 import { Grip, goBack } from '@/features/seller/parts';
 import { deleteProduct } from '@/api/products';
+import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { useSellerProduct } from '@/features/products/useSellerProduct';
 
 export default function DeleteProduct() {
@@ -61,17 +62,15 @@ export default function DeleteProduct() {
         </View>
         <View className="gap-2">
           <T className="font-display text-2xl tracking-[-0.24px]">Delete "{name}"?</T>
-          <T className="text-[15px] leading-[23px] text-muted-2">
+          <T className="text-[15px] leading-[23px] text-muted">
             It will be removed from your store and its product link will stop working. Past orders keep their details.
           </T>
         </View>
         <View className="flex-row items-center gap-3 rounded-[14px] bg-bg p-3.5">
-          <View className="h-11 w-11 items-center justify-center rounded-[10px] bg-[#E9A23B]">
-            <T className="font-sans-bold text-white">{name[0]}</T>
-          </View>
+          <ProductImage uri={productPhoto(product)} name={name} className="h-11 w-11 rounded-[10px]" />
           <View className="flex-1">
             <T className="font-sans-bold text-[15px]">{name}</T>
-            <T className="text-[13px] text-muted">In stock</T>
+            <T className="text-[13px] text-muted">{(product?.stock_count ?? 0) > 0 ? `${product?.stock_count} in stock` : 'Sold out'}</T>
           </View>
         </View>
         <View className="rounded-[14px] border border-dashed border-line-2 px-3.5 py-3">
@@ -84,11 +83,11 @@ export default function DeleteProduct() {
           </T>
         </View>
         <View className="gap-2.5">
-          <Pressable accessibilityRole="button" onPress={confirm} disabled={submitting} className="h-[54px] flex-row items-center justify-center gap-2 rounded-full bg-danger">
+          <Pressable accessibilityRole="button" onPress={confirm} disabled={submitting} className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-danger">
             {submitting ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
-            <T className="font-sans-bold text-[17px] text-white">{submitting ? 'Deleting...' : 'Delete product'}</T>
+            <T className="font-sans-bold text-base text-white">{submitting ? 'Deleting…' : 'Delete product'}</T>
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={keep} className="h-[54px] items-center justify-center rounded-full bg-cream">
+          <Pressable accessibilityRole="button" onPress={keep} className="h-[54px] items-center justify-center rounded-2xl border-[1.5px] border-line bg-surface">
             <T className="font-sans-bold text-base">Keep it</T>
           </Pressable>
         </View>

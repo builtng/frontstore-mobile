@@ -81,6 +81,8 @@ export interface Product {
   color?: string | null;
   stock_count: number;
   status: 'live' | 'preorder' | 'hidden';
+  /** Keep selling when stock hits 0 (backend stock_status = preorder). */
+  allow_preorder?: boolean;
   is_featured?: boolean;
   images?: string[];
   image_url?: string | null;
