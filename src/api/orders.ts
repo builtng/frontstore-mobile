@@ -42,7 +42,7 @@ function normalizeOrder(o: any): Order {
 }
 
 /** Fetch seller orders */
-export async function getSellerOrders(params?: { status?: string }): Promise<Order[]> {
+export async function getSellerOrders(params?: { status?: string; limit?: number }): Promise<Order[]> {
   const data = await apiGet<any>('/orders', params);
   const list = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
   return list.map(normalizeOrder);
@@ -128,4 +128,11 @@ export async function requestWithdrawal(amountKobo: number, otpCode?: string): P
 /** Send OTP for withdrawal/payout account change */
 export async function sendWithdrawalOtp(): Promise<any> {
   return apiPost('/store/withdraw/send-otp');
+}
+
+/** Store page views per day for the last 7 days (oldest first, today last), from /orders/stats. */
+export async function getDailyVisits(): Promise<number[]> {
+  const d = await apiGet<any>('/orders/stats');
+  const days = d?.metrics?.daily_breakdown;
+  return Array.isArray(days) ? days.map((x: any) => Number(x?.views ?? 0)) : [];
 }

@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronDown } from 'lucide-react-native';
+import { Check, ChevronDown, MoreHorizontal, Phone } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, SkeletonRows, T, cx } from '@/components/ui';
-import { BackHeader, Grip, Tag } from '@/features/seller/parts';
+import { BackHeader, Grip } from '@/features/seller/parts';
+import { WhatsAppIcon } from '@/features/setup/parts';
+import { STAGE, agoPhrase, customerWhatsApp, tileColor } from '@/features/seller/orderMeta';
 import { getOrder, updateOrderStatus, refundOrder } from '@/api/orders';
 import { OrderStatus } from '@/api/types';
 import { formatNaira } from '@/lib/format';
@@ -14,22 +16,14 @@ import { SearchableSelectModal } from '@/components/SearchableSelectModal';
 const STEPS: OrderStatus[] = ['paid', 'packed', 'shipped', 'delivered'];
 const STEP_LABELS = ['Paid', 'Packed', 'Shipped', 'Delivered'];
 const NEXT_LABELS: Record<string, string> = {
-  paid: 'Mark as packed',
-  packed: 'Mark as shipped',
-  shipped: 'Mark as delivered',
+  paid: 'Accept and pack',
+  packed: 'Mark shipped',
+  shipped: 'Mark delivered',
 };
 const REASONS = ['Out of stock', 'Customer changed mind', 'Damaged or wrong item'];
 
-function ContactButton({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" onPress={onPress} className="h-11 flex-1 items-center justify-center rounded-full border border-line-2">
-      <T className="font-sans-bold text-sm">{label}</T>
-    </Pressable>
-  );
-}
-
 export default function OrderDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, ship } = useLocalSearchParams<{ id: string; ship?: string }>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
@@ -38,7 +32,8 @@ export default function OrderDetail() {
   const [reasonOpen, setReasonOpen] = useState(false);
   const [courierName, setCourierName] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
-  const [shipModalOpen, setShipModalOpen] = useState(false);
+  // From the Orders list's "Mark shipped": open straight on the courier sheet.
+  const [shipModalOpen, setShipModalOpen] = useState(ship === '1');
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', id],
@@ -52,6 +47,7 @@ export default function OrderDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['order', id] });
       queryClient.invalidateQueries({ queryKey: ['seller-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-sales-orders'] });
     },
   });
 
@@ -60,6 +56,7 @@ export default function OrderDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['order', id] });
       queryClient.invalidateQueries({ queryKey: ['seller-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-sales-orders'] });
       setRefundOpen(false);
     },
   });
@@ -100,96 +97,132 @@ export default function OrderDetail() {
   if (isLoading || !order) {
     return (
       <Screen>
-        <BackHeader title="Order" sub="Order Details" fallback="/orders" />
-        <View className="flex-1 items-center justify-center">
-          {isLoading ? <SkeletonRows count={3} /> : <T className="text-muted-2">Order not found.</T>}
+        <BackHeader title="Order" fallback="/orders" />
+        <View className="flex-1 px-5 pt-2">
+          {isLoading ? <SkeletonRows count={3} /> : <T className="text-center text-muted">Order not found.</T>}
         </View>
       </Screen>
     );
   }
 
+  const stage = isRefunded ? STAGE.refunded : STAGE[currentStatus] ?? STAGE.paid;
+  const items = (order.items ?? []).filter((i: any) => !i.bundle_parent_id);
+  const shippingFee = Number((order as any).shipping_fee ?? 0);
+  const zone = (order as any).delivery_zone_name || order.city || '';
+  const initials = customerName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+  const wa = customerWhatsApp(order);
+
   return (
     <Screen>
       <BackHeader
-        title={`#${order?.order_number || id}`}
-        sub="Order Details"
+        title={`#${order.order_number || id}`}
         fallback="/orders"
         right={
-          isRefunded || !isPaid ? (
-            <View className="w-11" />
-          ) : (
-            <Pressable accessibilityRole="button" accessibilityLabel="Refund" onPress={() => setRefundOpen(true)} className="h-11 justify-center px-3">
-              <T className="font-sans-bold text-sm text-danger">Refund</T>
+          isRefunded || !isPaid ? undefined : (
+            <Pressable accessibilityRole="button" accessibilityLabel="Refund this order" onPress={() => setRefundOpen(true)} hitSlop={6} className="h-10 w-10 items-center justify-center rounded-full border border-line bg-surface">
+              <MoreHorizontal size={20} color="#0E1A15" strokeWidth={2} />
             </Pressable>
           )
         }
       />
 
-      <ScrollView contentContainerClassName="gap-3 px-4 pb-6 pt-1">
-        <View className="gap-3 rounded-[20px] border border-line bg-surface p-4">
-          <View className="flex-row items-center justify-between">
-            <Tag
-              label={isPaid ? `Paid${order.payment_method ? ` · ${order.payment_method}` : ''}` : 'Awaiting payment'}
-              bg={isPaid ? '#CFE5D7' : '#FBEFD9'}
-              fg={isPaid ? '#1E5E3A' : '#7A4B06'}
-            />
-            <Tag label={isRefunded ? 'Refunded' : STEP_LABELS[stepIdx]} bg={isRefunded ? '#FDECE8' : '#CFE5D7'} fg={isRefunded ? '#9A2C14' : '#1E5E3A'} />
+      <ScrollView contentContainerClassName="gap-3 px-5 pb-6 pt-1" showsVerticalScrollIndicator={false}>
+        <View className="gap-3.5 rounded-[22px] border border-line bg-surface p-4">
+          <View className="flex-row items-center justify-between gap-3">
+            <View className="min-w-0 flex-1">
+              <T numberOfLines={1} className="text-xs text-muted">
+                {isPaid ? `Paid ${agoPhrase(order.paid_at || order.created_at)}${order.payment_method ? ` · ${order.payment_method.toLowerCase()}` : ''}` : 'Awaiting payment'}
+              </T>
+              <T className="font-display text-[26px]">{formatNaira(totalAmountKobo / 100)}</T>
+            </View>
+            <View style={{ backgroundColor: stage.bg }} className="rounded-full px-3 py-1.5">
+              <T style={{ color: stage.fg }} className="font-sans-bold text-xs">{stage.label}</T>
+            </View>
           </View>
-          <View className="flex-row gap-1.5" accessibilityLabel={`Progress: ${STEP_LABELS[stepIdx]}`}>
-            {STEPS.map((label, i) => (
-              <View key={label} className="flex-1 gap-1.5">
-                <View style={{ backgroundColor: i <= stepIdx ? '#1E5E3A' : '#E7E9E4' }} className="h-[5px] rounded-full" />
-                <T style={{ color: i <= stepIdx ? '#0E1A15' : '#8A918D' }} className="font-sans-bold text-xs">{STEP_LABELS[i]}</T>
+          <View className="flex-row gap-1" accessibilityLabel={`Progress: ${STEP_LABELS[stepIdx]}`}>
+            {STEPS.map((step, i) => (
+              <View key={step} className="flex-1 gap-1.5">
+                <View style={{ backgroundColor: i <= stepIdx && !isRefunded ? '#1E5E3A' : '#E3E7E3' }} className="h-[5px] rounded-full" />
+                <T style={{ color: i <= stepIdx && !isRefunded ? '#1E5E3A' : '#8A948F' }} className="font-sans-bold text-[11px]">{STEP_LABELS[i]}</T>
               </View>
             ))}
           </View>
-        </View>
-
-        <View className="gap-3 rounded-[20px] border border-line bg-surface px-4 py-3.5">
-          <T className="font-sans-bold text-[15px]">{order?.items_summary || 'Order Items'}</T>
-          {order?.courier_name ? (
-            <View className="rounded-[10px] bg-mint px-2.5 py-2">
-              <T className="text-[13px] text-deep">Courier: {order.courier_name} {order.tracking_number ? `· ${order.tracking_number}` : ''}</T>
+          {order.courier_name ? (
+            <View className="rounded-xl bg-mint px-3 py-2">
+              <T className="text-[13px] text-green">Sent with {order.courier_name}{order.tracking_number ? ` · ${order.tracking_number}` : ''}</T>
             </View>
           ) : null}
-          <View className="gap-1.5 border-t border-dashed border-line-2 pt-2.5">
-            <View className="flex-row justify-between">
-              <T className="text-sm text-muted-2">Total Paid</T>
-              <T className="text-sm">{formatNaira(totalAmountKobo / 100)}</T>
-            </View>
-            <View className="flex-row justify-between">
-              <T className="font-sans-bold text-sm text-green">You receive</T>
-              <T className="font-sans-bold text-sm text-green">{formatNaira(netKobo / 100)}</T>
-            </View>
-          </View>
         </View>
 
-        <View className="gap-2.5 rounded-[20px] border border-line bg-surface px-4 py-3.5">
-          <View className="gap-0.5">
-            <T className="font-sans-bold text-[15px]">{customerName}</T>
-            {address ? <T className="text-[13px] text-muted-2">{address}</T> : null}
+        <View className="flex-row items-center gap-3 rounded-[22px] border border-line bg-surface px-4 py-3.5">
+          <View style={{ backgroundColor: tileColor(customerName) }} className="h-11 w-11 items-center justify-center rounded-full">
+            <T className="font-sans-bold text-base text-white">{initials || 'C'}</T>
           </View>
-          {customerPhone ? <View className="flex-row gap-2">
-            <ContactButton label="Call" onPress={() => Linking.openURL(`tel:${customerPhone}`)} />
-            <ContactButton label="WhatsApp" onPress={() => Linking.openURL(`https://wa.me/${customerPhone.replace(/\D/g, '')}`)} />
-            <ContactButton
-              label="Maps"
-              onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(address || 'Lagos')}`)}
-            />
-          </View> : null}
+          <View className="min-w-0 flex-1">
+            <T numberOfLines={1} className="font-sans-bold text-[15px]">{customerName}</T>
+            {address ? <T numberOfLines={2} className="text-[13px] text-muted">{address}</T> : null}
+          </View>
+          {customerPhone ? (
+            <Pressable accessibilityRole="button" accessibilityLabel={`Call ${customerName}`} onPress={() => Linking.openURL(`tel:${customerPhone}`)} className="h-10 w-10 items-center justify-center rounded-full bg-mint">
+              <Phone size={17} color="#1E5E3A" strokeWidth={2} />
+            </Pressable>
+          ) : null}
+          {wa ? (
+            <Pressable accessibilityRole="button" accessibilityLabel={`WhatsApp ${customerName}`} onPress={() => Linking.openURL(wa)} className="h-10 w-10 items-center justify-center rounded-full bg-[#DCF5E5]">
+              <WhatsAppIcon size={18} color="#128C4B" />
+            </Pressable>
+          ) : null}
+        </View>
+        {address ? (
+          <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(address)}`)} className="-mt-1 min-h-9 justify-center self-start px-1">
+            <T className="font-sans-bold text-[13px] text-green">Open address in Maps</T>
+          </Pressable>
+        ) : null}
+
+        <View className="rounded-[22px] border border-line bg-surface px-4 py-1.5">
+          {items.length ? items.map((it: any, i: number) => {
+            const qty = Number(it.quantity ?? 1);
+            const unit = Number(it.product_price ?? it.price ?? 0);
+            const opts = [it.size || it.selected_size, it.color || it.selected_color].filter(Boolean).join(' · ');
+            return (
+              <View key={it.id ?? i} className="flex-row items-center gap-3 border-b border-line py-2.5">
+                <View style={{ backgroundColor: tileColor(it.product_name || String(i)) }} className="h-[46px] w-[46px] rounded-xl" />
+                <View className="min-w-0 flex-1">
+                  <T numberOfLines={1} className="font-sans-bold text-sm">{it.product_name || 'Item'}</T>
+                  <T className="text-xs text-muted">{opts ? `${opts} · ` : ''}x{qty}</T>
+                </View>
+                {unit > 0 ? <T className="font-sans-bold text-sm">{formatNaira(unit * qty)}</T> : null}
+              </View>
+            );
+          }) : (
+            <View className="border-b border-line py-2.5"><T className="font-sans-bold text-sm">{order.items_summary || 'Order items'}</T></View>
+          )}
+          <View className="gap-1.5 py-2.5">
+            {shippingFee > 0 ? (
+              <View className="flex-row justify-between">
+                <T className="text-sm text-muted">Delivery{zone ? ` · ${zone}` : ''}</T>
+                <T className="font-sans-bold text-sm">{formatNaira(shippingFee)}</T>
+              </View>
+            ) : null}
+            <View className="flex-row justify-between">
+              <T className="font-sans-bold text-[15px]">You receive</T>
+              <T className="font-sans-bold text-[15px]">{formatNaira(netKobo / 100)}</T>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
-      <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 6 }} className="gap-2 border-t border-line bg-bg px-4 pt-3">
+      <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }} className="gap-2 px-5 pt-3">
         {actionError ? <T accessibilityLiveRegion="polite" className="text-center text-sm text-danger">{actionError.message}</T> : null}
         {stepIdx === 3 || isRefunded || currentStatus === 'cancelled' ? (
-          <View accessibilityLiveRegion="polite" className="h-14 items-center justify-center rounded-full bg-mint-2">
-            <T className="font-sans-bold text-base text-deep">{isRefunded ? `Refunded ${formatNaira(totalAmountKobo / 100)}` : currentStatus === 'cancelled' ? 'Cancelled' : 'Delivered - nice work'}</T>
+          <View accessibilityLiveRegion="polite" className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-mint">
+            {stepIdx === 3 && !isRefunded ? <Check size={18} color="#1E5E3A" strokeWidth={2.4} /> : null}
+            <T className="font-sans-bold text-[15px] text-green">{isRefunded ? `Refunded ${formatNaira(totalAmountKobo / 100)}` : currentStatus === 'cancelled' ? 'Cancelled' : 'Delivered. Nice work!'}</T>
           </View>
         ) : (
-          <Pressable accessibilityRole="button" onPress={advanceStatus} disabled={statusMutation.isPending} className="h-14 flex-row items-center justify-center gap-2 rounded-full bg-deep">
+          <Pressable accessibilityRole="button" onPress={advanceStatus} disabled={statusMutation.isPending} className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-green">
             {statusMutation.isPending ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
-            <T className="font-sans-bold text-[17px] text-white">{NEXT_LABELS[currentStatus] || 'Update Status'}</T>
+            <T className="font-sans-bold text-base text-white">{NEXT_LABELS[currentStatus] || 'Update status'}</T>
           </Pressable>
         )}
       </View>
@@ -200,17 +233,18 @@ export default function OrderDetail() {
           <Pressable onPress={() => setShipModalOpen(false)} className="absolute inset-0 bg-[rgba(14,26,21,0.5)]" />
           <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 16 }} className="gap-4 rounded-t-[28px] bg-surface px-5 pt-3">
             <Grip />
-            <T className="font-display-x text-[22px]">Mark order as shipped</T>
+            <T className="font-display-x text-[22px]">Mark as shipped</T>
+            <T className="-mt-2 text-sm text-muted">The customer gets the courier name and tracking number.</T>
             <View className="gap-1.5">
-              <T className="font-sans-bold text-sm">Courier Name</T>
-              <TextInput value={courierName} onChangeText={setCourierName} placeholder="GIG Logistics, Fez, etc." className="h-12 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base" />
+              <T className="font-sans-bold text-[13px] text-muted">Courier</T>
+              <TextInput autoFocus value={courierName} onChangeText={setCourierName} placeholder="GIG Logistics, Fez, a dispatch rider…" placeholderTextColor="#8A948F" className="h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink" />
             </View>
             <View className="gap-1.5">
-              <T className="font-sans-bold text-sm">Tracking Number (optional)</T>
-              <TextInput value={trackingNumber} onChangeText={setTrackingNumber} placeholder="GIG-44810273" className="h-12 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base" />
+              <T className="font-sans-bold text-[13px] text-muted">Tracking number (optional)</T>
+              <TextInput value={trackingNumber} onChangeText={setTrackingNumber} placeholder="GIG-44810273" placeholderTextColor="#8A948F" className="h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink" />
             </View>
-            <Pressable accessibilityRole="button" onPress={confirmShipment} disabled={!courierName.trim()} className={cx('h-[54px] items-center justify-center rounded-full bg-deep', !courierName.trim() && 'opacity-40')}>
-              <T className="font-sans-bold text-base text-white">Confirm Shipped</T>
+            <Pressable accessibilityRole="button" onPress={confirmShipment} disabled={!courierName.trim()} className={cx('h-[54px] items-center justify-center rounded-2xl bg-green', !courierName.trim() && 'opacity-40')}>
+              <T className="font-sans-bold text-base text-white">Confirm shipped</T>
             </Pressable>
           </View>
         </View>
@@ -230,7 +264,7 @@ export default function OrderDetail() {
                 accessibilityRole="button"
                 accessibilityLabel={`Reason, ${reason}`}
                 onPress={() => setReasonOpen(true)}
-                className="h-12 flex-row items-center justify-between rounded-xl border border-line-2 bg-surface px-3"
+                className="h-14 flex-row items-center justify-between rounded-2xl border-[1.5px] border-line bg-surface px-4"
               >
                 <T className="text-base">{reason}</T>
                 <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
@@ -239,7 +273,7 @@ export default function OrderDetail() {
               <SearchableSelectModal
                 visible={reasonOpen}
                 onClose={() => setReasonOpen(false)}
-                title="Select Refund Reason"
+                title="Why are you refunding?"
                 placeholder="Search reason..."
                 items={REASONS.map((r) => ({ id: r, title: r }))}
                 selectedId={reason}
@@ -250,12 +284,12 @@ export default function OrderDetail() {
               accessibilityRole="button"
               onPress={handleRefund}
               disabled={refundMutation.isPending}
-              className="h-[54px] flex-row items-center justify-center gap-2 rounded-full bg-danger"
+              className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-danger"
             >
               {refundMutation.isPending ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
               <T className="font-sans-bold text-base text-white">Refund {formatNaira(totalAmountKobo / 100)}</T>
             </Pressable>
-            <Pressable accessibilityRole="button" onPress={() => setRefundOpen(false)} className="h-12 items-center justify-center rounded-full bg-cream">
+            <Pressable accessibilityRole="button" onPress={() => setRefundOpen(false)} className="h-[54px] items-center justify-center rounded-2xl border-[1.5px] border-line bg-surface">
               <T className="font-sans-bold text-base">Keep order</T>
             </Pressable>
           </View>

@@ -3,12 +3,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { T } from './ui';
-type Item = { name: string; label: string; Icon: React.ComponentType<any> };
+type Item = { name: string; label: string; Icon: React.ComponentType<any>; useBadge?: () => number };
 
 /**
  * White bottom tab bar from the designs (green active label, grey inactive).
  * If `centerHref` is set, a raised green "+" button sits in the middle (seller mode).
  */
+/** Terracotta count on a tab (e.g. orders to ship). Hidden at zero. */
+function Badge({ use }: { use: () => number }) {
+  const n = use();
+  if (!n) return null;
+  return (
+    <View pointerEvents="none" className="absolute -top-0.5 right-3.5 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-terra px-[5px]">
+      <T className="font-sans-bold text-[11px] text-white">{n > 99 ? '99+' : n}</T>
+    </View>
+  );
+}
+
 export function makeTabBar(items: Item[], centerHref?: string) {
   return function TabBar({ state, navigation }: { state: any; navigation: any }) {
     const insets = useSafeAreaInsets();
@@ -22,9 +33,10 @@ export function makeTabBar(items: Item[], centerHref?: string) {
           accessibilityRole="tab"
           accessibilityState={{ selected: active }}
           onPress={() => navigation.navigate(it.name)}
-          className="w-16 items-center gap-1"
+          className="relative w-16 items-center gap-1"
         >
           <it.Icon size={24} color={color} strokeWidth={active ? 2.2 : 1.9} />
+          {it.useBadge ? <Badge use={it.useBadge} /> : null}
           <T style={{ color }} className={active ? 'font-sans-bold text-[11px]' : 'font-sans-semibold text-[11px]'}>{it.label}</T>
         </Pressable>
       );
