@@ -126,13 +126,12 @@ export default function FirstProduct() {
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-        <StepHeader fallback="/payout" label="Step 5 of 5" right={{ title: 'Skip', onPress: () => handleFinish(false) }} />
-        <Progress pct={100} />
+        <StepHeader fallback="/payout" right={{ title: 'Skip', onPress: () => handleFinish(false) }} />
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-3.5 px-5 pt-5 pb-6">
-          <Heading title="Add your first product" sub="Snap a photo. Nina AI writes the name, price and description - you just check it." />
+          <Heading title="Add your first product" sub="Just a photo. Nina writes the rest." />
           {errorMsg ? (
-            <View className="rounded-xl bg-red-100 p-3.5 border border-red-200">
-              <T className="text-sm font-sans-medium text-red-800">{errorMsg}</T>
+            <View className="rounded-2xl border border-danger/20 bg-danger-bg p-3.5">
+              <T className="font-sans-medium text-sm text-danger">{errorMsg}</T>
             </View>
           ) : null}
           {account === 'ready' ? (
@@ -160,9 +159,9 @@ export default function FirstProduct() {
               accessibilityState={{ disabled: true }}
               accessibilityLabel="Add product and finish"
               accessibilityHint={filled ? 'Add a name and price first' : 'Add a photo first'}
-              className="h-14 items-center justify-center rounded-full bg-[#BFD3C8]"
+              className="h-[54px] items-center justify-center rounded-2xl bg-[#BFD3C6]"
             >
-              <T className="font-sans-bold text-[17px] text-white">Add product and finish</T>
+              <T className="font-sans-bold text-base text-white">Add product and finish</T>
             </View>
           )}
         </BottomBar>

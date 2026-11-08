@@ -3,12 +3,13 @@ import { CodeEntry } from '@/features/auth/CodeEntry';
 
 /** /verify?flow=signup|login&channel=email|whatsapp&to=... */
 export default function Verify() {
-  const { flow, channel, to } = useLocalSearchParams<{ flow?: string; channel?: string; to?: string }>();
+  const { flow, channel, to, sent_to } = useLocalSearchParams<{ flow?: string; channel?: string; to?: string; sent_to?: string }>();
   return (
     <CodeEntry
       flow={flow === 'login' ? 'login' : 'signup'}
       channel={channel === 'whatsapp' ? 'whatsapp' : 'email'}
       to={to}
+      sentTo={sent_to}
     />
   );
 }

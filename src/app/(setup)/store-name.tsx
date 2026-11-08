@@ -144,31 +144,31 @@ export default function StoreName() {
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-        <StepHeader onBack={handleBack} fallback="/choose-mode" label="Step 2 of 5" />
-        <Progress pct={40} />
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-5 px-5 pt-7 pb-6">
-          <Heading title="Name your store" sub="This is what customers see. You can change it later." />
+        <StepHeader onBack={handleBack} fallback="/choose-mode" label="3 of 5" />
+        <Progress pct={60} />
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-[18px] px-5 pt-[22px] pb-6">
+          <Heading title="Name your store" sub="This is how customers will find you. You can change it later." />
           <Labelled label="Store name">
             <RingInput
               autoFocus
               value={name}
               onChangeText={(v) => updateDraft({ name: v })}
               accessibilityLabel="Store name"
+              placeholder="e.g. Mama V"
               autoCapitalize="words"
               maxLength={60}
             />
           </Labelled>
-          <Labelled label="Store link">
-            <View
-              accessible
+          <View className="gap-2 rounded-[18px] border border-line bg-surface p-4">
+            <T className="font-sans-bold text-xs tracking-[0.96px] text-muted">YOUR STORE LINK</T>
+            <T
+              numberOfLines={1}
               accessibilityLabel={`Store link: frontstore.app/${slug || 'yourstore'}`}
-              className="h-[54px] flex-row items-center rounded-[14px] border border-line-2 bg-surface pl-4 pr-3.5"
+              className="font-sans-bold text-[17px]"
             >
-              <T numberOfLines={1} className="shrink text-base">
-                <T className="text-base text-muted">frontstore.app/</T>
-                <T className="font-sans-bold text-base">{slug || 'yourstore'}</T>
-              </T>
-            </View>
+              <T className="font-sans-semibold text-[17px] text-muted">frontstore.app/</T>
+              {slug || 'yourstore'}
+            </T>
             {checking ? (
               <View className="flex-row items-center gap-1.5">
                 <ActivityIndicator size="small" color="#1E5E3A" />
@@ -181,19 +181,19 @@ export default function StoreName() {
               </View>
             ) : available === false ? (
               <View className="flex-row items-center gap-1.5">
-                <X size={14} color="#DC2626" strokeWidth={3} />
-                <T className="font-sans-bold text-[13px] text-red-600">Already taken</T>
+                <X size={14} color="#9A2C14" strokeWidth={3} />
+                <T className="font-sans-bold text-[13px] text-danger">Taken. Try another name</T>
               </View>
             ) : null}
-          </Labelled>
+          </View>
 
           <View className="gap-2.5">
-            <T className="font-sans-bold text-sm">Where is your business based?</T>
+            <T className="font-sans-bold text-[13px] text-muted">Where is your business based?</T>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Country: ${selectedDisplay}`}
               onPress={() => setModalOpen(true)}
-              className="h-[54px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-4"
+              className="h-14 flex-row items-center justify-between rounded-2xl border-[1.5px] border-line bg-surface px-4"
             >
               <View className="flex-row items-center gap-2.5 flex-1 pr-2">
                 <T className="text-xl">{selectedFlag}</T>

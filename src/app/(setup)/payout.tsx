@@ -134,21 +134,21 @@ export default function Payout() {
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-        <StepHeader fallback="/store-style" label="Step 4 of 5" right={{ title: 'Later', href: '/first-product' }} />
-        <Progress pct={80} />
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-[18px] px-5 pt-6 pb-6">
-          <Heading title="Where should we send your money?" sub="Customer payments are paid out directly to this account." />
+        <StepHeader fallback="/store-style" label="5 of 5" />
+        <Progress pct={100} />
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-[18px] px-5 pt-[22px] pb-6">
+          <Heading title="Where should we pay you?" sub="Sales go to your Frontstore wallet, then to this account." />
 
           <Labelled label="Bank">
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Bank: ${selectedBank?.name || 'Select bank'}`}
               onPress={() => setModalOpen(true)}
-              className="h-[54px] flex-row items-center justify-between rounded-[14px] border border-line-2 bg-surface px-4"
+              className="h-14 flex-row items-center justify-between rounded-2xl border-[1.5px] border-line bg-surface px-4"
             >
               <View className="flex-1 flex-row items-center gap-2.5 pr-2">
                 <Landmark size={18} color="#1E5E3A" strokeWidth={2} />
-                <T className="text-base font-sans-medium text-ink flex-1" numberOfLines={1}>
+                <T className="flex-1 font-sans-semibold text-[17px] text-ink" numberOfLines={1}>
                   {selectedBank?.name || (loadingBanks ? 'Loading banks...' : 'Select bank')}
                 </T>
               </View>
@@ -174,16 +174,11 @@ export default function Payout() {
               <T className="text-sm text-muted">Verifying account with bank...</T>
             </View>
           ) : accountName ? (
-            <View className="flex-row items-center gap-3 rounded-[14px] bg-mint px-4 py-3.5" accessibilityLiveRegion="polite">
-              <View className="h-8 w-8 items-center justify-center rounded-full bg-green">
-                <Check size={16} color="#FFFFFF" strokeWidth={3} />
-              </View>
-              <View className="flex-1">
-                <T className="text-xs text-[#26322D]">Verified account name</T>
-                <T className="font-sans-bold text-base text-ink" numberOfLines={1}>
-                  {accountName}
-                </T>
-              </View>
+            <View accessibilityLabel={`Verified account name: ${accountName}`} className="flex-row items-center gap-2 rounded-[14px] bg-mint px-3.5 py-3" accessibilityLiveRegion="polite">
+              <Check size={16} color="#14532D" strokeWidth={2.6} />
+              <T className="flex-1 font-sans-bold text-sm uppercase text-[#14532D]" numberOfLines={1}>
+                {accountName}
+              </T>
             </View>
           ) : (
             <View className="gap-2">
@@ -197,15 +192,15 @@ export default function Payout() {
               </Labelled>
 
               {errorMsg ? (
-                <View className="rounded-[14px] bg-amber-50 p-3.5 border border-amber-200 gap-1.5">
-                  <T className="text-xs font-sans-medium text-amber-800">{errorMsg}</T>
+                <View className="gap-1.5 rounded-[14px] bg-warn-bg p-3.5">
+                  <T className="font-sans-medium text-xs text-warn-fg">{errorMsg}</T>
                   {selectedBank && account.length === 10 ? (
                     <Pressable
                       onPress={() => doResolve(account, selectedBank)}
                       className="flex-row items-center gap-1.5 self-start mt-1"
                     >
-                      <RefreshCw size={13} color="#92400E" />
-                      <T className="text-xs font-sans-bold text-amber-900 underline">Retry auto-lookup</T>
+                      <RefreshCw size={13} color="#8A4A06" />
+                      <T className="font-sans-bold text-xs text-warn-fg underline">Retry auto-lookup</T>
                     </Pressable>
                   ) : null}
                 </View>
@@ -215,10 +210,10 @@ export default function Payout() {
 
           <View className="flex-row items-start gap-2.5">
             <View className="mt-0.5">
-              <Lock size={16} color="#4A524E" strokeWidth={2} />
+              <Lock size={15} color="#5F6B65" strokeWidth={2} />
             </View>
-            <T className="flex-1 text-[13px] leading-5 text-muted-2">
-              Payments are processed securely via regulated payment rails. Payouts arrive next business day at 10:00am.
+            <T className="flex-1 text-[13px] leading-5 text-muted">
+              Payouts arrive the next business day at 10:00am. To keep your money safe, changing this account later needs our team’s approval.
             </T>
           </View>
         </ScrollView>
@@ -240,10 +235,13 @@ export default function Payout() {
 
         <BottomBar>
           <Button
-            title="Save account"
+            title="Save and continue"
             disabled={!canSave}
             onPress={handleSave}
           />
+          <Pressable accessibilityRole="link" onPress={() => router.push('/first-product')} className="min-h-[44px] items-center justify-center">
+            <T className="font-sans-bold text-sm text-muted">Do this later</T>
+          </Pressable>
         </BottomBar>
       </KeyboardAvoidingView>
     </Screen>

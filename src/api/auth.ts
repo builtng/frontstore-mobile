@@ -17,9 +17,13 @@ export async function sendEmailOtp(email: string, name?: string): Promise<any> {
   return apiPost('/auth/send-email-otp', { email, name });
 }
 
-/** Request a WhatsApp OTP verification code */
-export async function sendWhatsAppOtp(phoneNumber: string): Promise<any> {
-  return apiPost('/auth/send-otp', { phone_number: phoneNumber });
+/**
+ * Ask for a login code for a phone number. The server emails the code to the
+ * email on that account. When the number has no email yet it sends nothing and
+ * answers `needs_email: true`; call again with `email` to send it there.
+ */
+export async function sendWhatsAppOtp(phoneNumber: string, email?: string): Promise<{ needs_email?: boolean; email?: string; is_new_user?: boolean; phone?: string }> {
+  return apiPost('/auth/send-otp', email ? { phone_number: phoneNumber, email } : { phone_number: phoneNumber });
 }
 
 /** Verify OTP code (email or phone) */

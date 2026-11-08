@@ -25,50 +25,52 @@ export function StepHeader({
   };
 
   return (
-    <View className="flex-row items-center justify-between px-3 pt-1">
+    <View className="h-[52px] flex-row items-center justify-between px-4">
       {!hideBack && (fallback || onBack) ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back"
           onPress={handleBack}
-          className="h-11 w-11 items-center justify-center"
+          hitSlop={6}
+          className="h-10 w-10 items-center justify-center rounded-full border border-line bg-surface"
         >
-          <ChevronLeft size={22} color="#0E1A15" strokeWidth={2} />
+          <ChevronLeft size={20} color="#0E1A15" strokeWidth={2} />
         </Pressable>
       ) : (
-        <View className="h-11 w-11" />
+        <View className="h-10 w-10" />
       )}
       {label ? <T className="font-sans-bold text-[13px] text-muted">{label}</T> : null}
       {right ? (
         right.onPress ? (
           <Pressable accessibilityRole="button" onPress={right.onPress} className="h-11 justify-center px-2.5">
-            <T className="font-sans-semibold text-[15px] text-muted-2">{right.title}</T>
+            <T className="font-sans-bold text-[15px] text-green">{right.title}</T>
           </Pressable>
         ) : (
           <Link href={right.href!} asChild>
             <Pressable accessibilityRole="link" className="h-11 justify-center px-2.5">
-              <T className="font-sans-semibold text-[15px] text-muted-2">{right.title}</T>
+              <T className="font-sans-bold text-[15px] text-green">{right.title}</T>
             </Pressable>
           </Link>
         )
       ) : (
-        <View className="w-11" />
+        <View className="w-10" />
       )}
     </View>
   );
 }
 
-/** Thin green progress bar under the step header. */
-export function Progress({ pct }: { pct: number }) {
+/** Five-part progress bar under the step header (design: 4px bars, 6px apart). `pct` fills whole steps. */
+export function Progress({ pct, steps = 5 }: { pct: number; steps?: number }) {
+  const done = Math.round((pct / 100) * steps);
   return (
-    <View className="px-5 pt-2.5">
-      <View
-        accessibilityRole="progressbar"
-        accessibilityValue={{ min: 0, max: 100, now: pct }}
-        className="h-1.5 rounded-full bg-line"
-      >
-        <View style={{ width: `${pct}%` }} className="h-1.5 rounded-full bg-green" />
-      </View>
+    <View
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: 100, now: pct }}
+      className="flex-row gap-1.5 px-5"
+    >
+      {Array.from({ length: steps }, (_, k) => (
+        <View key={k} className={cx('h-1 flex-1 rounded-full', k < done ? 'bg-green' : 'bg-line-2')} />
+      ))}
     </View>
   );
 }
@@ -84,7 +86,7 @@ export function Heading({ title, sub, size = 30 }: { title: string; sub?: React.
       >
         {title}
       </T>
-      {typeof sub === 'string' ? <T className="text-[15px] leading-[22px] text-muted-2">{sub}</T> : sub ?? null}
+      {typeof sub === 'string' ? <T className="text-base leading-6 text-muted">{sub}</T> : sub ?? null}
     </View>
   );
 }
@@ -110,12 +112,12 @@ export const RingInput = forwardRef<TextInput, TextInputProps & { left?: React.R
     useImperativeHandle(ref, () => innerRef.current!);
 
     return (
-      <View className={cx('rounded-[17px] border-[3px]', focused ? 'border-mint-2' : 'border-transparent')} style={{ margin: -3 }}>
+      <View className={cx('rounded-[19px] border-[3px]', focused ? 'border-mint' : 'border-transparent')} style={{ margin: -3 }}>
         <Pressable
           onPress={() => innerRef.current?.focus()}
           className={cx(
-            'h-[54px] flex-row items-center gap-2.5 rounded-[14px] bg-surface px-4',
-            focused ? 'border-[1.5px] border-green' : 'border border-line-2',
+            'h-14 flex-row items-center gap-2.5 rounded-2xl border-[1.5px] bg-surface px-4',
+            focused ? 'border-green' : 'border-line',
             left ? 'pl-3.5' : null,
             boxClassName,
           )}
@@ -126,7 +128,7 @@ export const RingInput = forwardRef<TextInput, TextInputProps & { left?: React.R
             placeholderTextColor="#8A948F"
             onFocus={(e) => { setFocused(true); onFocus?.(e); }}
             onBlur={(e) => { setFocused(false); onBlur?.(e); }}
-            className={cx('h-full flex-1 text-ink', inputClassName ?? 'font-sans text-base')}
+            className={cx('h-full flex-1 text-ink', inputClassName ?? 'font-sans-semibold text-[17px]')}
             {...rest}
           />
         </Pressable>
@@ -135,11 +137,11 @@ export const RingInput = forwardRef<TextInput, TextInputProps & { left?: React.R
   },
 );
 
-/** Bold 14px field label + control, matching the designs' <label> blocks. */
+/** Bold 13px grey field label + control, matching the designs' <label> blocks. */
 export function Labelled({ label, children, className }: { label: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
     <View className={cx('gap-1.5', className)}>
-      {typeof label === 'string' ? <T className="font-sans-bold text-sm">{label}</T> : label}
+      {typeof label === 'string' ? <T className="font-sans-bold text-[13px] text-muted">{label}</T> : label}
       {children}
     </View>
   );

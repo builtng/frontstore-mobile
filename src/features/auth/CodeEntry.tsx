@@ -21,7 +21,8 @@ function maskPhone(raw: string) {
 }
 
 /** "Check your email / WhatsApp" 6-digit code screen, shared by /verify (signup) and /login-code. */
-export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; channel: Channel; to?: string }) {
+/** `sentTo` is the email the code actually went to (phone codes are emailed to the account's address). */
+export function CodeEntry({ flow, channel: initialChannel, to, sentTo }: { flow: Flow; channel: Channel; to?: string; sentTo?: string }) {
   const signup = flow === 'signup';
   const [channel, setChannel] = useState<Channel>(initialChannel);
   const [code, setCode] = useState('');
@@ -56,7 +57,8 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
     setErrorMsg(null);
     try {
       if (phone) {
-        await sendWhatsAppOtp(to || dest);
+        // Pass the email along: a new number has none on file until it is verified.
+        await sendWhatsAppOtp(to || dest, sentTo && sentTo.includes('@') ? sentTo : undefined);
       } else {
         await sendEmailOtp(to || dest);
       }
@@ -107,17 +109,16 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-        <StepHeader fallback={fallback} label={signup ? 'Step 1 of 5' : 'Log in'} />
-        {signup ? <Progress pct={20} /> : null}
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-6 px-5 pt-8 pb-6">
-          <View className="h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-green">
-            {phone ? <WhatsAppIcon size={28} color="#FFFFFF" strokeWidth={1.9} /> : <Mail size={28} color="#FFFFFF" strokeWidth={1.9} />}
-          </View>
+        <StepHeader fallback={fallback} label={signup ? '2 of 5' : undefined} />
+        {signup ? <Progress pct={40} /> : null}
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-[18px] px-5 pt-[22px] pb-6">
           <Heading
-            title={phone ? 'Check your WhatsApp' : 'Check your email'}
+            title="Enter the code"
             sub={
-              <T className="text-[15px] leading-[22px] text-muted-2">
-                Enter the 6-digit code we sent to <T className="font-sans-bold text-[15px]">{dest}</T>
+              <T className="text-base leading-6 text-muted">
+                {/* Phone codes are emailed to the account, so say where it really went. */}
+                We sent it to <T className="text-base leading-6 text-ink">{sentTo || dest}</T>
+                {phone && sentTo && sentTo !== dest ? <T className="text-base leading-6 text-muted">, the email on {maskPhone(targetIdentifier)}</T> : null}.
               </T>
             }
           />
@@ -138,10 +139,8 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
               {Array.from({ length: LEN }, (_, k) => {
                 const active = focused && (k === code.length || (complete && k === LEN - 1));
                 return (
-                  <View key={k} className={cx('flex-1 rounded-[17px] border-[3px]', active ? 'border-mint-2' : 'border-transparent')} style={{ margin: -3 }}>
-                    <View className={cx('h-[60px] items-center justify-center rounded-[14px] bg-surface', active ? 'border-2 border-green' : 'border border-line-2')}>
-                      <T className="font-sans-bold text-[26px]">{code[k] ?? ''}</T>
-                    </View>
+                  <View key={k} className={cx('h-[60px] flex-1 items-center justify-center rounded-[14px] border-2 bg-surface', active ? 'border-green' : code[k] ? 'border-[#BFD3C6]' : 'border-line')}>
+                    <T className="font-display-x text-[26px]">{code[k] ?? ''}</T>
                   </View>
                 );
               })}
@@ -164,8 +163,8 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
           </Pressable>
 
           {left > 0 ? (
-            <T className="text-[15px] text-muted-2" accessibilityLiveRegion="polite">
-              Resend code in <T className="font-sans-bold text-[15px]">{`${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`}</T>
+            <T className="text-sm text-muted" accessibilityLiveRegion="polite">
+              Didn’t get it? <T className="text-sm text-ink">Resend in {`${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`}</T>
             </T>
           ) : (
             <Pressable accessibilityRole="button" onPress={onResend} className="-my-3 h-11 justify-center self-start">
@@ -175,6 +174,10 @@ export function CodeEntry({ flow, channel: initialChannel, to }: { flow: Flow; c
           <Pressable accessibilityRole="button" onPress={onAlt} className="-my-3 h-11 justify-center self-start">
             <T className="font-sans-bold text-[15px] text-green">{alt}</T>
           </Pressable>
+          <View className="flex-row gap-2 rounded-[14px] bg-mint px-3.5 py-3">
+            <Mail size={16} color="#14532D" strokeWidth={2} />
+            <T className="flex-1 text-[13px] leading-[19px] text-[#14532D]">Tip: open the email from Frontstore and copy the code. Your keyboard may offer to fill it in.</T>
+          </View>
         </ScrollView>
         <BottomBar>
           <Button
