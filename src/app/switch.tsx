@@ -91,7 +91,7 @@ export default function Switch() {
         })}
 
 
-        <Pressable accessibilityRole="button" onPress={go} className="h-[54px] items-center justify-center rounded-full bg-deep">
+        <Pressable accessibilityRole="button" onPress={go} className="h-[54px] items-center justify-center rounded-2xl bg-deep">
           <T className="font-sans-bold text-base text-white">{goLabel}</T>
         </Pressable>
       </View>

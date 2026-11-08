@@ -142,7 +142,7 @@ export default function BuyerStore() {
 
   if (storeLoading || (storeError && !liveData)) {
     return (
-      <Screen className="bg-surface-2">
+      <Screen className="bg-bg">
         <View className="flex-row items-center px-2 pb-1">
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} className="h-11 w-11 items-center justify-center">
             <ChevronLeft size={24} color="#0E1A15" strokeWidth={2} />
@@ -170,53 +170,54 @@ export default function BuyerStore() {
   }
 
   return (
-    <Screen className="bg-surface-2">
-      <View className="flex-row items-center justify-between px-2 pb-1">
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} className="h-11 w-11 items-center justify-center">
-          <ChevronLeft size={24} color="#0E1A15" strokeWidth={2} />
-        </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Share store" onPress={share} className="h-11 w-11 items-center justify-center">
-          <ShareIcon size={20} color="#0E1A15" strokeWidth={2} />
-        </Pressable>
-      </View>
-
+    <Screen edges={[]} className="bg-bg">
       <ScrollView contentContainerClassName="pb-6" showsVerticalScrollIndicator={false}>
-        {ownStore ? (
-          <View className="mx-4 mb-3 rounded-2xl bg-mint px-4 py-3">
-            <T className="font-sans-bold text-sm text-green">This is a preview of your store</T>
-            <T className="text-[13px] text-green">It’s what buyers see. You can’t buy from your own store.</T>
+        {/* Cover in the store's colour, with the back / share buttons floating on it. */}
+        <View style={{ backgroundColor: storeColor, paddingTop: insets.top }} className="h-[150px]">
+          <View style={{ top: insets.top + 6 }} className="absolute left-4 right-4 flex-row justify-between">
+            <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} className="h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-white/90">
+              <ChevronLeft size={20} color="#0E1A15" strokeWidth={2} />
+            </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Share store" onPress={share} className="h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-white/90">
+              <ShareIcon size={18} color="#0E1A15" strokeWidth={2} />
+            </Pressable>
           </View>
-        ) : null}
-        <View className="gap-2.5 px-4">
-          <View className="flex-row items-center gap-3.5">
-            <Avatar initial={storeInitial} color={storeColor} uri={storeObj?.logo_url} size={64} radius={20} fontSize={26} />
-            <View className="flex-1 gap-0.5">
-              <T numberOfLines={2} className="font-display-x text-[20px] leading-[24px]">{storeName}</T>
-              <T className="text-[13px] text-muted-2">{meta}</T>
+        </View>
+        <View className="gap-2.5 px-5">
+          <View className="-mt-[38px] flex-row items-end justify-between">
+            <View className="rounded-[24px] border-4 border-bg">
+              <Avatar initial={storeInitial} color="#0E1A15" uri={storeObj?.logo_url} size={72} radius={20} fontSize={28} />
             </View>
-          </View>
-          <T className="text-sm leading-[21px] text-muted-2">{storeBio}</T>
-          <View className="flex-row gap-2">
             {!ownStore ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityState={{ selected: following }}
                 accessibilityLabel={following ? `Following ${storeName}, tap to unfollow` : `Follow ${storeName}`}
                 onPress={handleToggleFollow}
-                className={cx('h-11 flex-1 items-center justify-center rounded-full', following ? 'border border-line-2 bg-surface' : 'bg-ink')}
+                className={cx('mb-1 h-10 items-center justify-center rounded-full border-[1.5px] px-[18px]', following ? 'border-line bg-surface' : 'border-ink bg-ink')}
               >
-                <T className={cx('font-sans-bold text-[15px]', following ? 'text-ink' : 'text-white')}>{following ? 'Following' : 'Follow'}</T>
+                <T className={cx('font-sans-bold text-sm', following ? 'text-ink' : 'text-white')}>{following ? 'Following' : 'Follow'}</T>
               </Pressable>
             ) : null}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`View reviews for ${storeName}`}
-              onPress={() => setReviewsOpen(true)}
-              className="h-11 flex-1 items-center justify-center rounded-full border border-line-2 bg-surface"
-            >
-              <T className="font-sans-bold text-[15px]">Reviews ({reviewsList.length})</T>
-            </Pressable>
           </View>
+          <T numberOfLines={2} className="font-display text-[22px] leading-[27px]">{storeName}</T>
+          {meta ? <T className="text-sm text-muted">{meta}</T> : null}
+          {storeBio ? <T className="text-sm leading-[21px] text-muted">{storeBio}</T> : null}
+          {ownStore ? (
+            <View className="rounded-2xl bg-mint px-4 py-3">
+              <T className="font-sans-bold text-sm text-green">This is a preview of your store</T>
+              <T className="text-[13px] text-green">It’s what buyers see. You can’t buy from your own store.</T>
+            </View>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`View reviews for ${storeName}`}
+            onPress={() => setReviewsOpen(true)}
+            className="h-10 flex-row items-center gap-1.5 self-start rounded-full border border-line bg-surface px-3.5"
+          >
+            <Star size={14} color="#E9A23B" fill="#E9A23B" />
+            <T className="font-sans-bold text-sm">{reviewsList.length ? `Reviews (${reviewsList.length})` : 'No reviews yet'}</T>
+          </Pressable>
         </View>
 
         <ChipRow options={cats} value={cat} onChange={setCat} bordered="border-line-2" className="pt-4" contentPadding />
@@ -230,20 +231,20 @@ export default function BuyerStore() {
           {shown.map((p) => {
             const q = cart[p.id] ?? 0;
             return (
-              <View key={p.id} style={{ width: tile }} className="gap-1.5">
-                <ProductImage uri={p.photo} name={p.name} className="h-[140px] w-full rounded-2xl" textClassName="text-3xl" />
-                <T numberOfLines={2} className="min-h-[36px] font-sans-bold text-sm">{p.name}</T>
-                <View className="flex-row items-center justify-between">
-                  <T className="font-sans-bold text-sm">{naira(p.price)}</T>
+              <View key={p.id} style={{ width: tile, shadowColor: '#0E1A15', shadowOpacity: 0.06, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 }} className="gap-2 rounded-[22px] bg-surface p-2 pb-2.5">
+                <ProductImage uri={p.photo} name={p.name} className="h-[142px] w-full rounded-2xl" textClassName="text-3xl" />
+                <T numberOfLines={2} className="min-h-[36px] px-0.5 font-sans-bold text-sm">{p.name}</T>
+                <View className="flex-row items-center justify-between gap-1 px-0.5">
+                  <T className="font-sans-bold text-[15px]">{naira(p.price)}</T>
                   {!ownStore ? (
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={q ? `Add another ${p.name}, ${q} in cart` : `Add ${p.name}`}
                       onPress={() => setCart((c) => ({ ...c, [p.id]: q + 1 }))}
                       style={q ? { backgroundColor: storeColor } : undefined}
-                      className={cx('h-10 min-w-[44px] items-center justify-center rounded-full px-2.5', !q && 'border-[1.5px] border-ink bg-surface')}
+                      className={cx('h-9 min-w-[44px] items-center justify-center rounded-full px-2.5', !q && 'bg-ink')}
                     >
-                      <T className={cx('font-sans-bold text-sm', q ? 'text-white' : 'text-ink')}>{q ? `${q} in cart` : '+ Add'}</T>
+                      <T className="font-sans-bold text-[13px] text-white">{q ? `${q} in cart` : '+ Add'}</T>
                     </Pressable>
                   ) : null}
                 </View>
@@ -255,7 +256,7 @@ export default function BuyerStore() {
 
       {count > 0 ? (
         <View style={{ paddingBottom: Math.max(insets.bottom, 12) }} className="px-3 pt-2">
-          <View className="flex-row items-center justify-between rounded-full bg-ink py-2.5 pl-[18px] pr-2.5">
+          <View className="flex-row items-center justify-between rounded-[20px] bg-ink py-2.5 pl-[18px] pr-2.5">
             <View>
               <T className="text-xs text-on-dark-2">{count} items</T>
               <T className="font-sans-bold text-base text-white">{naira(total)}</T>
@@ -268,9 +269,9 @@ export default function BuyerStore() {
                 setOrderError(null);
                 setCheckoutOpen(true);
               }}
-              className="h-[46px] justify-center rounded-full bg-deep px-5"
+              className="h-[46px] justify-center rounded-2xl bg-gold px-5"
             >
-              <T className="font-sans-bold text-[15px] text-white">Checkout</T>
+              <T className="font-sans-bold text-[15px] text-[#2A1B05]">Checkout</T>
             </Pressable>
           </View>
         </View>
@@ -393,7 +394,7 @@ export default function BuyerStore() {
             </View>
 
             {isSubmitting ? (
-              <View className="h-[52px] items-center justify-center rounded-full bg-deep">
+              <View className="h-[54px] items-center justify-center rounded-2xl bg-deep">
                 <ActivityIndicator color="#fff" />
               </View>
             ) : (

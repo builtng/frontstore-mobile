@@ -66,7 +66,7 @@ function OrderCard({ o }: { o: any }) {
         <Avatar initial={storeInitial} color={storeColor} size={44} radius={13} fontSize={16} />
         <View className="flex-1">
           <T className="font-sans-bold text-base">{storeName}</T>
-          <T className="text-xs text-muted">#{orderId}</T>
+          <T className="text-xs text-muted">#{o.order_number || orderId}</T>
         </View>
         <T className="font-sans-bold text-base">{naira(totalAmount)}</T>
       </View>

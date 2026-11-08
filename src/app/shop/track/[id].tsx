@@ -1,142 +1,161 @@
-import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, Linking, Pressable, ScrollView, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft } from 'lucide-react-native';
-import { Screen, T, cx } from '@/components/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Check, Truck } from 'lucide-react-native';
+import { LoadError, Screen, SkeletonRows, T, cx } from '@/components/ui';
+import { BackHeader } from '@/features/seller/parts';
+import { WhatsAppIcon } from '@/features/setup/parts';
 import { naira } from '@/lib/format';
-import { trackOrder, confirmOrderDelivery } from '@/api/buyer';
+import { confirmOrderDelivery, trackOrder } from '@/api/buyer';
+import { orderStage } from '@/api/orders';
+import { apiGet } from '@/api/client';
 
+const time = (iso?: string | null) =>
+  iso ? new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '';
+const dayOnly = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '');
+
+/** Buyer's order tracking: only what the store has actually recorded, nothing made up. */
 export default function BuyerTrack() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
+  const { data: o, isLoading, isError, refetch } = useQuery({ queryKey: ['order-track', id], queryFn: () => trackOrder(id!), enabled: !!id });
 
-  const { data: liveOrder } = useQuery({
-    queryKey: ['order-track', id],
-    queryFn: () => trackOrder(id!),
-    enabled: !!id,
+  // No store WhatsApp: fall back to Frontstore support.
+  const { data: platform } = useQuery({
+    queryKey: ['public-settings'],
+    queryFn: () => apiGet<{ support_email?: string; support_whatsapp?: string }>('/public/settings'),
+    staleTime: 1000 * 60 * 60,
   });
 
-  const confirmMutation = useMutation({
+  const confirm = useMutation({
     mutationFn: () => confirmOrderDelivery(id!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['order-track', id] });
-      queryClient.invalidateQueries({ queryKey: ['buyer-orders'] });
+      qc.invalidateQueries({ queryKey: ['order-track', id] });
+      qc.invalidateQueries({ queryKey: ['buyer-orders'] });
     },
   });
 
-  const isDelivered = liveOrder?.order_status === 'delivered';
-  const [got, setGot] = useState(isDelivered);
+  if (isLoading || !o) {
+    return (
+      <Screen>
+        <BackHeader title="Track order" fallback="/shop/orders" />
+        <View className="px-5 pt-2">{isLoading ? <SkeletonRows count={3} /> : isError ? <LoadError what="this order" onRetry={() => refetch()} /> : null}</View>
+      </Screen>
+    );
+  }
 
-  const storeName = liveOrder?.store?.name || 'Store';
-  const courierName = liveOrder?.courier_name || 'Assigned Courier';
-  const trackingNumber = liveOrder?.tracking_number || `TRK-${id}`;
-  const courierInitial = courierName[0] || 'R';
-  const totalAmount = liveOrder ? liveOrder.total_amount : 0;
-
-  const doneStep = (liveOrder?.order_status === 'delivered' || got) ? 4 : liveOrder?.order_status === 'shipped' ? 3 : 2;
-
-  const steps: [string, string][] = [
-    ['Paid', 'Confirmed'],
-    [`Packed by ${storeName}`, 'Ready'],
-    ['Out for delivery', `${courierName}`],
-    ['Delivered', (got || liveOrder?.order_status === 'delivered') ? 'Delivered' : 'Pending'],
+  const raw: any = o;
+  const stage = orderStage(raw);
+  const store = raw.store ?? {};
+  const storeName = store.store_name || store.name || 'the store';
+  const storeWa = String(store.whatsapp_phone || '').replace(/\D/g, '').replace(/^0/, '234');
+  const cancelled = stage === 'cancelled' || stage === 'refunded';
+  const idx = { paid: 0, packed: 1, shipped: 2, delivered: 3, refunded: -1, cancelled: -1 }[stage];
+  const steps: Array<[string, string]> = [
+    ['Paid', time(raw.paid_at || raw.created_at)],
+    [`Packed by ${storeName}`, idx >= 1 ? 'Ready to send' : 'Waiting for the store'],
+    [raw.courier_name ? `With ${raw.courier_name}` : 'On the way', idx >= 2 ? (raw.tracking_number ? `Tracking ${raw.tracking_number}` : 'Sent out') : ''],
+    ['Delivered', idx >= 3 ? time(raw.delivery_confirmed_at || raw.updated_at) : raw.expected_delivery_date ? `Expected ${dayOnly(raw.expected_delivery_date)}` : ''],
   ];
-
-  const handleConfirm = () => {
-    setGot(true);
-    if (id && liveOrder) {
-      confirmMutation.mutate();
-    }
-  };
-
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/shop/orders'));
+  const items = (raw.items ?? []).filter((i: any) => !i.bundle_parent_id);
+  const total = Number(raw.display_amount ?? raw.total_amount ?? 0);
+  const headline = cancelled ? (stage === 'refunded' ? 'Refunded' : 'Cancelled')
+    : stage === 'delivered' ? 'Delivered'
+    : stage === 'shipped' ? 'On its way'
+    : stage === 'packed' ? 'Packed and ready'
+    : 'Order placed';
+  const sub = cancelled ? 'This order won’t be delivered.'
+    : stage === 'delivered' ? 'Enjoy your order!'
+    : raw.expected_delivery_date ? `Expected ${dayOnly(raw.expected_delivery_date)}`
+    : raw.delivery_address || '';
 
   return (
     <Screen>
-      <View className="flex-row items-center justify-between px-2 pb-1">
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} className="h-11 w-11 items-center justify-center">
-          <ChevronLeft size={24} color="#0E1A15" strokeWidth={2} />
-        </Pressable>
-        <View className="items-center">
-          <T className="font-sans-bold text-base">#{id || 'ORDER'}</T>
-          <T className="text-xs text-muted">{storeName}</T>
-        </View>
-        <View className="w-11" />
-      </View>
-
-      <ScrollView contentContainerClassName="gap-3 px-4 pb-6 pt-2">
-        <View className="gap-1.5 rounded-[22px] bg-ink p-5">
-          <T className="text-[13px] text-on-dark-2">{got ? 'Delivered' : 'Arriving'}</T>
-          <T className="font-display text-[26px] text-bg">{got ? 'Enjoy your order!' : 'Estimated today'}</T>
-          <T className="text-sm text-on-dark">{got ? 'Thanks for confirming.' : (liveOrder?.shipping_address ? `${liveOrder.shipping_address.street}, ${liveOrder.shipping_address.city}` : 'Delivery address on record')}</T>
+      <BackHeader title="Track order" sub={`#${raw.order_number || id}`} fallback="/shop/orders" />
+      <ScrollView contentContainerClassName="gap-3 px-5 pb-6 pt-1" showsVerticalScrollIndicator={false}>
+        <View className="gap-1 rounded-[24px] bg-green p-5">
+          <View className="flex-row items-center gap-2">
+            <Truck size={16} color="#CFE5D7" strokeWidth={2} />
+            <T className="text-[13px] text-mint-2">{storeName}</T>
+          </View>
+          <T className="font-display text-[26px] text-white">{headline}</T>
+          {sub ? <T numberOfLines={2} className="text-sm text-mint-2">{sub}</T> : null}
         </View>
 
-        <View className="rounded-[20px] border border-line bg-surface p-[18px]" accessibilityRole="list">
-          {steps.map(([title, sub], i) => {
-            const on = i < doneStep;
-            const last = i === steps.length - 1;
-            return (
-              <View key={title} className="flex-row gap-3.5" accessibilityLabel={`${title}, ${sub}${on ? ', done' : ''}`}>
-                <View className="items-center">
-                  <View className={cx('h-[22px] w-[22px] rounded-full', on ? 'bg-green' : 'border-2 border-[#BFC7C1] bg-surface')} />
-                  <View
-                    className={cx('min-h-6 w-0.5 flex-1', last ? 'bg-transparent' : i < doneStep - 1 ? 'bg-green' : 'bg-line')}
-                  />
+        {raw.courier_name ? (
+          <View className="flex-row items-center gap-3 rounded-[20px] border border-line bg-surface p-3.5">
+            <View className="h-11 w-11 items-center justify-center rounded-full bg-[#0E7490]">
+              <T className="font-sans-bold text-base text-white">{raw.courier_name[0].toUpperCase()}</T>
+            </View>
+            <View className="min-w-0 flex-1">
+              <T numberOfLines={1} className="font-sans-bold text-[15px]">{raw.courier_name}</T>
+              <T numberOfLines={1} className="text-[13px] text-muted">{raw.tracking_number ? `Tracking ${raw.tracking_number}` : storeName}</T>
+            </View>
+          </View>
+        ) : null}
+
+        {!cancelled ? (
+          <View className="rounded-[20px] border border-line bg-surface p-4">
+            {steps.map(([label, when], i) => {
+              const done = i <= idx;
+              const last = i === steps.length - 1;
+              return (
+                <View key={i} className="flex-row gap-3">
+                  <View className="items-center">
+                    <View className={cx('h-6 w-6 items-center justify-center rounded-full', done ? 'bg-green' : 'border-2 border-line-2 bg-surface')}>
+                      {done ? <Check size={13} color="#FFFFFF" strokeWidth={3} /> : null}
+                    </View>
+                    {!last ? <View className={cx('w-0.5 flex-1', i < idx ? 'bg-green' : 'bg-line')} style={{ minHeight: 26 }} /> : null}
+                  </View>
+                  <View className={cx('min-w-0 flex-1', !last && 'pb-4')}>
+                    <T className={cx('font-sans-bold text-[15px]', !done && 'text-muted')}>{label}</T>
+                    {when ? <T className="text-[13px] text-muted">{when}</T> : null}
+                  </View>
                 </View>
-                <View className={cx('flex-1 gap-0.5', !last && 'pb-4')}>
-                  <T className={cx('font-sans-bold text-[15px]', on ? 'text-ink' : 'text-[#8A918D]')}>{title}</T>
-                  <T className="text-[13px] text-muted">{sub}</T>
-                </View>
-              </View>
-            );
-          })}
-        </View>
+              );
+            })}
+          </View>
+        ) : null}
 
-        <View className="flex-row items-center gap-3 rounded-[20px] border border-line bg-surface px-4 py-3.5">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-cream">
-            <T className="font-sans-bold text-base">{courierInitial}</T>
-          </View>
-          <View className="flex-1">
-            <T className="font-sans-bold text-sm">{courierName}</T>
-            <T className="text-xs text-muted">{trackingNumber}</T>
-          </View>
-          <Pressable accessibilityRole="button" accessibilityLabel="Call rider" className="h-10 justify-center rounded-full border border-line-2 px-3.5">
-            <T className="font-sans-bold text-[13px]">Call</T>
-          </Pressable>
-        </View>
-
-        <View className="gap-2 rounded-[20px] border border-line bg-surface px-4 py-3.5">
-          {liveOrder?.items && liveOrder.items.length > 0 ? (
-            liveOrder.items.map((i) => (
-              <View key={i.id} className="flex-row justify-between">
-                <T className="text-sm">{i.product_name || i.product?.name || 'Item'} (x{i.quantity})</T>
-                <T className="font-sans-bold text-sm">{naira((i.price || (i.unit_price_kobo ? i.unit_price_kobo / 100 : 0)) * i.quantity)}</T>
-              </View>
-            ))
-          ) : (
-            <T className="py-2 text-sm text-muted">No line item details available.</T>
-          )}
-          <View className="flex-row justify-between border-t border-dashed border-line-2 pt-2">
-            <T className="font-sans-bold text-sm">Total Paid</T>
-            <T className="font-sans-bold text-sm">{naira(totalAmount)}</T>
+        <View className="rounded-[20px] border border-line bg-surface px-4 py-1.5">
+          {items.length ? items.map((it: any, i: number) => (
+            <View key={it.id ?? i} className="flex-row justify-between gap-3 border-b border-line py-2.5">
+              <T numberOfLines={2} className="min-w-0 flex-1 text-sm">{Number(it.quantity ?? 1)}× {it.product_name || it.product?.name || 'Item'}</T>
+              {it.product_price ? <T className="font-sans-bold text-sm">{naira(Number(it.product_price) * Number(it.quantity ?? 1))}</T> : null}
+            </View>
+          )) : null}
+          <View className="flex-row justify-between py-2.5">
+            <T className="font-sans-bold text-[15px]">Total paid</T>
+            <T className="font-sans-bold text-[15px]">{naira(total)}</T>
           </View>
         </View>
+        {confirm.error ? <T className="text-center text-[13px] text-danger">{(confirm.error as Error).message || 'Couldn’t confirm. Try again.'}</T> : null}
       </ScrollView>
 
-      <View style={{ paddingBottom: Math.max(insets.bottom, 12) }} className="flex-row gap-2.5 border-t border-line bg-bg px-4 pt-3">
-        <Pressable accessibilityRole="button" className="h-[54px] justify-center rounded-full border border-line-2 px-[18px]">
-          <T className="font-sans-bold text-[15px]">Get help</T>
-        </Pressable>
-        {got ? (
-          <Pressable accessibilityRole="button" className="h-[54px] flex-1 items-center justify-center rounded-full bg-ink">
-            <T className="font-sans-bold text-base text-white">Rate your order</T>
+      <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }} className="gap-2.5 px-5 pt-3">
+        {stage === 'shipped' ? (
+          <Pressable accessibilityRole="button" disabled={confirm.isPending} onPress={() => confirm.mutate()} className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-green">
+            {confirm.isPending ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
+            <T className="font-sans-bold text-base text-white">I’ve received it</T>
+          </Pressable>
+        ) : null}
+        {storeWa ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => Linking.openURL(`https://wa.me/${storeWa}?text=${encodeURIComponent(`Hi ${storeName}, about my order #${raw.order_number || id}`)}`)}
+            className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl border-[1.5px] border-line bg-surface"
+          >
+            <WhatsAppIcon size={18} color="#128C4B" />
+            <T className="font-sans-bold text-[15px]">Message the store</T>
           </Pressable>
         ) : (
-          <Pressable accessibilityRole="button" onPress={handleConfirm} className="h-[54px] flex-1 items-center justify-center rounded-full bg-deep">
-            <T className="font-sans-bold text-base text-white">I've received it</T>
+          <Pressable accessibilityRole="button" onPress={() => {
+              const wa = (platform?.support_whatsapp || '').replace(/\D/g, '');
+              Linking.openURL(wa ? `https://wa.me/${wa}` : `mailto:${platform?.support_email || 'hello@frontstore.ng'}?subject=${encodeURIComponent(`Order #${raw.order_number || id}`)}`);
+            }} className="h-[54px] items-center justify-center rounded-2xl border-[1.5px] border-line bg-surface">
+            <T className="font-sans-bold text-[15px]">Get help</T>
           </Pressable>
         )}
       </View>
