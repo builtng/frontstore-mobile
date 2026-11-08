@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
-import { AlertTriangle, Check, ChevronDown, ChevronUp, Ticket, X } from 'lucide-react-native';
+import { AlertTriangle, Check, ChevronDown, ChevronUp, QrCode, Ticket, X } from 'lucide-react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { LoadError, Screen, SkeletonRows, T, cx } from '@/components/ui';
 import { BackHeader } from '@/features/seller/parts';
 import { checkInTicket, getTicketEvents, type CheckInResult, type TicketEvent } from '@/api/tickets';
 import { C } from '@/lib/theme';
+import { TicketScanner, canScan } from '@/features/seller/TicketScanner';
 
 const when = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '';
@@ -77,6 +78,14 @@ export default function Tickets() {
   const input = useRef<TextInput>(null);
   const [code, setCode] = useState('');
   const [result, setResult] = useState<CheckInResult | null>(null);
+  const [scanning, setScanning] = useState(false);
+  // Each scan checks in straight away; the list catches up when the scanner closes.
+  const scanCode = async (c: string) => {
+    const r = await checkInTicket(c);
+    setResult(r);
+    if (r.kind === 'ok') qc.invalidateQueries({ queryKey: ['ticket-events'] });
+    return r;
+  };
   const { data: events, isLoading, isError, refetch } = useQuery({ queryKey: ['ticket-events'], queryFn: getTicketEvents });
 
   const check = useMutation({
@@ -97,7 +106,13 @@ export default function Tickets() {
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-3.5 px-5 pb-8 pt-1" showsVerticalScrollIndicator={false}>
           <View className="gap-3 rounded-[24px] bg-panel p-4">
             <T className="font-display text-lg text-white">Check someone in</T>
-            <T className="text-[13px] text-on-dark-2">Type the code on their ticket, e.g. TKT-8F3K2Q. Most phone cameras can read the QR and show it.</T>
+            {canScan ? (
+              <Pressable accessibilityRole="button" onPress={() => setScanning(true)} className="h-[52px] flex-row items-center justify-center gap-2 rounded-2xl bg-gold">
+                <QrCode size={20} color="#2A1B05" strokeWidth={2} />
+                <T className="font-sans-bold text-base text-[#2A1B05]">Scan QR code</T>
+              </Pressable>
+            ) : null}
+            <T className="text-[13px] text-on-dark-2">{canScan ? 'Or type the code on their ticket, e.g. TKT-8F3K2Q.' : 'Type the code on their ticket, e.g. TKT-8F3K2Q. Most phone cameras can read the QR and show it.'}</T>
             <View className="flex-row gap-2">
               <TextInput
                 ref={input}
@@ -112,8 +127,8 @@ export default function Tickets() {
                 accessibilityLabel="Ticket code"
                 className="h-[52px] min-w-0 flex-1 rounded-2xl bg-white/10 px-4 font-display text-lg tracking-[1px] text-white"
               />
-              <Pressable accessibilityRole="button" disabled={!code.trim() || check.isPending} onPress={submit} className={cx('h-[52px] items-center justify-center rounded-2xl bg-gold px-5', !code.trim() && 'opacity-50')}>
-                {check.isPending ? <ActivityIndicator color="#2A1B05" /> : <T className="font-sans-bold text-base text-[#2A1B05]">Check in</T>}
+              <Pressable accessibilityRole="button" disabled={!code.trim() || check.isPending} onPress={submit} className={cx('h-[52px] items-center justify-center rounded-2xl px-5', canScan ? 'border-[1.5px] border-white/30' : 'bg-gold', !code.trim() && 'opacity-50')}>
+                {check.isPending ? <ActivityIndicator color={canScan ? '#FFFFFF' : '#2A1B05'} /> : <T className={cx('font-sans-bold text-base', canScan ? 'text-white' : 'text-[#2A1B05]')}>Check in</T>}
               </Pressable>
             </View>
             {check.error ? <T className="text-[13px] text-[#FFB4A8]">{(check.error as Error).message || 'Couldn’t check that code. Try again.'}</T> : null}
@@ -136,6 +151,7 @@ export default function Tickets() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      <TicketScanner visible={scanning} onClose={() => setScanning(false)} onCode={scanCode} />
     </Screen>
   );
 }

@@ -20,7 +20,7 @@
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow FrontStore to access your photos to add product images.",
         "NSPhotoLibraryAddUsageDescription": "Allow FrontStore to save QR codes and images to your photo library.",
-        "NSCameraUsageDescription": "Allow FrontStore to access your camera to capture product photos.",
+        "NSCameraUsageDescription": "Allow FrontStore to use your camera to capture product photos and scan ticket QR codes at your events.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -74,6 +74,13 @@
             "targetSdkVersion": 36,
             "buildToolsVersion": "36.0.0"
           }
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow FrontStore to use your camera to capture product photos and scan ticket QR codes at your events.",
+          "recordAudioAndroid": false
         }
       ]
     ],
