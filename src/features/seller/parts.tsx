@@ -3,6 +3,7 @@ import { router, type Href } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 import { T, cx } from '@/components/ui';
+import { C } from '@/lib/theme';
 
 /** Go back, or to `fallback` when there is no history (deep link / web refresh). */
 export function goBack(fallback: Href = '/home') {
@@ -22,7 +23,7 @@ export function BackHeader({ title, sub, right, fallback }: { title: string; sub
           hitSlop={6}
           className="h-10 w-10 items-center justify-center rounded-full border border-line bg-surface"
         >
-          <ChevronLeft size={20} color="#0E1A15" strokeWidth={2} />
+          <ChevronLeft size={20} color={C.ink} strokeWidth={2} />
         </Pressable>
       </View>
       <View className="min-w-0 flex-1 items-center">
@@ -43,7 +44,7 @@ export function Chip({ label, on, onPress, className }: { label: string; on: boo
       onPress={onPress}
       className={cx('min-h-[38px] justify-center rounded-full px-4', on ? 'bg-ink' : 'border border-line bg-surface', className)}
     >
-      <T className={cx('font-sans-bold text-sm', on ? 'text-white' : 'text-ink')}>{label}</T>
+      <T className={cx('font-sans-bold text-sm', on ? 'text-bg' : 'text-ink')}>{label}</T>
     </Pressable>
   );
 }
@@ -57,7 +58,7 @@ export function Toggle({ value, onChange, label }: { value: boolean; onChange: (
       accessibilityState={{ checked: value }}
       onPress={() => onChange(!value)}
       hitSlop={8}
-      className={cx('h-[30px] w-[50px] justify-center rounded-full px-[3px]', value ? 'items-end bg-green' : 'items-start bg-[#CDD3CE]')}
+      className={cx('h-[30px] w-[50px] justify-center rounded-full px-[3px]', value ? 'items-end bg-green' : 'items-start bg-line-2')}
     >
       <View className="h-6 w-6 rounded-full bg-surface" />
     </Pressable>
@@ -65,7 +66,7 @@ export function Toggle({ value, onChange, label }: { value: boolean; onChange: (
 }
 
 /** Four-point sparkle used for the Nina AI badges. */
-export function Sparkle({ size = 12, color = '#1E5E3A' }: { size?: number; color?: string }) {
+export function Sparkle({ size = 12, color = C.accent }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
       <Path d="M12 2l2.2 6.5L21 11l-6.8 2.5L12 20l-2.2-6.5L3 11l6.8-2.5z" />
@@ -96,7 +97,7 @@ export function Segmented<V extends string>({ options, value, onChange, classNam
             accessibilityState={{ selected: on }}
             onPress={() => onChange(v)}
             style={on ? { shadowColor: '#0E1A15', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.14, shadowRadius: 3, elevation: 1 } : undefined}
-            className={cx('h-9 flex-1 items-center justify-center rounded-[10px]', on && 'bg-surface')}
+            className={cx('h-9 flex-1 items-center justify-center rounded-[10px]', on && 'bg-seg')}
           >
             <T numberOfLines={1} className={cx('font-sans-bold text-[13px]', on ? 'text-ink' : 'text-muted')}>{label}</T>
           </Pressable>

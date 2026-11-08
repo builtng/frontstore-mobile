@@ -9,6 +9,7 @@ import { Avatar, ChipRow, HeartToggle, useTileWidth } from '@/features/buyer/par
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { getMe } from '@/api/auth';
 import { getMarketplaceStores, getBuyerOrders, getSavedProducts, searchMarketplace, toggleSaveProduct } from '@/api/buyer';
+import { C } from '@/lib/theme';
 
 const CATS = ['For you', 'Fashion', 'Food', 'Beauty', 'Gadgets'];
 const CARD_SHADOW = { shadowColor: '#0E1A15', shadowOpacity: 0.06, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 };
@@ -65,8 +66,8 @@ export default function BuyerHome() {
               onPress={() => router.replace({ pathname: '/choose-mode', params: { setup_token: setup_token || '', initial_mode: 'shop' } })}
               className="flex-row items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5"
             >
-              <RefreshCw size={12} color="#1E5E3A" />
-              <T className="font-sans-bold text-xs text-green">Change to Selling</T>
+              <RefreshCw size={12} color={C.accent} />
+              <T className="font-sans-bold text-xs text-accent">Change to Selling</T>
             </Pressable>
           </View>
         ) : null}
@@ -79,7 +80,7 @@ export default function BuyerHome() {
           {user ? (
             <Link href="/switch?from=shop" asChild>
               <Pressable accessibilityRole="button" accessibilityLabel="Switch account" className="h-11 flex-row items-center gap-1.5 rounded-full border border-line bg-surface pl-1 pr-1.5">
-                <View className="h-[34px] w-[34px] items-center justify-center rounded-full bg-ink">
+                <View className="h-[34px] w-[34px] items-center justify-center rounded-full bg-panel">
                   <T className="font-sans-bold text-xs text-white">{userInitials}</T>
                 </View>
                 <ChevronDown size={14} color="#4A524E" strokeWidth={2} />
@@ -87,7 +88,7 @@ export default function BuyerHome() {
             </Link>
           ) : (
             <Link href="/login" asChild>
-              <Pressable accessibilityRole="button" accessibilityLabel="Sign in" className="h-10 items-center justify-center rounded-full bg-ink px-4">
+              <Pressable accessibilityRole="button" accessibilityLabel="Sign in" className="h-10 items-center justify-center rounded-full bg-panel px-4">
                 <T className="font-sans-bold text-xs text-white">Sign in</T>
               </Pressable>
             </Link>
@@ -96,18 +97,18 @@ export default function BuyerHome() {
 
         <Link href="/shop/search" asChild>
           <Pressable accessibilityRole="search" className="h-[50px] flex-row items-center gap-2.5 rounded-2xl border border-line bg-surface px-4">
-            <Search size={18} color="#5F6B65" strokeWidth={2} />
+            <Search size={18} color={C.muted} strokeWidth={2} />
             <T className="text-[15px] text-muted">Search stores and products</T>
           </Pressable>
         </Link>
 
         {activeOrder ? (
           <Link href={`/shop/track/${activeOrder.id}`} asChild>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Track order ${activeOrder.id}`} className="flex-row items-center gap-3 rounded-[20px] bg-ink p-3.5">
+            <Pressable accessibilityRole="button" accessibilityLabel={`Track order ${activeOrder.id}`} className="flex-row items-center gap-3 rounded-[20px] bg-panel p-3.5">
               <Avatar initial={(activeOrder.store?.name || activeOrder.store?.store_name)?.[0] ?? 'S'} color={activeOrder.store?.primary_color ?? '#8E4A5E'} size={44} radius={12} fontSize={16} />
               <View className="flex-1 gap-1.5">
-                <T className="text-sm text-bg">
-                  <T className="font-sans-bold text-sm text-bg">{activeOrder.order_status === 'shipped' ? 'Out for delivery' : 'Processing'}</T> · {activeOrder.store?.name || activeOrder.store?.store_name || 'Store'}
+                <T className="text-sm text-white">
+                  <T className="font-sans-bold text-sm text-white">{activeOrder.order_status === 'shipped' ? 'Out for delivery' : 'Processing'}</T> · {activeOrder.store?.name || activeOrder.store?.store_name || 'Store'}
                 </T>
                 <View className="flex-row gap-1">
                   {[0, 1, 2, 3].map((i) => (
@@ -126,7 +127,7 @@ export default function BuyerHome() {
           <T className="font-display text-lg">Stores on Frontstore</T>
           <Link href={{ pathname: '/shop/search', params: { filter: 'Stores' } }} asChild>
             <Pressable accessibilityRole="link" hitSlop={12}>
-              <T className="font-sans-bold text-[13px] text-green">See all</T>
+              <T className="font-sans-bold text-[13px] text-accent">See all</T>
             </Pressable>
           </Link>
         </View>
@@ -215,7 +216,7 @@ export default function BuyerHome() {
               <T className="font-sans-bold text-[15px]">Got something to sell?</T>
               <T className="text-[13px] text-muted">Open your own Frontstore in minutes.</T>
             </View>
-            <T className="font-sans-bold text-[13px] text-green">Start selling</T>
+            <T className="font-sans-bold text-[13px] text-accent">Start selling</T>
           </Pressable>
         </Link>
       </ScrollView>

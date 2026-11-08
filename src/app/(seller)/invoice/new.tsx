@@ -8,6 +8,7 @@ import { Screen, T, cx } from '@/components/ui';
 import { BackHeader, Segmented } from '@/features/seller/parts';
 import { createInvoice } from '@/api/invoices';
 import { formatNaira } from '@/lib/format';
+import { C } from '@/lib/theme';
 
 type Line = { name: string; qty: string; price: string };
 const box = 'h-[50px] rounded-[14px] border border-line bg-surface px-3.5 font-sans-semibold text-base text-ink';
@@ -66,16 +67,16 @@ export default function NewInvoice() {
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-3.5 px-5 pb-6 pt-1.5" showsVerticalScrollIndicator={false}>
           <View className="gap-1.5">
             <Label>Customer name</Label>
-            <TextInput value={name} onChangeText={setName} placeholder="e.g. Mrs Funmi Bello" placeholderTextColor="#8A948F" maxLength={150} accessibilityLabel="Customer name" className={box} />
+            <TextInput value={name} onChangeText={setName} placeholder="e.g. Mrs Funmi Bello" placeholderTextColor={C.placeholder} maxLength={150} accessibilityLabel="Customer name" className={box} />
           </View>
           <View className="flex-row gap-2.5">
             <View className="min-w-0 flex-1 gap-1.5">
               <Label>WhatsApp (optional)</Label>
-              <TextInput value={whatsapp} onChangeText={setWhatsapp} placeholder="0803 000 0000" placeholderTextColor="#8A948F" keyboardType="phone-pad" accessibilityLabel="Customer WhatsApp number, optional" className={box} />
+              <TextInput value={whatsapp} onChangeText={setWhatsapp} placeholder="0803 000 0000" placeholderTextColor={C.placeholder} keyboardType="phone-pad" accessibilityLabel="Customer WhatsApp number, optional" className={box} />
             </View>
             <View className="min-w-0 flex-1 gap-1.5">
               <Label>Email (optional)</Label>
-              <TextInput value={email} onChangeText={setEmail} placeholder="For emailing it" placeholderTextColor="#8A948F" keyboardType="email-address" autoCapitalize="none" accessibilityLabel="Customer email, optional" className={cx(box, !emailOk && 'border-danger')} />
+              <TextInput value={email} onChangeText={setEmail} placeholder="For emailing it" placeholderTextColor={C.placeholder} keyboardType="email-address" autoCapitalize="none" accessibilityLabel="Customer email, optional" className={cx(box, !emailOk && 'border-danger')} />
             </View>
           </View>
 
@@ -85,10 +86,10 @@ export default function NewInvoice() {
               {lines.map((l, i) => (
                 <View key={i} className={cx('gap-2 p-3', i > 0 && 'border-t border-line')}>
                   <View className="flex-row items-center gap-2">
-                    <TextInput value={l.name} onChangeText={(v) => setLine(i, { name: v })} placeholder="Item, e.g. Aso-ebi gown" placeholderTextColor="#8A948F" accessibilityLabel={`Item ${i + 1}`} className="h-11 min-w-0 flex-1 font-sans-semibold text-base text-ink" />
+                    <TextInput value={l.name} onChangeText={(v) => setLine(i, { name: v })} placeholder="Item, e.g. Aso-ebi gown" placeholderTextColor={C.placeholder} accessibilityLabel={`Item ${i + 1}`} className="h-11 min-w-0 flex-1 font-sans-semibold text-base text-ink" />
                     {lines.length > 1 ? (
                       <Pressable accessibilityRole="button" accessibilityLabel={`Remove item ${i + 1}`} hitSlop={8} onPress={() => setLines((cur) => cur.filter((_, k) => k !== i))} className="h-8 w-8 items-center justify-center rounded-full bg-bg">
-                        <X size={14} color="#5F6B65" strokeWidth={2.4} />
+                        <X size={14} color={C.muted} strokeWidth={2.4} />
                       </Pressable>
                     ) : null}
                   </View>
@@ -99,14 +100,14 @@ export default function NewInvoice() {
                     </View>
                     <View className="h-11 flex-1 flex-row items-center gap-1 rounded-xl bg-bg px-3">
                       <T className="text-sm text-muted">₦</T>
-                      <TextInput value={l.price} onChangeText={(v) => setLine(i, { price: v.replace(/\D/g, '').slice(0, 9) })} keyboardType="number-pad" placeholder="Price each" placeholderTextColor="#8A948F" accessibilityLabel={`Price each for item ${i + 1}`} className="h-full flex-1 font-sans-bold text-base text-ink" />
+                      <TextInput value={l.price} onChangeText={(v) => setLine(i, { price: v.replace(/\D/g, '').slice(0, 9) })} keyboardType="number-pad" placeholder="Price each" placeholderTextColor={C.placeholder} accessibilityLabel={`Price each for item ${i + 1}`} className="h-full flex-1 font-sans-bold text-base text-ink" />
                     </View>
                   </View>
                 </View>
               ))}
               <Pressable accessibilityRole="button" onPress={() => setLines((cur) => [...cur, { name: '', qty: '1', price: '' }])} className="flex-row items-center justify-center gap-1.5 border-t border-line py-3">
-                <Plus size={16} color="#1E5E3A" strokeWidth={2.4} />
-                <T className="font-sans-bold text-sm text-green">Add another item</T>
+                <Plus size={16} color={C.accent} strokeWidth={2.4} />
+                <T className="font-sans-bold text-sm text-accent">Add another item</T>
               </Pressable>
             </View>
           </View>
@@ -118,7 +119,7 @@ export default function NewInvoice() {
 
           <View className="gap-1.5">
             <Label>Note (optional)</Label>
-            <TextInput value={notes} onChangeText={setNotes} multiline textAlignVertical="top" placeholder="e.g. 50% deposit now, balance on pickup" placeholderTextColor="#8A948F" accessibilityLabel="Note, optional" className="min-h-[80px] rounded-[14px] border border-line bg-surface px-3.5 py-3 font-sans text-[15px] text-ink" />
+            <TextInput value={notes} onChangeText={setNotes} multiline textAlignVertical="top" placeholder="e.g. 50% deposit now, balance on pickup" placeholderTextColor={C.placeholder} accessibilityLabel="Note, optional" className="min-h-[80px] rounded-[14px] border border-line bg-surface px-3.5 py-3 font-sans text-[15px] text-ink" />
           </View>
         </ScrollView>
 
@@ -128,7 +129,7 @@ export default function NewInvoice() {
             <T className="text-sm text-muted">Total</T>
             <T className="font-display text-xl">{formatNaira(total)}</T>
           </View>
-          <Pressable accessibilityRole="button" disabled={!ready || save.isPending} onPress={() => save.mutate()} className={cx('h-[54px] flex-row items-center justify-center gap-2 rounded-2xl', ready ? 'bg-green' : 'bg-[#BFD3C6]')}>
+          <Pressable accessibilityRole="button" disabled={!ready || save.isPending} onPress={() => save.mutate()} className={cx('h-[54px] flex-row items-center justify-center gap-2 rounded-2xl', ready ? 'bg-green' : 'bg-disabled')}>
             {save.isPending ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
             <T className="font-sans-bold text-base text-white">{save.isPending ? 'Saving…' : 'Create invoice'}</T>
           </Pressable>

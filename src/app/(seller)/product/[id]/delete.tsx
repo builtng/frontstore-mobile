@@ -9,6 +9,7 @@ import { Grip, goBack } from '@/features/seller/parts';
 import { deleteProduct } from '@/api/products';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { useSellerProduct } from '@/features/products/useSellerProduct';
+import { C } from '@/lib/theme';
 
 export default function DeleteProduct() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -57,8 +58,8 @@ export default function DeleteProduct() {
         className="absolute bottom-0 left-0 right-0 gap-[18px] rounded-t-[28px] bg-surface px-5 pt-3"
       >
         <Grip />
-        <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-[#FDECE8]">
-          <Trash2 size={26} color="#9A2C14" strokeWidth={2} />
+        <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-danger-bg">
+          <Trash2 size={26} color={C.danger} strokeWidth={2} />
         </View>
         <View className="gap-2">
           <T className="font-display text-2xl tracking-[-0.24px]">Delete "{name}"?</T>
@@ -74,9 +75,9 @@ export default function DeleteProduct() {
           </View>
         </View>
         <View className="rounded-[14px] border border-dashed border-line-2 px-3.5 py-3">
-          <T className="text-sm leading-[21px] text-[#26322D]">
+          <T className="text-sm leading-[21px] text-body">
             Just out of stock?{' '}
-            <T accessibilityRole="link" onPress={() => router.replace(`/product/${id}`)} className="font-sans-bold text-sm text-green">
+            <T accessibilityRole="link" onPress={() => router.replace(`/product/${id}`)} className="font-sans-bold text-sm text-accent">
               Hide it instead
             </T>{' '}
             - you can bring it back any time.

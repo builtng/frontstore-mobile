@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomBar, Heading, Progress, StepHeader } from '@/features/setup/parts';
 import { initialOf, toSlug, updateDraft, useDraft } from '@/features/setup/draft';
+import { C } from '@/lib/theme';
 
 const SWATCHES: Array<[string, string]> = [
   ['Terracotta', '#C8553D'], ['Forest', '#1E5E3A'], ['Indigo', '#2F5D8A'], ['Plum', '#7B3F61'], ['Ochre', '#8A5A12'], ['Ink', '#0E1A15'],
@@ -36,7 +37,7 @@ export default function StoreStyle() {
                 onPress={() => updateDraft({ category: c })}
                 className={cx('h-[42px] justify-center rounded-full border-[1.5px] px-4', on ? 'border-green bg-mint' : 'border-line bg-surface')}
               >
-                <T className={cx('font-sans-bold text-sm', on ? 'text-green' : 'text-ink')}>{c}</T>
+                <T className={cx('font-sans-bold text-sm', on ? 'text-accent' : 'text-ink')}>{c}</T>
               </Pressable>
             );
           })}
@@ -52,7 +53,7 @@ export default function StoreStyle() {
                 accessibilityLabel={label}
                 accessibilityState={{ checked: on }}
                 onPress={() => updateDraft({ color: hex })}
-                style={{ backgroundColor: hex, borderColor: on ? '#0E1A15' : '#FFFFFF' }}
+                style={{ backgroundColor: hex, borderColor: on ? C.ink : '#FFFFFF' }}
                 className="h-11 w-11 rounded-full border-[3px]"
               />
             );
@@ -68,7 +69,7 @@ export default function StoreStyle() {
                 accessibilityRole="button"
                 accessibilityLabel={logo_uri ? 'Change logo' : 'Add logo'}
                 onPress={pickLogo}
-                className="h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-2xl border-4 border-surface bg-ink"
+                className="h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-2xl border-4 border-surface bg-panel"
               >
                 {logo_uri ? (
                   <Image source={{ uri: logo_uri }} className="h-full w-full" resizeMode="cover" />

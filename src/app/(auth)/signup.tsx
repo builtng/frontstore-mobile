@@ -5,6 +5,7 @@ import { ShieldCheck } from 'lucide-react-native';
 import { Button, Screen, T } from '@/components/ui';
 import { BottomBar, Heading, Labelled, Progress, RingInput, StepHeader } from '@/features/setup/parts';
 import { ContactField, NeedsEmail, isEmail, isLocalPhone, useSendCode, type Way } from '@/features/auth/ContactField';
+import { C } from '@/lib/theme';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -49,7 +50,7 @@ export default function Signup() {
           <ContactField way={way} onWay={(w) => { setWay(w); code.reset(); }} value={value} onChange={(v) => { setValue(v); code.reset(); }} onSubmit={next} />
           {code.needsEmail ? <NeedsEmail value={code.extraEmail} onChange={code.setExtraEmail} onSubmit={next} /> : null}
           <View className="flex-row items-center gap-2">
-            <ShieldCheck size={16} color="#1E5E3A" strokeWidth={2} />
+            <ShieldCheck size={16} color={C.accent} strokeWidth={2} />
             <T className="flex-1 text-[13px] text-muted">We send a 6-digit code. No password to remember.</T>
           </View>
         </ScrollView>
@@ -63,7 +64,7 @@ export default function Signup() {
           <Link href="/login" asChild>
             <Pressable accessibilityRole="link" className="min-h-[44px] items-center justify-center">
               <T className="text-center font-sans-semibold text-sm text-muted">
-                Already have a store? <T className="font-sans-semibold text-sm text-green">Log in</T>
+                Already have a store? <T className="font-sans-semibold text-sm text-accent">Log in</T>
               </T>
             </Pressable>
           </Link>

@@ -16,6 +16,8 @@ export type PaymentLink = {
   expires_at?: string | null;
   created_at: string;
   payments_count?: number;
+  /** How many payments came in (sent by newer servers). */
+  receipts_count?: number;
 };
 
 export type LinkPayment = { customer_name: string | null; customer_email?: string | null; amount: number | null; message?: string | null; paid_at: string };

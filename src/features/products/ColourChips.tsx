@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { T, cx } from '@/components/ui';
+import { C } from '@/lib/theme';
 
 const QUICK = ['Black', 'White', 'Red', 'Blue', 'Navy', 'Green', 'Brown', 'Pink', 'Gold', 'Grey'];
 const MAX = 8;
@@ -28,10 +29,10 @@ export function ColourChips({ value, onChange }: { value: string[]; onChange: (c
             accessibilityRole="button"
             accessibilityLabel={`${c}, remove colour`}
             onPress={() => onChange(value.filter((v) => v !== c))}
-            className="flex-row items-center gap-1.5 rounded-xl bg-ink px-3.5 py-[9px]"
+            className="flex-row items-center gap-1.5 rounded-xl bg-panel px-3.5 py-[9px]"
           >
-            <T className="font-sans-bold text-sm text-bg">{c}</T>
-            <T className="text-sm text-bg/60">×</T>
+            <T className="font-sans-bold text-sm text-white">{c}</T>
+            <T className="text-sm text-white/60">×</T>
           </Pressable>
         ))}
         {value.length < MAX ? (
@@ -40,7 +41,7 @@ export function ColourChips({ value, onChange }: { value: string[]; onChange: (c
             accessibilityLabel="Add colour"
             accessibilityState={{ expanded: adding }}
             onPress={() => setAdding(!adding)}
-            className="rounded-xl border border-dashed border-[#BFC7C1] px-3.5 py-[9px]"
+            className="rounded-xl border border-dashed border-rule px-3.5 py-[9px]"
           >
             <T className="font-sans-bold text-sm text-muted">{adding ? 'Done' : '+ Add'}</T>
           </Pressable>
@@ -62,7 +63,7 @@ export function ColourChips({ value, onChange }: { value: string[]; onChange: (c
             onSubmitEditing={() => add(typed)}
             returnKeyType="done"
             placeholder="Other colour, e.g. Saffron"
-            placeholderTextColor="#8A948F"
+            placeholderTextColor={C.placeholder}
             accessibilityLabel="Colour name"
             className={cx('h-11 rounded-xl border border-line-2 bg-surface px-3 font-sans text-base text-ink')}
           />

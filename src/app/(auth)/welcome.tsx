@@ -16,15 +16,15 @@ function Art() {
       <View style={[{ position: 'absolute', left: 22, top: 40, width: 200, transform: [{ rotate: '-7deg' }] }, lift]} className="gap-2 rounded-3xl bg-surface p-3.5">
         <View className="h-[120px] rounded-2xl bg-saffron" />
         <T className="font-sans-bold text-sm">Àdìrẹ two-piece</T>
-        <T className="font-sans-bold text-[15px] text-green">₦18,500</T>
-        <View className="h-9 items-center justify-center rounded-xl bg-ink">
+        <T className="font-sans-bold text-[15px] text-accent">₦18,500</T>
+        <View className="h-9 items-center justify-center rounded-xl bg-panel">
           <T className="font-sans-bold text-[13px] text-white">Add to cart</T>
         </View>
       </View>
       <View style={[{ position: 'absolute', right: 8, top: 150, width: 190, transform: [{ rotate: '6deg' }] }, lift]} className="gap-1.5 rounded-[22px] bg-surface p-3.5">
         <View className="flex-row justify-between">
           <T className="text-xs text-muted">New order</T>
-          <T className="font-sans-bold text-xs text-green">Paid</T>
+          <T className="font-sans-bold text-xs text-accent">Paid</T>
         </View>
         <T className="font-sans-bold text-[15px]">Chioma A.</T>
         <T className="text-xs text-muted">Two-piece · M x2</T>
@@ -75,7 +75,7 @@ export default function Welcome() {
 
         <View className="mt-auto gap-2.5 pt-8">
           <Pressable accessibilityRole="button" onPress={() => open('/signup')} className="h-14 items-center justify-center rounded-2xl bg-surface">
-            <T className="font-sans-bold text-base text-green">Create my free store</T>
+            <T className="font-sans-bold text-base text-accent">Create my free store</T>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={() => open('/login')} className="h-14 items-center justify-center rounded-2xl border-[1.5px] border-white/35">
             <T className="font-sans-bold text-base text-white">I already have a store</T>

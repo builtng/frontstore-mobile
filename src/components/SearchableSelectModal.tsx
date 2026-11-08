@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Check, Search, X } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
+import { C } from '@/lib/theme';
 
 export type SelectItem = {
   id: string;
@@ -100,19 +101,19 @@ export function SearchableSelectModal({
                 onPress={onClose}
                 className="h-9 w-9 items-center justify-center rounded-full bg-bg"
               >
-                <X size={18} color="#0E1A15" strokeWidth={2.4} />
+                <X size={18} color={C.ink} strokeWidth={2.4} />
               </Pressable>
             </View>
 
             {/* Search Input */}
             <View className="px-5 pb-3 pt-1">
               <View className="h-12 flex-row items-center rounded-2xl border border-line-2 bg-bg px-3.5">
-                <Search size={18} color="#8A938E" strokeWidth={2.2} />
+                <Search size={18} color={C.placeholder} strokeWidth={2.2} />
                 <TextInput
                   value={search}
                   onChangeText={setSearch}
                   placeholder={placeholder}
-                  placeholderTextColor="#8A938E"
+                  placeholderTextColor={C.placeholder}
                   autoCapitalize="none"
                   autoCorrect={false}
                   clearButtonMode="while-editing"
@@ -120,7 +121,7 @@ export function SearchableSelectModal({
                 />
                 {search.length > 0 && Platform.OS !== 'ios' ? (
                   <Pressable onPress={() => setSearch('')} className="p-1">
-                    <X size={16} color="#8A938E" strokeWidth={2} />
+                    <X size={16} color={C.placeholder} strokeWidth={2} />
                   </Pressable>
                 ) : null}
               </View>
@@ -129,7 +130,7 @@ export function SearchableSelectModal({
             {/* Results List */}
             {loading ? (
               <View className="h-48 items-center justify-center gap-2">
-                <ActivityIndicator size="small" color="#1E5E3A" />
+                <ActivityIndicator size="small" color={C.accent} />
                 <T className="text-xs text-muted">Loading options...</T>
               </View>
             ) : filtered.length === 0 ? (
@@ -154,7 +155,7 @@ export function SearchableSelectModal({
                       onPress={() => handleSelect(item)}
                       className={cx(
                         'my-0.5 flex-row items-center justify-between rounded-2xl px-4 py-3.5 transition-colors',
-                        isSelected ? 'bg-[#E8F3EE]' : 'bg-surface active:bg-bg'
+                        isSelected ? 'bg-mint' : 'bg-surface active:bg-bg'
                       )}
                     >
                       <View className="flex-1 flex-row items-center gap-3">

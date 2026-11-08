@@ -20,7 +20,7 @@ export function ProductImage({ uri, name, className, textClassName = 'text-lg' }
 
   return (
     // A neutral background while the photo loads, so a letter never flashes first.
-    <View className={cx('items-center justify-center overflow-hidden', uri && !failed ? 'bg-[#E9ECE7]' : 'bg-[#E9A23B]', className)}>
+    <View className={cx('items-center justify-center overflow-hidden', uri && !failed ? 'bg-sand' : 'bg-[#E9A23B]', className)}>
       {uri && !failed ? (
         <Image source={{ uri }} fadeDuration={0} onError={() => setFailed(true)} accessibilityIgnoresInvertColors className="h-full w-full" resizeMode="cover" />
       ) : (

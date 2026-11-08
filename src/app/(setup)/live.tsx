@@ -11,6 +11,7 @@ import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 import { T } from '@/components/ui';
 import { WhatsAppIcon } from '@/features/setup/parts';
 import { toSlug, useDraft } from '@/features/setup/draft';
+import { C } from '@/lib/theme';
 
 /** Confetti pieces from the design (x as a share of screen width), kept clear of the text. */
 const BITS: Array<[number, number, number, number, string, number]> = [
@@ -55,14 +56,14 @@ export default function Live() {
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: Math.max(insets.bottom + 16, 40) }} className="px-6 pt-[30px]">
         <View className="items-center gap-4">
           <View style={{ shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 20, shadowOffset: { width: 0, height: 20 }, elevation: 10 }} className="mt-10 h-[92px] w-[92px] items-center justify-center rounded-[30px] bg-surface">
-            <Check size={44} color="#1E5E3A" strokeWidth={2.6} />
+            <Check size={44} color={C.accent} strokeWidth={2.6} />
           </View>
           <T accessibilityRole="header" className="text-center font-display-x text-[34px] leading-[37px] tracking-[-0.68px] text-white">Your store is live!</T>
           <T className="text-center text-base leading-6 text-mint-2">Share your link and your first customer can pay right away.</T>
           <View className="w-full flex-row items-center gap-2 rounded-full bg-white/15 py-1.5 pl-4 pr-1.5">
             <T numberOfLines={1} className="flex-1 font-sans-bold text-[15px] text-white">{slug ? link : 'Getting your link…'}</T>
             <Pressable accessibilityRole="button" accessibilityLabel="Copy store link" disabled={!slug} onPress={copyLink} className="h-10 items-center justify-center rounded-full bg-surface px-4">
-              <T className="font-sans-bold text-sm text-green">{copied ? 'Copied' : 'Copy'}</T>
+              <T className="font-sans-bold text-sm text-accent">{copied ? 'Copied' : 'Copy'}</T>
             </Pressable>
           </View>
           <Pressable accessibilityRole="link" disabled={!slug} onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug } })} className="min-h-11 justify-center">

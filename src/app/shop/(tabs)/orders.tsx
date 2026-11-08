@@ -7,6 +7,7 @@ import { naira } from '@/lib/format';
 import { Avatar, Segmented } from '@/features/buyer/parts';
 import { getBuyerOrders } from '@/api/buyer';
 import { Order } from '@/api/types';
+import { C } from '@/lib/theme';
 
 const STATUS = {
   out: { label: 'Out for delivery', bg: '#DCE7F3', fg: '#1F3F66' },
@@ -70,7 +71,7 @@ function OrderCard({ o }: { o: any }) {
         </View>
         <T className="font-sans-bold text-base">{naira(totalAmount)}</T>
       </View>
-      <T className="text-sm text-[#26322D]">{itemsText}</T>
+      <T className="text-sm text-body">{itemsText}</T>
       <View className="flex-row items-center justify-between">
         <View style={{ backgroundColor: st.bg }} className="rounded-full px-2.5 py-[5px]">
           <T style={{ color: st.fg }} className="font-sans-bold text-xs">{st.label}</T>
@@ -78,7 +79,7 @@ function OrderCard({ o }: { o: any }) {
         <View className="flex-row gap-2">
           {second.href ? <Link href={second.href} asChild>{secondBtn}</Link> : secondBtn}
           <Link href={`/shop/track/${orderId}`} asChild>
-            <Pressable accessibilityRole="button" accessibilityLabel={`${active ? 'Track' : 'Details for'} order ${orderId}`} className="h-10 justify-center rounded-full bg-ink px-3.5">
+            <Pressable accessibilityRole="button" accessibilityLabel={`${active ? 'Track' : 'Details for'} order ${orderId}`} className="h-10 justify-center rounded-full bg-panel px-3.5">
               <T className="font-sans-bold text-[13px] text-white">{active ? 'Track' : 'Details'}</T>
             </Pressable>
           </Link>

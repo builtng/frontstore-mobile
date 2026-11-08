@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { T } from './ui';
+import { C } from '@/lib/theme';
 type Item = { name: string; label: string; Icon: React.ComponentType<any>; useBadge?: () => number };
 
 /**
@@ -26,7 +27,7 @@ export function makeTabBar(items: Item[], centerHref?: string) {
     const nodes = items.map((it) => {
       const index = state.routes.findIndex((r: any) => r.name === it.name);
       const active = state.index === index;
-      const color = active ? '#1E5E3A' : '#7A847F';
+      const color = active ? C.accent : C.faint;
       return (
         <Pressable
           key={it.name}

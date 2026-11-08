@@ -78,7 +78,7 @@ export default function BuyerMyReviews() {
                     </View>
                     <Stars n={r.stars} />
                   </View>
-                  {r.text ? <T className="text-sm leading-[21px] text-[#26322D]">{r.text}</T> : null}
+                  {r.text ? <T className="text-sm leading-[21px] text-body">{r.text}</T> : null}
                   {r.reply ? (
                     <View className="rounded-xl bg-bg px-3 py-2.5">
                       <T className="font-sans-bold text-[13px] leading-[19px]">{r.store} replied</T>

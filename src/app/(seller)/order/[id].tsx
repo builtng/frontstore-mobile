@@ -12,6 +12,7 @@ import { getOrder, updateOrderStatus, refundOrder } from '@/api/orders';
 import { OrderStatus } from '@/api/types';
 import { formatNaira } from '@/lib/format';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
+import { C } from '@/lib/theme';
 
 const STEPS: OrderStatus[] = ['paid', 'packed', 'shipped', 'delivered'];
 const STEP_LABELS = ['Paid', 'Packed', 'Shipped', 'Delivered'];
@@ -120,7 +121,7 @@ export default function OrderDetail() {
         right={
           isRefunded || !isPaid ? undefined : (
             <Pressable accessibilityRole="button" accessibilityLabel="Refund this order" onPress={() => setRefundOpen(true)} hitSlop={6} className="h-10 w-10 items-center justify-center rounded-full border border-line bg-surface">
-              <MoreHorizontal size={20} color="#0E1A15" strokeWidth={2} />
+              <MoreHorizontal size={20} color={C.ink} strokeWidth={2} />
             </Pressable>
           )
         }
@@ -142,14 +143,14 @@ export default function OrderDetail() {
           <View className="flex-row gap-1" accessibilityLabel={`Progress: ${STEP_LABELS[stepIdx]}`}>
             {STEPS.map((step, i) => (
               <View key={step} className="flex-1 gap-1.5">
-                <View style={{ backgroundColor: i <= stepIdx && !isRefunded ? '#1E5E3A' : '#E3E7E3' }} className="h-[5px] rounded-full" />
-                <T style={{ color: i <= stepIdx && !isRefunded ? '#1E5E3A' : '#8A948F' }} className="font-sans-bold text-[11px]">{STEP_LABELS[i]}</T>
+                <View style={{ backgroundColor: i <= stepIdx && !isRefunded ? C.green : C.line }} className="h-[5px] rounded-full" />
+                <T style={{ color: i <= stepIdx && !isRefunded ? C.accent : C.placeholder }} className="font-sans-bold text-[11px]">{STEP_LABELS[i]}</T>
               </View>
             ))}
           </View>
           {order.courier_name ? (
             <View className="rounded-xl bg-mint px-3 py-2">
-              <T className="text-[13px] text-green">Sent with {order.courier_name}{order.tracking_number ? ` · ${order.tracking_number}` : ''}</T>
+              <T className="text-[13px] text-accent">Sent with {order.courier_name}{order.tracking_number ? ` · ${order.tracking_number}` : ''}</T>
             </View>
           ) : null}
         </View>
@@ -164,7 +165,7 @@ export default function OrderDetail() {
           </View>
           {customerPhone ? (
             <Pressable accessibilityRole="button" accessibilityLabel={`Call ${customerName}`} onPress={() => Linking.openURL(`tel:${customerPhone}`)} className="h-10 w-10 items-center justify-center rounded-full bg-mint">
-              <Phone size={17} color="#1E5E3A" strokeWidth={2} />
+              <Phone size={17} color={C.accent} strokeWidth={2} />
             </Pressable>
           ) : null}
           {wa ? (
@@ -175,7 +176,7 @@ export default function OrderDetail() {
         </View>
         {address ? (
           <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(address)}`)} className="-mt-1 min-h-9 justify-center self-start px-1">
-            <T className="font-sans-bold text-[13px] text-green">Open address in Maps</T>
+            <T className="font-sans-bold text-[13px] text-accent">Open address in Maps</T>
           </Pressable>
         ) : null}
 
@@ -216,8 +217,8 @@ export default function OrderDetail() {
         {actionError ? <T accessibilityLiveRegion="polite" className="text-center text-sm text-danger">{actionError.message}</T> : null}
         {stepIdx === 3 || isRefunded || currentStatus === 'cancelled' ? (
           <View accessibilityLiveRegion="polite" className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-mint">
-            {stepIdx === 3 && !isRefunded ? <Check size={18} color="#1E5E3A" strokeWidth={2.4} /> : null}
-            <T className="font-sans-bold text-[15px] text-green">{isRefunded ? `Refunded ${formatNaira(totalAmountKobo / 100)}` : currentStatus === 'cancelled' ? 'Cancelled' : 'Delivered. Nice work!'}</T>
+            {stepIdx === 3 && !isRefunded ? <Check size={18} color={C.accent} strokeWidth={2.4} /> : null}
+            <T className="font-sans-bold text-[15px] text-accent">{isRefunded ? `Refunded ${formatNaira(totalAmountKobo / 100)}` : currentStatus === 'cancelled' ? 'Cancelled' : 'Delivered. Nice work!'}</T>
           </View>
         ) : (
           <Pressable accessibilityRole="button" onPress={advanceStatus} disabled={statusMutation.isPending} className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-green">
@@ -237,11 +238,11 @@ export default function OrderDetail() {
             <T className="-mt-2 text-sm text-muted">The customer gets the courier name and tracking number.</T>
             <View className="gap-1.5">
               <T className="font-sans-bold text-[13px] text-muted">Courier</T>
-              <TextInput autoFocus value={courierName} onChangeText={setCourierName} placeholder="GIG Logistics, Fez, a dispatch rider…" placeholderTextColor="#8A948F" className="h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink" />
+              <TextInput autoFocus value={courierName} onChangeText={setCourierName} placeholder="GIG Logistics, Fez, a dispatch rider…" placeholderTextColor={C.placeholder} className="h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink" />
             </View>
             <View className="gap-1.5">
               <T className="font-sans-bold text-[13px] text-muted">Tracking number (optional)</T>
-              <TextInput value={trackingNumber} onChangeText={setTrackingNumber} placeholder="GIG-44810273" placeholderTextColor="#8A948F" className="h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink" />
+              <TextInput value={trackingNumber} onChangeText={setTrackingNumber} placeholder="GIG-44810273" placeholderTextColor={C.placeholder} className="h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink" />
             </View>
             <Pressable accessibilityRole="button" onPress={confirmShipment} disabled={!courierName.trim()} className={cx('h-[54px] items-center justify-center rounded-2xl bg-green', !courierName.trim() && 'opacity-40')}>
               <T className="font-sans-bold text-base text-white">Confirm shipped</T>
@@ -267,7 +268,7 @@ export default function OrderDetail() {
                 className="h-14 flex-row items-center justify-between rounded-2xl border-[1.5px] border-line bg-surface px-4"
               >
                 <T className="text-base">{reason}</T>
-                <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
+                <ChevronDown size={16} color={C.muted} strokeWidth={2} />
               </Pressable>
 
               <SearchableSelectModal

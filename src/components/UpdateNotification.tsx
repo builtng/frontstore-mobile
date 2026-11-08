@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Download, Sparkles, X } from 'lucide-react-native';
 import * as Updates from 'expo-updates';
 import { T } from './ui';
+import { C } from '@/lib/theme';
 
 /**
  * Over-the-air updates, in stages the seller can see:
@@ -113,7 +114,7 @@ export function UpdateNotification() {
           pointerEvents="box-none"
           style={[styles.container, { top: Math.max(insets.top + 8, 16), transform: [{ translateY }], opacity }]}
         >
-          <View pointerEvents="auto" accessibilityLiveRegion="polite" className="overflow-hidden rounded-2xl border border-white/10 bg-ink" style={styles.toast}>
+          <View pointerEvents="auto" accessibilityLiveRegion="polite" className="overflow-hidden rounded-2xl border border-white/10 bg-panel" style={styles.toast}>
             <View className="flex-row items-center p-3">
               <View className="mr-3 h-9 w-9 items-center justify-center rounded-xl border border-leaf/30 bg-deep">
                 {ready ? <Sparkles size={18} color="#6FD3A4" /> : <Download size={18} color="#6FD3A4" />}
@@ -158,7 +159,7 @@ export function UpdateNotification() {
 
       <Modal visible={phase === 'applying' || phase === 'failed'} transparent animationType="fade" statusBarTranslucent onRequestClose={() => {}}>
         <View className="flex-1 items-center justify-center bg-[rgba(14,26,21,0.92)] px-8">
-          <View accessibilityLiveRegion="polite" className="w-full max-w-[340px] gap-5 rounded-[24px] bg-ink p-6">
+          <View accessibilityLiveRegion="polite" className="w-full max-w-[340px] gap-5 rounded-[24px] bg-panel p-6">
             <View className="h-12 w-12 items-center justify-center rounded-2xl border border-leaf/30 bg-deep">
               <Sparkles size={22} color="#6FD3A4" />
             </View>
@@ -192,7 +193,7 @@ export function UpdateNotification() {
                   {steps.map((s) => (
                     <View key={s.label} className="flex-row items-center gap-2.5">
                       <View className={s.done ? 'h-5 w-5 items-center justify-center rounded-full bg-leaf' : s.active ? 'h-5 w-5 rounded-full border-2 border-leaf' : 'h-5 w-5 rounded-full border-2 border-[#33504A]'}>
-                        {s.done ? <Check size={12} color="#0E1A15" strokeWidth={3} /> : null}
+                        {s.done ? <Check size={12} color={C.ink} strokeWidth={3} /> : null}
                       </View>
                       <T className={s.done || s.active ? 'font-sans-semibold text-sm text-white' : 'text-sm text-on-dark-2'}>{s.label}</T>
                     </View>

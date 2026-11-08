@@ -7,6 +7,7 @@ import { LogoMark, Screen, T, cx } from '@/components/ui';
 import { setUserMode } from '@/api/authStore';
 import { completeBuyerSetup } from '@/api/auth';
 import { updateDraft, useDraft } from '@/features/setup/draft';
+import { C } from '@/lib/theme';
 
 type Mode = 'shop' | 'sell';
 
@@ -92,9 +93,9 @@ export default function ChooseMode() {
               <T className={cx('font-display text-[22px]', sell && 'text-white')}>{o.title}</T>
               <T className={cx('text-[15px] leading-[22px]', sell ? 'text-mint-2' : 'text-muted')}>{o.body}</T>
               <View className="flex-row items-center gap-1.5">
-                {busy ? <ActivityIndicator size="small" color={sell ? '#F3C77A' : '#1E5E3A'} /> : null}
-                <T className={cx('font-sans-bold text-sm', sell ? 'text-gold' : 'text-green')}>{o.cta}</T>
-                <ArrowRight size={16} color={sell ? '#F3C77A' : '#1E5E3A'} strokeWidth={2.2} />
+                {busy ? <ActivityIndicator size="small" color={sell ? '#F3C77A' : C.accent} /> : null}
+                <T className={cx('font-sans-bold text-sm', sell ? 'text-gold' : 'text-accent')}>{o.cta}</T>
+                <ArrowRight size={16} color={sell ? '#F3C77A' : C.accent} strokeWidth={2.2} />
               </View>
             </Pressable>
           );

@@ -10,6 +10,7 @@ import { LockedOrError } from '@/features/seller/ProGate';
 import { getInvoices, invoiceState } from '@/api/invoices';
 import { formatNaira } from '@/lib/format';
 import { INVOICE_PILL, dueLine } from '@/features/seller/invoiceMeta';
+import { C } from '@/lib/theme';
 
 type Tab = 'all' | 'unpaid' | 'overdue' | 'paid';
 
@@ -40,7 +41,7 @@ export default function Invoices() {
         ) : (
           <>
             <View className="flex-row gap-2.5">
-              <View className="flex-1 gap-1 rounded-[20px] bg-ink p-4">
+              <View className="flex-1 gap-1 rounded-[20px] bg-panel p-4">
                 <T className="text-xs text-on-dark-2">Outstanding</T>
                 <T numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} className="font-display text-[22px] text-white">{formatNaira(outstanding)}</T>
               </View>
@@ -70,14 +71,14 @@ export default function Invoices() {
                           <T className="text-xs text-muted">{dueLine(v)}</T>
                         </View>
                       </View>
-                      <ChevronRight size={18} color="#9AA39E" strokeWidth={2} />
+                      <ChevronRight size={18} color={C['faint-2']} strokeWidth={2} />
                     </Pressable>
                   );
                 })}
               </View>
             ) : (
               <View className="items-center gap-2 rounded-[22px] border border-line bg-surface px-6 py-8">
-                <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-mint"><ReceiptText size={24} color="#1E5E3A" strokeWidth={2} /></View>
+                <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-mint"><ReceiptText size={24} color={C.accent} strokeWidth={2} /></View>
                 <T className="text-center font-sans-bold text-base">{all.length ? 'Nothing in this list' : 'Bill a customer'}</T>
                 <T className="text-center text-sm leading-5 text-muted">{all.length ? 'Invoices move here as they’re sent and paid.' : 'For bulk and custom orders. Send the link on WhatsApp or email and they pay online.'}</T>
               </View>

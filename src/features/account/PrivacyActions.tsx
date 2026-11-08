@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, T } from '@/components/ui';
 import { BottomSheet, LinkRow, SheetField } from '@/features/buyer/account';
 import { deleteAccount, exportMyData, getDeleteAccountPreview } from '@/api/auth';
+import { C } from '@/lib/theme';
 
 /**
  * "Download my data" and "Delete my account" rows plus the delete sheet.
@@ -57,7 +58,7 @@ export function PrivacyActions() {
           <T className="font-display text-xl">Delete your account?</T>
 
           {previewLoading || !preview ? (
-            <ActivityIndicator color="#1E5E3A" />
+            <ActivityIndicator color={C.accent} />
           ) : !preview.can_delete ? (
             <View className="gap-2">
               <T className="text-[15px] leading-[22px] text-muted-2">Before you can delete your account:</T>

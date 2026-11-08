@@ -7,6 +7,7 @@ import { Button, Screen, T, cx } from '@/components/ui';
 import { AccountHeader, BottomSheet, DashedAdd, SheetField } from '@/features/buyer/account';
 import { getAddresses, addAddress, deleteAddress, setDefaultAddress } from '@/api/buyer';
 import { Address } from '@/api/types';
+import { C } from '@/lib/theme';
 
 const EMPTY = { label: 'Home', recipient_name: '', street: '', city: '', state: '', phone_number: '', landmark: '' };
 
@@ -70,8 +71,8 @@ export default function BuyerAddresses() {
             <View key={a.id} className={cx('gap-2 rounded-[20px] bg-surface p-4', isDef ? 'border-2 border-green' : 'border border-line')}>
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-1.5">
-                  <MapPin size={18} color="#1E5E3A" strokeWidth={2} />
-                  <T className="font-sans-bold text-[15px] text-green">{a.label || 'Address'}</T>
+                  <MapPin size={18} color={C.accent} strokeWidth={2} />
+                  <T className="font-sans-bold text-[15px] text-accent">{a.label || 'Address'}</T>
                 </View>
                 {isDef ? (
                   <View className="rounded-full bg-mint-2 px-[9px] py-[3px]">
@@ -79,17 +80,17 @@ export default function BuyerAddresses() {
                   </View>
                 ) : null}
               </View>
-              <T className="text-sm leading-[21px] text-[#26322D]">
+              <T className="text-sm leading-[21px] text-body">
                 <T className="font-sans-bold text-sm text-ink">{a.recipient_name}</T>
                 {`\n${a.street}${a.city ? `, ${a.city}` : ''}\n${a.phone_number}`}
               </T>
-              <View className="flex-row items-center gap-4 border-t border-[#E7E9E4] pt-2">
+              <View className="flex-row items-center gap-4 border-t border-line pt-2">
                 <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${a.label} address`} hitSlop={12} onPress={() => deleteMutation.mutate(typeof a.id === 'number' ? a.id : Number(a.id))}>
                   <T className="font-sans-bold text-sm text-danger">Remove</T>
                 </Pressable>
                 {!isDef ? (
                   <Pressable accessibilityRole="button" accessibilityLabel={`Set ${a.label} as default address`} hitSlop={12} onPress={() => defaultMutation.mutate(typeof a.id === 'number' ? a.id : Number(a.id))} className="ml-auto">
-                    <T className="font-sans-bold text-sm text-green">Set as default</T>
+                    <T className="font-sans-bold text-sm text-accent">Set as default</T>
                   </Pressable>
                 ) : null}
               </View>

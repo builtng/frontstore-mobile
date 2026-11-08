@@ -15,6 +15,7 @@ import { ContactEditSheet } from '@/features/account/ContactEditSheet';
 import { PERIODS, PERIOD_LABEL, SALES_ORDER_LIMIT, summarise, visitsFor, type Period } from '@/features/seller/salesStats';
 import { formatNaira } from '@/lib/format';
 import { WhatsAppIcon } from '@/features/setup/parts';
+import { C } from '@/lib/theme';
 
 /** How long ago, in words: "2 hours old". */
 function age(iso?: string | null) {
@@ -34,7 +35,7 @@ const QUICK: Array<{ label: string; href: Href; Icon: typeof Plus }> = [
 ];
 
 function NeedRow({ first, tone, Icon, title, sub, href, onOpen }: { first?: boolean; tone: 'green' | 'warn' | 'danger'; Icon: typeof Plus; title: string; sub: string; href: Href; onOpen?: () => void }) {
-  const color = { green: '#1E5E3A', warn: '#8A4A06', danger: '#9A2C14' }[tone];
+  const color = { green: C.accent, warn: C['warn-fg'], danger: C.danger }[tone];
   return (
     <Pressable accessibilityRole="button" onPress={() => { onOpen?.(); router.push(href); }} className={cx('flex-row items-center gap-3 px-4 py-3.5', !first && 'border-t border-line')}>
         <IconTile tone={tone}><Icon size={19} color={color} strokeWidth={2} /></IconTile>
@@ -42,7 +43,7 @@ function NeedRow({ first, tone, Icon, title, sub, href, onOpen }: { first?: bool
           <T numberOfLines={1} className="font-sans-bold text-[15px]">{title}</T>
           <T numberOfLines={1} className="text-[13px] text-muted">{sub}</T>
         </View>
-        <ChevronRight size={18} color="#9AA39E" strokeWidth={2} />
+        <ChevronRight size={18} color={C['faint-2']} strokeWidth={2} />
     </Pressable>
   );
 }
@@ -121,7 +122,7 @@ export default function Home() {
             onPress={() => setNotificationsOpen(true)}
             className="h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-surface"
           >
-            <Bell size={20} color="#0E1A15" strokeWidth={2} />
+            <Bell size={20} color={C.ink} strokeWidth={2} />
             {toShip.length > 0 ? <View className="absolute right-2.5 top-[9px] h-2 w-2 rounded-full border-2 border-surface bg-terra" /> : null}
           </Pressable>
         </View>
@@ -146,8 +147,8 @@ export default function Home() {
                 {PERIODS.map(([val, label]) => {
                   const on = val === period;
                   return (
-                    <Pressable key={val} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => setPeriod(val)} className={cx('h-[30px] justify-center rounded-[9px] px-2.5', on && 'bg-surface')}>
-                      <T className={cx('font-sans-bold text-xs', on ? 'text-green' : 'text-white')}>{label}</T>
+                    <Pressable key={val} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => setPeriod(val)} className={cx('h-[30px] justify-center rounded-[9px] px-2.5', on && 'bg-white')}>
+                      <T className={cx('font-sans-bold text-xs', on ? 'text-[#1E5E3A]' : 'text-white')}>{label}</T>
                     </Pressable>
                   );
                 })}
@@ -182,7 +183,7 @@ export default function Home() {
               <Link key={label} href={href} asChild>
                 <Pressable accessibilityRole="button" className="flex-1 items-center gap-1.5">
                   <View className="h-14 w-14 items-center justify-center rounded-[18px] border border-line bg-surface">
-                    <Icon size={22} color="#1E5E3A" strokeWidth={2} />
+                    <Icon size={22} color={C.accent} strokeWidth={2} />
                   </View>
                   <T numberOfLines={1} className="text-center font-sans-bold text-xs">{label}</T>
                 </Pressable>
@@ -193,7 +194,7 @@ export default function Home() {
           <View className="flex-row items-baseline justify-between">
             <T className="font-display text-lg">Needs you</T>
             <Link href="/orders" asChild>
-              <Pressable accessibilityRole="link" hitSlop={12}><T className="font-sans-bold text-sm text-green">All orders</T></Pressable>
+              <Pressable accessibilityRole="link" hitSlop={12}><T className="font-sans-bold text-sm text-accent">All orders</T></Pressable>
             </Link>
           </View>
           <View className="overflow-hidden rounded-[22px] border border-line bg-surface">
@@ -203,7 +204,7 @@ export default function Home() {
               needs.map((n, i) => <NeedRow key={n.title} first={i === 0} {...n} />)
             ) : (
               <View className="flex-row items-center gap-3 px-4 py-3.5">
-                <IconTile><CheckCircle size={19} color="#1E5E3A" strokeWidth={2} /></IconTile>
+                <IconTile><CheckCircle size={19} color={C.accent} strokeWidth={2} /></IconTile>
                 <View className="flex-1 gap-px">
                   <T className="font-sans-bold text-[15px]">You’re all caught up</T>
                   <T className="text-[13px] text-muted">New paid orders and low stock will show here.</T>
@@ -212,7 +213,7 @@ export default function Home() {
             )}
           </View>
 
-          <Pressable accessibilityRole="button" onPress={() => router.push('/share')} className="flex-row items-center gap-3 rounded-[20px] bg-ink px-4 py-3.5">
+          <Pressable accessibilityRole="button" onPress={() => router.push('/share')} className="flex-row items-center gap-3 rounded-[20px] bg-panel px-4 py-3.5">
             <View className="h-2 w-2 rounded-full bg-leaf" />
             <View className="min-w-0 flex-1">
               <T className="text-xs text-on-dark-2">{store?.is_active === false ? 'Your store is paused' : 'Your store is live'}</T>
@@ -233,7 +234,7 @@ export default function Home() {
           <View className="flex-row items-center justify-between">
             <T className="font-display text-xl">Notifications</T>
             <Pressable accessibilityRole="button" accessibilityLabel="Close" hitSlop={8} onPress={() => setNotificationsOpen(false)}>
-              <X size={20} color="#0E1A15" />
+              <X size={20} color={C.ink} />
             </Pressable>
           </View>
           <View className="overflow-hidden rounded-[22px] border border-line bg-surface">

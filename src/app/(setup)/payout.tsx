@@ -8,6 +8,7 @@ import { getBanks, resolveAccount } from '@/api/store';
 import { Bank } from '@/api/types';
 import { updateDraft, useDraft } from '@/features/setup/draft';
 import { SearchableSelectModal, SelectItem } from '@/components/SearchableSelectModal';
+import { C } from '@/lib/theme';
 
 export default function Payout() {
   const draft = useDraft();
@@ -108,7 +109,7 @@ export default function Payout() {
       subtitle: `Code: ${b.code}`,
       icon: (
         <View className="h-9 w-9 items-center justify-center rounded-xl bg-mint/50">
-          <Landmark size={18} color="#1E5E3A" strokeWidth={2} />
+          <Landmark size={18} color={C.accent} strokeWidth={2} />
         </View>
       ),
       metadata: b,
@@ -147,12 +148,12 @@ export default function Payout() {
               className="h-14 flex-row items-center justify-between rounded-2xl border-[1.5px] border-line bg-surface px-4"
             >
               <View className="flex-1 flex-row items-center gap-2.5 pr-2">
-                <Landmark size={18} color="#1E5E3A" strokeWidth={2} />
+                <Landmark size={18} color={C.accent} strokeWidth={2} />
                 <T className="flex-1 font-sans-semibold text-[17px] text-ink" numberOfLines={1}>
                   {selectedBank?.name || (loadingBanks ? 'Loading banks...' : 'Select bank')}
                 </T>
               </View>
-              <ChevronDown size={18} color="#5F6B65" strokeWidth={2} />
+              <ChevronDown size={18} color={C.muted} strokeWidth={2} />
             </Pressable>
           </Labelled>
 
@@ -170,13 +171,13 @@ export default function Payout() {
 
           {resolving ? (
             <View className="flex-row items-center gap-2 py-2">
-              <ActivityIndicator size="small" color="#1E5E3A" />
+              <ActivityIndicator size="small" color={C.accent} />
               <T className="text-sm text-muted">Verifying account with bank...</T>
             </View>
           ) : accountName ? (
             <View accessibilityLabel={`Verified account name: ${accountName}`} className="flex-row items-center gap-2 rounded-[14px] bg-mint px-3.5 py-3" accessibilityLiveRegion="polite">
-              <Check size={16} color="#14532D" strokeWidth={2.6} />
-              <T className="flex-1 font-sans-bold text-sm uppercase text-[#14532D]" numberOfLines={1}>
+              <Check size={16} color={C['mint-fg']} strokeWidth={2.6} />
+              <T className="flex-1 font-sans-bold text-sm uppercase text-mint-fg" numberOfLines={1}>
                 {accountName}
               </T>
             </View>
@@ -199,7 +200,7 @@ export default function Payout() {
                       onPress={() => doResolve(account, selectedBank)}
                       className="flex-row items-center gap-1.5 self-start mt-1"
                     >
-                      <RefreshCw size={13} color="#8A4A06" />
+                      <RefreshCw size={13} color={C['warn-fg']} />
                       <T className="font-sans-bold text-xs text-warn-fg underline">Retry auto-lookup</T>
                     </Pressable>
                   ) : null}
@@ -210,7 +211,7 @@ export default function Payout() {
 
           <View className="flex-row items-start gap-2.5">
             <View className="mt-0.5">
-              <Lock size={15} color="#5F6B65" strokeWidth={2} />
+              <Lock size={15} color={C.muted} strokeWidth={2} />
             </View>
             <T className="flex-1 text-[13px] leading-5 text-muted">
               Payouts arrive the next business day at 10:00am. To keep your money safe, changing this account later needs our team’s approval.

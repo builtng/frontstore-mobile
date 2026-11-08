@@ -7,6 +7,7 @@ import { Button, Screen, T } from '@/components/ui';
 import { AccountHeader, BottomSheet, DashedAdd } from '@/features/buyer/account';
 import { getSavedCards, deleteSavedCard, setDefaultSavedCard, initializeCardTokenization } from '@/api/buyer';
 import { SavedCard } from '@/api/types';
+import { C } from '@/lib/theme';
 
 export default function BuyerCards() {
   const insets = useSafeAreaInsets();
@@ -67,14 +68,14 @@ export default function BuyerCards() {
                 className="h-[180px] justify-between rounded-[20px] p-[18px]"
               >
                 <View className="flex-row items-center justify-between">
-                  <T className="font-display text-lg text-bg">{c.brand}</T>
+                  <T className="font-display text-lg text-white">{c.brand}</T>
                   {isDef ? (
                     <View className="rounded-full bg-gold px-[9px] py-[3px]">
                       <T className="font-display-x text-[11px] text-[#2A1B05]">Default</T>
                     </View>
                   ) : null}
                 </View>
-                <T numberOfLines={1} className="font-display text-lg tracking-[1.44px] text-bg">•••• •••• •••• {c.last4}</T>
+                <T numberOfLines={1} className="font-display text-lg tracking-[1.44px] text-white">•••• •••• •••• {c.last4}</T>
                 <View className="flex-row justify-between">
                   <T className="text-xs text-on-dark">CARDHOLDER</T>
                   <T className="text-xs text-on-dark">Exp {c.exp_month}/{c.exp_year}</T>
@@ -83,7 +84,7 @@ export default function BuyerCards() {
               <View className="flex-row gap-4 px-1">
                 {!isDef ? (
                   <Pressable accessibilityRole="button" accessibilityLabel={`Make ${c.brand} ${c.last4} default`} hitSlop={12} onPress={() => defaultMutation.mutate(typeof c.id === 'number' ? c.id : Number(c.id))}>
-                    <T className="font-sans-bold text-sm text-green">Make default</T>
+                    <T className="font-sans-bold text-sm text-accent">Make default</T>
                   </Pressable>
                 ) : null}
                 <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${c.brand} ${c.last4}`} hitSlop={12} onPress={() => deleteMutation.mutate(typeof c.id === 'number' ? c.id : Number(c.id))}>
@@ -96,7 +97,7 @@ export default function BuyerCards() {
         <DashedAdd label="+ Add a card" onPress={() => setOpen(true)} />
         <View className="flex-row items-start gap-2.5 rounded-2xl bg-mint px-4 py-3.5">
           <View className="pt-0.5">
-            <Lock size={16} color="#1E5E3A" strokeWidth={2} />
+            <Lock size={16} color={C.accent} strokeWidth={2} />
           </View>
           <T className="flex-1 text-sm leading-[21px] text-deep">
             Cards are saved by Paystack. Frontstore never sees or stores your full card number. You approve every payment with your bank.

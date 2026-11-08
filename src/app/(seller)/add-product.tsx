@@ -70,7 +70,7 @@ export default function AddProduct() {
               accessibilityHint={ready ? undefined : 'Add a name and price first'}
               disabled={!ready || submitting}
               onPress={onPublish}
-              className={cx('h-[54px] flex-row items-center justify-center gap-2 rounded-2xl', ready ? 'bg-green' : 'bg-[#BFD3C6]')}
+              className={cx('h-[54px] flex-row items-center justify-center gap-2 rounded-2xl', ready ? 'bg-green' : 'bg-disabled')}
             >
               {submitting ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
               <T className="font-sans-bold text-base text-white">{submitting ? 'Publishing…' : 'Publish'}</T>

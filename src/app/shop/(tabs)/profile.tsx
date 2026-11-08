@@ -7,6 +7,7 @@ import { Screen, T, cx } from '@/components/ui';
 import { Avatar } from '@/features/buyer/parts';
 import { getMe, logout } from '@/api/auth';
 import { getBuyerOrders, getSavedProducts, getFollowedStores } from '@/api/buyer';
+import { C } from '@/lib/theme';
 
 const ROWS: { label: string; value: string; href?: Href }[] = [
   { label: 'Delivery addresses', value: 'Saved addresses', href: '/shop/addresses' },
@@ -59,7 +60,7 @@ export default function BuyerProfile() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#1E5E3A" />}
       >
         <View className="flex-row items-center gap-3.5">
-          <View className="h-[60px] w-[60px] items-center justify-center rounded-full bg-ink">
+          <View className="h-[60px] w-[60px] items-center justify-center rounded-full bg-panel">
             <T className="font-sans-bold text-xl text-white">{initials}</T>
           </View>
           <View className="flex-1">
@@ -74,7 +75,7 @@ export default function BuyerProfile() {
               <Avatar initial={(sellerStore.store_name || sellerStore.name || 'S')[0]} color={sellerStore.primary_color ?? sellerStore.store_color ?? '#1E5E3A'} size={44} radius={13} fontSize={16} />
               <View className="flex-1">
                 <T className="text-xs text-on-dark-2">Switch to selling</T>
-                <T className="font-sans-bold text-base text-bg">{sellerStore.store_name || sellerStore.name}</T>
+                <T className="font-sans-bold text-base text-white">{sellerStore.store_name || sellerStore.name}</T>
               </View>
               <View className="rounded-full bg-saffron px-[9px] py-1">
                 <T className="font-display-x text-xs text-deep">Seller Mode</T>
@@ -88,7 +89,7 @@ export default function BuyerProfile() {
                 <T className="font-sans-bold text-[15px]">Got something to sell?</T>
                 <T className="text-[13px] text-muted-2">Open your own Frontstore in minutes.</T>
               </View>
-              <T className="font-sans-bold text-[13px] text-green">Start selling</T>
+              <T className="font-sans-bold text-[13px] text-accent">Start selling</T>
             </Pressable>
           </Link>
         )}
@@ -111,11 +112,11 @@ export default function BuyerProfile() {
               accessibilityRole="button"
               accessibilityLabel={r.value ? `${r.label}, ${r.value}` : r.label}
               onPress={r.href ? () => router.push(r.href!) : undefined}
-              className={cx('min-h-[52px] flex-row items-center gap-3 px-4', i < ROWS.length - 1 && 'border-b border-[#E7E9E4]')}
+              className={cx('min-h-[52px] flex-row items-center gap-3 px-4', i < ROWS.length - 1 && 'border-b border-line')}
             >
               <T className="flex-1 font-sans-semibold text-[15px]">{r.label}</T>
               {r.value ? <T className="text-[13px] text-muted">{r.value}</T> : null}
-              <ChevronRight size={16} color="#5F6B65" strokeWidth={2} />
+              <ChevronRight size={16} color={C.muted} strokeWidth={2} />
             </Pressable>
           ))}
         </View>
@@ -125,7 +126,7 @@ export default function BuyerProfile() {
             <T className="font-sans-bold text-[15px] text-danger">Log out</T>
           </Pressable>
         ) : (
-          <Pressable accessibilityRole="button" onPress={() => router.push('/login')} className="h-12 items-center justify-center rounded-[16px] bg-ink">
+          <Pressable accessibilityRole="button" onPress={() => router.push('/login')} className="h-12 items-center justify-center rounded-[16px] bg-panel">
             <T className="font-sans-bold text-[15px] text-white">Log in or Sign up</T>
           </Pressable>
         )}

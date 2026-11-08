@@ -11,6 +11,7 @@ import { SALES_ORDER_LIMIT } from '@/features/seller/salesStats';
 import { getStore } from '@/api/store';
 import { Home, Package, ShoppingBag, Store } from 'lucide-react-native';
 import { makeTabBar } from '@/components/TabBar';
+import { C } from '@/lib/theme';
 
 /** Paid or packed orders still waiting to go out: the badge on the Orders tab. */
 function useToShipCount() {
@@ -48,5 +49,5 @@ export default function SellerTabs() {
     queryClient.prefetchQuery({ queryKey: ['seller-wallet'], queryFn: getWalletBalance });
   }, []);
 
-  return <Tabs tabBar={(p: any) => <TabBar {...p} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: '#F4F5F2' } }} />;
+  return <Tabs tabBar={(p: any) => <TabBar {...p} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: C.bg } }} />;
 }

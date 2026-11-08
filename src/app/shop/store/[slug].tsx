@@ -12,6 +12,7 @@ import { naira } from '@/lib/format';
 import { Avatar, ChipRow, useTileWidth } from '@/features/buyer/parts';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { getPublicStore, toggleFollowStore, createStoreOrder, initOrderPayment } from '@/api/buyer';
+import { C } from '@/lib/theme';
 
 export default function BuyerStore() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -145,7 +146,7 @@ export default function BuyerStore() {
       <Screen className="bg-bg">
         <View className="flex-row items-center px-2 pb-1">
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} className="h-11 w-11 items-center justify-center">
-            <ChevronLeft size={24} color="#0E1A15" strokeWidth={2} />
+            <ChevronLeft size={24} color={C.ink} strokeWidth={2} />
           </Pressable>
         </View>
         {storeLoading ? (
@@ -176,10 +177,10 @@ export default function BuyerStore() {
         <View style={{ backgroundColor: storeColor, paddingTop: insets.top }} className="h-[150px]">
           <View style={{ top: insets.top + 6 }} className="absolute left-4 right-4 flex-row justify-between">
             <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} className="h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-white/90">
-              <ChevronLeft size={20} color="#0E1A15" strokeWidth={2} />
+              <ChevronLeft size={20} color={C.ink} strokeWidth={2} />
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Share store" onPress={share} className="h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-white/90">
-              <ShareIcon size={18} color="#0E1A15" strokeWidth={2} />
+              <ShareIcon size={18} color={C.ink} strokeWidth={2} />
             </Pressable>
           </View>
         </View>
@@ -194,7 +195,7 @@ export default function BuyerStore() {
                 accessibilityState={{ selected: following }}
                 accessibilityLabel={following ? `Following ${storeName}, tap to unfollow` : `Follow ${storeName}`}
                 onPress={handleToggleFollow}
-                className={cx('mb-1 h-10 items-center justify-center rounded-full border-[1.5px] px-[18px]', following ? 'border-line bg-surface' : 'border-ink bg-ink')}
+                className={cx('mb-1 h-10 items-center justify-center rounded-full border-[1.5px] px-[18px]', following ? 'border-line bg-surface' : 'border-ink bg-panel')}
               >
                 <T className={cx('font-sans-bold text-sm', following ? 'text-ink' : 'text-white')}>{following ? 'Following' : 'Follow'}</T>
               </Pressable>
@@ -205,8 +206,8 @@ export default function BuyerStore() {
           {storeBio ? <T className="text-sm leading-[21px] text-muted">{storeBio}</T> : null}
           {ownStore ? (
             <View className="rounded-2xl bg-mint px-4 py-3">
-              <T className="font-sans-bold text-sm text-green">This is a preview of your store</T>
-              <T className="text-[13px] text-green">It’s what buyers see. You can’t buy from your own store.</T>
+              <T className="font-sans-bold text-sm text-accent">This is a preview of your store</T>
+              <T className="text-[13px] text-accent">It’s what buyers see. You can’t buy from your own store.</T>
             </View>
           ) : null}
           <Pressable
@@ -242,7 +243,7 @@ export default function BuyerStore() {
                       accessibilityLabel={q ? `Add another ${p.name}, ${q} in cart` : `Add ${p.name}`}
                       onPress={() => setCart((c) => ({ ...c, [p.id]: q + 1 }))}
                       style={q ? { backgroundColor: storeColor } : undefined}
-                      className={cx('h-9 min-w-[44px] items-center justify-center rounded-full px-2.5', !q && 'bg-ink')}
+                      className={cx('h-9 min-w-[44px] items-center justify-center rounded-full px-2.5', !q && 'bg-panel')}
                     >
                       <T className="font-sans-bold text-[13px] text-white">{q ? `${q} in cart` : '+ Add'}</T>
                     </Pressable>
@@ -256,7 +257,7 @@ export default function BuyerStore() {
 
       {count > 0 ? (
         <View style={{ paddingBottom: Math.max(insets.bottom, 12) }} className="px-3 pt-2">
-          <View className="flex-row items-center justify-between rounded-[20px] bg-ink py-2.5 pl-[18px] pr-2.5">
+          <View className="flex-row items-center justify-between rounded-[20px] bg-panel py-2.5 pl-[18px] pr-2.5">
             <View>
               <T className="text-xs text-on-dark-2">{count} items</T>
               <T className="font-sans-bold text-base text-white">{naira(total)}</T>
@@ -281,7 +282,7 @@ export default function BuyerStore() {
       <BottomSheet visible={checkoutOpen} onClose={() => setCheckoutOpen(false)}>
         {orderSuccess ? (
           <View className="gap-3 py-2">
-            <T className="font-display text-2xl text-green">Order Received!</T>
+            <T className="font-display text-2xl text-accent">Order Received!</T>
             <T className="font-sans-bold text-base text-ink">Order #{orderSuccess.orderId}</T>
             {orderSuccess.payment?.bank_account_number ? (
               <View className="gap-1.5 rounded-2xl border border-line bg-surface p-4">
@@ -296,7 +297,7 @@ export default function BuyerStore() {
                   className="flex-row items-center justify-between"
                 >
                   <T className="font-display text-2xl tracking-[1px]">{orderSuccess.payment.bank_account_number}</T>
-                  <T className="font-sans-bold text-sm text-green">Copy</T>
+                  <T className="font-sans-bold text-sm text-accent">Copy</T>
                 </Pressable>
                 <T className="text-sm text-muted-2">{orderSuccess.payment.bank_account_name}</T>
                 <T className="text-xs text-muted">
@@ -334,7 +335,7 @@ export default function BuyerStore() {
           <View className="gap-3 py-1">
             <View className="flex-row items-center justify-between">
               <T className="font-display text-xl">Checkout ({count} items)</T>
-              <T className="font-sans-bold text-lg text-green">{naira(total)}</T>
+              <T className="font-sans-bold text-lg text-accent">{naira(total)}</T>
             </View>
 
             {orderError ? (
@@ -374,7 +375,7 @@ export default function BuyerStore() {
                     paymentMethod === 'card' ? 'border-green bg-mint' : 'border-line bg-surface'
                   )}
                 >
-                  <T className={cx('font-sans-bold text-xs', paymentMethod === 'card' ? 'text-green' : 'text-ink')}>
+                  <T className={cx('font-sans-bold text-xs', paymentMethod === 'card' ? 'text-accent' : 'text-ink')}>
                     Card / Transfer (Paystack)
                   </T>
                 </Pressable>
@@ -386,7 +387,7 @@ export default function BuyerStore() {
                     paymentMethod === 'transfer' ? 'border-green bg-mint' : 'border-line bg-surface'
                   )}
                 >
-                  <T className={cx('font-sans-bold text-xs', paymentMethod === 'transfer' ? 'text-green' : 'text-ink')}>
+                  <T className={cx('font-sans-bold text-xs', paymentMethod === 'transfer' ? 'text-accent' : 'text-ink')}>
                     Bank Transfer / WhatsApp
                   </T>
                 </Pressable>
@@ -414,7 +415,7 @@ export default function BuyerStore() {
           <View className="flex-row items-center justify-between">
             <T className="font-display text-xl">Store Reviews ({reviewsList.length})</T>
             <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setReviewsOpen(false)}>
-              <X size={20} color="#0E1A15" />
+              <X size={20} color={C.ink} />
             </Pressable>
           </View>
           <ScrollView className="max-h-[360px]" showsVerticalScrollIndicator={false}>

@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Compass, Search, ShoppingBag, Heart, User } from 'lucide-react-native';
 import { makeTabBar } from '@/components/TabBar';
+import { C } from '@/lib/theme';
 
 const TabBar = makeTabBar([
   { name: 'index', label: 'Discover', Icon: Compass },
@@ -11,5 +12,5 @@ const TabBar = makeTabBar([
 ]);
 
 export default function BuyerTabs() {
-  return <Tabs tabBar={(p: any) => <TabBar {...p} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: '#F4F5F2' } }} />;
+  return <Tabs tabBar={(p: any) => <TabBar {...p} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: C.bg } }} />;
 }

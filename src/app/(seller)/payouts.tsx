@@ -9,11 +9,12 @@ import { BackHeader, Grip, IconTile } from '@/features/seller/parts';
 import { getWalletBalance, getPayoutHistory, requestWithdrawal, sendWithdrawalOtp } from '@/api/orders';
 import { formatNaira } from '@/lib/format';
 import { ContactEditSheet } from '@/features/account/ContactEditSheet';
+import { C } from '@/lib/theme';
 
 const payoutStyle = {
-  paid: { label: 'paid', tone: 'green' as const, Icon: Check, color: '#1E5E3A' },
-  processing: { label: 'processing', tone: 'warn' as const, Icon: Clock, color: '#8A4A06' },
-  failed: { label: 'failed, retrying', tone: 'danger' as const, Icon: CircleAlert, color: '#9A2C14' },
+  paid: { label: 'paid', tone: 'green' as const, Icon: Check, get color() { return C.accent; } },
+  processing: { label: 'processing', tone: 'warn' as const, Icon: Clock, get color() { return C['warn-fg']; } },
+  failed: { label: 'failed, retrying', tone: 'danger' as const, Icon: CircleAlert, get color() { return C.danger; } },
 };
 const fmtDay = (iso: string) => {
   const d = new Date(iso);
@@ -99,7 +100,7 @@ export default function Payouts() {
     <Screen>
       <BackHeader title="Payouts" fallback="/home" />
       <ScrollView contentContainerClassName="gap-3.5 px-5 pb-8 pt-1" showsVerticalScrollIndicator={false}>
-        <View className="gap-3.5 rounded-[26px] bg-ink p-5">
+        <View className="gap-3.5 rounded-[26px] bg-panel p-5">
           <T className="text-[13px] text-on-dark-2">Available to withdraw</T>
           <T numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} className="font-display text-[40px] leading-[44px] tracking-[-0.8px] text-white">{formatNaira(availKobo / 100)}</T>
           <View className="flex-row gap-2">
@@ -132,21 +133,21 @@ export default function Payouts() {
           <View className="gap-2 rounded-[20px] bg-warn-bg p-4">
             <T className="font-sans-bold text-warn-fg">Add your email to get paid</T>
             <T className="text-[13px] text-warn-fg">Your payout code is sent to your email, and your account doesn’t have one yet.</T>
-            <Pressable accessibilityRole="button" onPress={() => setAddingEmail(true)} className="mt-1 h-11 items-center justify-center self-start rounded-xl bg-ink px-5">
+            <Pressable accessibilityRole="button" onPress={() => setAddingEmail(true)} className="mt-1 h-11 items-center justify-center self-start rounded-xl bg-panel px-5">
               <T className="font-sans-bold text-sm text-white">Add email</T>
             </Pressable>
           </View>
         ) : null}
 
         <View className="flex-row items-center gap-3 rounded-[22px] border border-line bg-surface px-4 py-3.5">
-          <IconTile><Landmark size={19} color="#1E5E3A" strokeWidth={2} /></IconTile>
+          <IconTile><Landmark size={19} color={C.accent} strokeWidth={2} /></IconTile>
           <View className="flex-1">
             <T className="font-sans-bold text-[15px]">{accHolder}</T>
             <T className="text-[13px] text-muted">{bankName} · {accNo}</T>
           </View>
           <Link href="/payout" asChild>
             <Pressable accessibilityRole="button" accessibilityLabel="Change payout account" hitSlop={4} className="h-9 justify-center rounded-full bg-mint px-3">
-              <T className="font-sans-bold text-[13px] text-green">Change</T>
+              <T className="font-sans-bold text-[13px] text-accent">Change</T>
             </Pressable>
           </Link>
         </View>
@@ -206,7 +207,7 @@ export default function Payouts() {
             </View>
 
             <Pressable accessibilityRole="button" onPress={handlePayOutNow} disabled={sending} hitSlop={8} className="self-start">
-              <T className="font-sans-bold text-sm text-green">{sending ? 'Sending…' : 'Didn’t get it? Send a new code'}</T>
+              <T className="font-sans-bold text-sm text-accent">{sending ? 'Sending…' : 'Didn’t get it? Send a new code'}</T>
             </Pressable>
 
             <Pressable accessibilityRole="button" onPress={confirmWithdrawal} disabled={submitting || otpCode.length < 6} className={cx('h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-green', otpCode.length < 6 && 'opacity-40')}>

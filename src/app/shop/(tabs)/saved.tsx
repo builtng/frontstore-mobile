@@ -6,6 +6,7 @@ import { EmptyState, Screen, SkeletonRows, T } from '@/components/ui';
 import { naira } from '@/lib/format';
 import { Avatar, HeartToggle, Segmented, useTileWidth } from '@/features/buyer/parts';
 import { getSavedProducts, getFollowedStores, toggleSaveProduct } from '@/api/buyer';
+import { C } from '@/lib/theme';
 
 type Tab = 'prod' | 'stores';
 export default function BuyerSaved() {

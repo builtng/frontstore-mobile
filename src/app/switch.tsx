@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { T, cx } from '@/components/ui';
 import { getMe } from '@/api/auth';
 import { setUserMode } from '@/api/authStore';
+import { C } from '@/lib/theme';
 
 type Mode = 'shop' | 'sell';
 
@@ -85,7 +86,7 @@ export default function Switch() {
                 <T className="font-sans-bold text-base">{a.name}</T>
                 <T className="text-[13px] text-muted">{a.sub}</T>
               </View>
-              <View className={cx('h-[22px] w-[22px] rounded-full', on ? 'border-[7px] border-green' : 'border-[1.5px] border-[#BFC7C1]')} />
+              <View className={cx('h-[22px] w-[22px] rounded-full', on ? 'border-[7px] border-green' : 'border-[1.5px] border-rule')} />
             </Pressable>
           );
         })}

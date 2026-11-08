@@ -6,6 +6,7 @@ import { Screen } from '@/components/ui';
 import { AccountHeader, Group, LinkRow, SwitchRow } from '@/features/buyer/account';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/api/buyer';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
+import { AppearancePicker } from '@/features/account/AppearancePicker';
 
 type NoteKey = 'orderWa' | 'orderEmail' | 'push' | 'drops' | 'prices';
 
@@ -78,6 +79,8 @@ export default function BuyerSettings() {
         <Group title="Login & security">
           <LinkRow label="Login codes" value="Email or WhatsApp" />
         </Group>
+
+        <AppearancePicker />
 
         <Group title="Privacy">
           <PrivacyActions />

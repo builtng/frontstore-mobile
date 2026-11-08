@@ -7,6 +7,7 @@ import { Screen, T, cx } from '@/components/ui';
 import { Avatar, ChipRow } from '@/features/buyer/parts';
 import { getMarketplaceStoresPaginated } from '@/api/buyer';
 import { Store } from '@/api/types';
+import { C } from '@/lib/theme';
 
 const FILTERS = ['All', 'Stores', 'Fashion', 'Food', 'Beauty', 'Gadgets', 'Lagos', 'Under ₦20k'];
 
@@ -123,7 +124,7 @@ export default function BuyerSearch() {
     <Screen>
       <View className="gap-3.5 px-4 pt-3 pb-2">
         <View className={cx('h-[50px] flex-row items-center gap-2.5 rounded-[14px] border-[1.5px] bg-surface pl-3.5 pr-3', focused || q ? 'border-green' : 'border-line')}>
-          <Search size={18} color="#5F6B65" strokeWidth={2} />
+          <Search size={18} color={C.muted} strokeWidth={2} />
           <TextInput
             ref={input}
             value={q}
@@ -131,7 +132,7 @@ export default function BuyerSearch() {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder="Search stores, categories or location"
-            placeholderTextColor="#8A948F"
+            placeholderTextColor={C.placeholder}
             accessibilityLabel="Search"
             returnKeyType="search"
             autoCorrect={false}
@@ -139,7 +140,7 @@ export default function BuyerSearch() {
           />
           {focused || q ? (
             <Pressable accessibilityRole="button" onPress={cancel} hitSlop={12}>
-              <T className="font-sans-bold text-sm text-green">Cancel</T>
+              <T className="font-sans-bold text-sm text-accent">Cancel</T>
             </Pressable>
           ) : null}
         </View>
@@ -172,7 +173,7 @@ export default function BuyerSearch() {
         ListFooterComponent={
           isFetchingNextPage ? (
             <View className="items-center py-4">
-              <ActivityIndicator size="small" color="#1E5E3A" />
+              <ActivityIndicator size="small" color={C.accent} />
               <T className="mt-1 text-xs text-muted">Loading more stores...</T>
             </View>
           ) : null
@@ -180,7 +181,7 @@ export default function BuyerSearch() {
         ListEmptyComponent={
           isLoading ? (
             <View className="items-center py-16">
-              <ActivityIndicator size="large" color="#1E5E3A" />
+              <ActivityIndicator size="large" color={C.accent} />
               <T className="mt-2 text-sm text-muted">Loading stores...</T>
             </View>
           ) : (

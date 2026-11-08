@@ -8,6 +8,7 @@ import { Button, LoadError, Screen, Skeleton, T, cx } from '@/components/ui';
 import { BackHeader, goBack } from '@/features/seller/parts';
 import { getStore, updateStore, uploadStoreLogo } from '@/api/store';
 import { initialOf } from '@/features/setup/draft';
+import { C } from '@/lib/theme';
 
 // Same brand colours as store setup.
 const SWATCHES: Array<[string, string]> = [
@@ -101,7 +102,7 @@ export default function StoreEdit() {
                 </View>
               ) : null}
             </Pressable>
-            <View pointerEvents="none" className="absolute -bottom-1 -right-1 h-7 w-7 items-center justify-center rounded-full border-2 border-bg bg-ink">
+            <View pointerEvents="none" className="absolute -bottom-1 -right-1 h-7 w-7 items-center justify-center rounded-full border-2 border-bg bg-panel">
               <Camera size={13} color="#FFFFFF" strokeWidth={2.4} />
             </View>
             </View>
@@ -125,7 +126,7 @@ export default function StoreEdit() {
               multiline
               textAlignVertical="top"
               placeholder="What you sell and what makes it special"
-              placeholderTextColor="#8A948F"
+              placeholderTextColor={C.placeholder}
               accessibilityLabel="About your store"
               className={cx(inputBox, 'min-h-[96px] py-2.5 leading-[22px]')}
             />
@@ -145,7 +146,7 @@ export default function StoreEdit() {
                     accessibilityState={{ checked: on }}
                     disabled={!store?.is_pro}
                     onPress={() => setColor(hex)}
-                    style={{ opacity: store?.is_pro ? 1 : 0.4, borderColor: on ? '#0E1A15' : '#D9DED9', borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
+                    style={{ opacity: store?.is_pro ? 1 : 0.4, borderColor: on ? C.ink : C['line-2'], borderWidth: on ? 2 : 1, margin: on ? -2 : -1 }}
                     className="rounded-full"
                   >
                     <View style={{ backgroundColor: hex }} className="h-11 w-11 rounded-full border-[3px] border-bg" />

@@ -67,7 +67,7 @@ export default function Login() {
             </Labelled>
           ) : null}
           <Pressable accessibilityRole="button" onPress={() => setPw(!pw)} className="h-11 justify-center self-start">
-            <T className="font-sans-bold text-[15px] text-green">{pw ? 'Use a one-time code instead' : 'Log in with password'}</T>
+            <T className="font-sans-bold text-[15px] text-accent">{pw ? 'Use a one-time code instead' : 'Log in with password'}</T>
           </Pressable>
         </ScrollView>
         <BottomBar>
@@ -80,7 +80,7 @@ export default function Login() {
           <Link href="/signup" asChild>
             <Pressable accessibilityRole="link" className="min-h-[44px] items-center justify-center">
               <T className="text-center font-sans-semibold text-sm text-muted">
-                New here? <T className="font-sans-semibold text-sm text-green">Create a free store</T>
+                New here? <T className="font-sans-semibold text-sm text-accent">Create a free store</T>
               </T>
             </Pressable>
           </Link>

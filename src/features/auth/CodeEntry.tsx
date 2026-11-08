@@ -5,6 +5,7 @@ import { Mail } from 'lucide-react-native';
 import { Button, Screen, T, cx } from '@/components/ui';
 import { BottomBar, Heading, Progress, StepHeader, WhatsAppIcon, goBack } from '@/features/setup/parts';
 import { verifyOtp, sendEmailOtp, sendWhatsAppOtp } from '@/api/auth';
+import { C } from '@/lib/theme';
 
 export type Flow = 'signup' | 'login';
 export type Channel = 'email' | 'whatsapp';
@@ -139,7 +140,7 @@ export function CodeEntry({ flow, channel: initialChannel, to, sentTo }: { flow:
               {Array.from({ length: LEN }, (_, k) => {
                 const active = focused && (k === code.length || (complete && k === LEN - 1));
                 return (
-                  <View key={k} className={cx('h-[60px] flex-1 items-center justify-center rounded-[14px] border-2 bg-surface', active ? 'border-green' : code[k] ? 'border-[#BFD3C6]' : 'border-line')}>
+                  <View key={k} className={cx('h-[60px] flex-1 items-center justify-center rounded-[14px] border-2 bg-surface', active ? 'border-green' : code[k] ? 'border-disabled' : 'border-line')}>
                     <T className="font-display-x text-[26px]">{code[k] ?? ''}</T>
                   </View>
                 );
@@ -168,15 +169,15 @@ export function CodeEntry({ flow, channel: initialChannel, to, sentTo }: { flow:
             </T>
           ) : (
             <Pressable accessibilityRole="button" onPress={onResend} className="-my-3 h-11 justify-center self-start">
-              <T className="font-sans-bold text-[15px] text-green">Resend code</T>
+              <T className="font-sans-bold text-[15px] text-accent">Resend code</T>
             </Pressable>
           )}
           <Pressable accessibilityRole="button" onPress={onAlt} className="-my-3 h-11 justify-center self-start">
-            <T className="font-sans-bold text-[15px] text-green">{alt}</T>
+            <T className="font-sans-bold text-[15px] text-accent">{alt}</T>
           </Pressable>
           <View className="flex-row gap-2 rounded-[14px] bg-mint px-3.5 py-3">
-            <Mail size={16} color="#14532D" strokeWidth={2} />
-            <T className="flex-1 text-[13px] leading-[19px] text-[#14532D]">Tip: open the email from Frontstore and copy the code. Your keyboard may offer to fill it in.</T>
+            <Mail size={16} color={C['mint-fg']} strokeWidth={2} />
+            <T className="flex-1 text-[13px] leading-[19px] text-mint-fg">Tip: open the email from Frontstore and copy the code. Your keyboard may offer to fill it in.</T>
           </View>
         </ScrollView>
         <BottomBar>

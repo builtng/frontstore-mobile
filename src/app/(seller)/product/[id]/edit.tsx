@@ -14,6 +14,7 @@ import { formatNaira } from '@/lib/format';
 import { SearchableSelectModal } from '@/components/SearchableSelectModal';
 import { useCategories } from '@/features/products/useCategories';
 import { ColourChips } from '@/features/products/ColourChips';
+import { C } from '@/lib/theme';
 
 const ALL_SIZES = ['S', 'M', 'L', 'XL'];
 const MAX_PHOTOS = 3;
@@ -140,7 +141,7 @@ export default function EditProduct() {
         fallback="/products"
         right={
           <Pressable accessibilityRole="button" accessibilityLabel="Delete product" onPress={() => router.push(`/product/${id}/delete`)} hitSlop={6} className="h-10 w-10 items-center justify-center rounded-full border border-line bg-surface">
-            <Trash2 size={18} color="#9A2C14" strokeWidth={2} />
+            <Trash2 size={18} color={C.danger} strokeWidth={2} />
           </Pressable>
         }
       />
@@ -187,8 +188,8 @@ export default function EditProduct() {
             <ProductImage name={name} className="h-24 w-24 rounded-[18px]" textClassName="text-2xl" />
           )}
           {photos.length < MAX_PHOTOS ? (
-            <Pressable accessibilityRole="button" accessibilityLabel="Add photo" onPress={addPhoto} disabled={uploading} className="h-24 w-24 items-center justify-center gap-1 rounded-[18px] border-[1.5px] border-dashed border-[#BFC7C1]">
-              {uploading ? <ActivityIndicator color="#1E5E3A" /> : <Camera size={22} color="#5F6B65" strokeWidth={2} />}
+            <Pressable accessibilityRole="button" accessibilityLabel="Add photo" onPress={addPhoto} disabled={uploading} className="h-24 w-24 items-center justify-center gap-1 rounded-[18px] border-[1.5px] border-dashed border-rule">
+              {uploading ? <ActivityIndicator color={C.accent} /> : <Camera size={22} color={C.muted} strokeWidth={2} />}
               <T className="font-sans-semibold text-[13px] text-muted">{uploading ? 'Uploading…' : 'Add photo'}</T>
             </Pressable>
           ) : null}
@@ -211,7 +212,7 @@ export default function EditProduct() {
             <T className="font-sans-bold text-[13px] text-muted">Was (optional)</T>
             <View className="h-[50px] flex-row items-center gap-1 rounded-[14px] border border-line bg-surface px-3.5">
               <T className="font-sans-semibold text-base text-muted">₦</T>
-              <TextInput value={was} onChangeText={(v) => setWas(v.replace(/[^\d]/g, ''))} keyboardType="number-pad" placeholder="Old price" placeholderTextColor="#8A948F" accessibilityLabel="Was price, optional" className="h-full min-w-0 flex-1 font-sans-semibold text-base text-ink" />
+              <TextInput value={was} onChangeText={(v) => setWas(v.replace(/[^\d]/g, ''))} keyboardType="number-pad" placeholder="Old price" placeholderTextColor={C.placeholder} accessibilityLabel="Was price, optional" className="h-full min-w-0 flex-1 font-sans-semibold text-base text-ink" />
             </View>
           </View>
         </View>
@@ -224,7 +225,7 @@ export default function EditProduct() {
               onChangeText={(v) => { const d = v.replace(/\D/g, '').slice(0, 5); setStock(d); setInStock(d !== '' && d !== '0'); }}
               keyboardType="number-pad"
               placeholder="0"
-              placeholderTextColor="#8A948F"
+              placeholderTextColor={C.placeholder}
               accessibilityLabel="How many in stock"
               className="h-[50px] rounded-[14px] border border-line bg-surface px-3.5 font-sans-semibold text-base text-ink"
             />
@@ -238,7 +239,7 @@ export default function EditProduct() {
               className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-line bg-surface px-3.5"
             >
               <T className="flex-1 font-sans-semibold text-base" numberOfLines={1}>{categories.nameOf(category) || 'Select'}</T>
-              <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
+              <ChevronDown size={16} color={C.muted} strokeWidth={2} />
             </Pressable>
           </View>
         </View>
@@ -268,7 +269,7 @@ export default function EditProduct() {
                   onPress={() => toggleSize(s)}
                   className={cx('min-h-[44px] min-w-[44px] items-center justify-center rounded-xl px-3.5', on ? 'bg-ink' : 'border border-line bg-surface')}
                 >
-                  <T className={cx('font-sans-bold text-sm', on ? 'text-white' : 'text-muted')}>{s}</T>
+                  <T className={cx('font-sans-bold text-sm', on ? 'text-bg' : 'text-muted')}>{s}</T>
                 </Pressable>
               );
             })}

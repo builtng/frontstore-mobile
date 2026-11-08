@@ -10,6 +10,7 @@ import { BackHeader } from '@/features/seller/parts';
 import { FacebookIcon, InstagramLogo, TikTokLogo, WhatsAppIcon } from '@/features/setup/parts';
 import { getMe } from '@/api/auth';
 import { getStore } from '@/api/store';
+import { C } from '@/lib/theme';
 
 function Action({ label, bg, onPress, border, children }: { label: string; bg: string; onPress: () => void; border?: boolean; children: React.ReactNode }) {
   return (
@@ -82,7 +83,7 @@ export default function ShareStore() {
         ) : (
           <>
             <View style={{ backgroundColor: brand }} className="items-center gap-3.5 rounded-[28px] px-5 pb-5 pt-6">
-              <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border-[3px] border-white/90 bg-ink">
+              <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border-[3px] border-white/90 bg-panel">
                 {store?.logo_url ? <Image source={{ uri: store.logo_url }} className="h-full w-full" /> : <T className="font-display-x text-base text-white">{(storeName || 'S')[0].toUpperCase()}</T>}
               </View>
               <T numberOfLines={1} className="text-center font-display text-xl text-white">{storeName}</T>
@@ -92,8 +93,8 @@ export default function ShareStore() {
               <View className="w-full flex-row items-center gap-2 rounded-full bg-white/15 py-1.5 pl-4 pr-1.5">
                 <T numberOfLines={1} className="flex-1 font-sans-bold text-sm text-white">frontstore.app/{username}</T>
                 <Pressable accessibilityRole="button" accessibilityLabel="Copy store link" onPress={copy} className="h-[38px] flex-row items-center gap-1.5 rounded-full bg-white px-3.5">
-                  {copied ? <Check size={14} color="#1E5E3A" strokeWidth={2.6} /> : <Copy size={14} color="#1E5E3A" strokeWidth={2.2} />}
-                  <T className="font-sans-bold text-[13px] text-green">{copied ? 'Copied' : 'Copy'}</T>
+                  {copied ? <Check size={14} color={C.accent} strokeWidth={2.6} /> : <Copy size={14} color={C.accent} strokeWidth={2.2} />}
+                  <T className="font-sans-bold text-[13px] text-accent">{copied ? 'Copied' : 'Copy'}</T>
                 </Pressable>
               </View>
             </View>
@@ -114,14 +115,14 @@ export default function ShareStore() {
                 <TikTokLogo size={20} />
               </Action>
               <Action label="Share to any app" bg="#FFFFFF" border onPress={shareAnywhere}>
-                <Share2 size={20} color="#0E1A15" strokeWidth={2} />
+                <Share2 size={20} color={C.ink} strokeWidth={2} />
               </Action>
             </View>
-            {note ? <T accessibilityLiveRegion="polite" className="text-center text-[13px] text-green">{note}</T> : null}
+            {note ? <T accessibilityLiveRegion="polite" className="text-center text-[13px] text-accent">{note}</T> : null}
 
             {username ? (
               <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug: username } })} className="self-center py-2">
-                <T className="font-sans-bold text-sm text-green">View your store</T>
+                <T className="font-sans-bold text-sm text-accent">View your store</T>
               </Pressable>
             ) : null}
           </>

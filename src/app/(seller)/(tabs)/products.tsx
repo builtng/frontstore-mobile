@@ -9,6 +9,7 @@ import { Segmented, Toggle } from '@/features/seller/parts';
 import { getProducts, restoreProduct, updateProduct } from '@/api/products';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { Product } from '@/api/types';
+import { C } from '@/lib/theme';
 
 type Filter = 'all' | 'in' | 'low' | 'out';
 const LOW = 3;
@@ -99,19 +100,19 @@ export default function Products() {
           onPress={() => { setSearching(!searching); setQuery(''); }}
           className="h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-surface"
         >
-          {searching ? <X size={19} color="#0E1A15" strokeWidth={2} /> : <Search size={19} color="#0E1A15" strokeWidth={2} />}
+          {searching ? <X size={19} color={C.ink} strokeWidth={2} /> : <Search size={19} color={C.ink} strokeWidth={2} />}
         </Pressable>
       </View>
       <View className="px-5 pb-3">
         {searching ? (
           <View className="h-11 flex-row items-center gap-2 rounded-[14px] border-[1.5px] border-line bg-surface px-3">
-            <Search size={16} color="#5F6B65" strokeWidth={2} />
+            <Search size={16} color={C.muted} strokeWidth={2} />
             <TextInput
               autoFocus
               value={query}
               onChangeText={setQuery}
               placeholder="Search products"
-              placeholderTextColor="#8A948F"
+              placeholderTextColor={C.placeholder}
               accessibilityLabel="Search products"
               returnKeyType="search"
               className="h-full min-w-0 flex-1 font-sans text-base text-ink"
@@ -147,7 +148,7 @@ export default function Products() {
                   </Pressable>
                   <Toggle label={`Show ${p.name} in store`} value={shown} onChange={(v) => visibility.mutate({ p, show: v })} />
                   <Pressable accessibilityRole="button" accessibilityLabel={`More actions for ${p.name}`} onPress={() => router.push(`/product/${p.id}`)} className="h-[34px] w-[34px] items-center justify-center rounded-full">
-                    <EllipsisVertical size={18} color="#5F6B65" strokeWidth={2.2} />
+                    <EllipsisVertical size={18} color={C.muted} strokeWidth={2.2} />
                   </Pressable>
                 </View>
               );
@@ -157,7 +158,7 @@ export default function Products() {
           <LoadError what="your products" onRetry={() => refetch()} />
         ) : !all.length ? (
           <EmptyState
-            icon={<Package size={22} color="#5F6B65" />}
+            icon={<Package size={22} color={C.muted} />}
             title="No products yet"
             sub="Snap a photo and your first product is ready to sell."
             action="Add a product"
@@ -178,7 +179,7 @@ export default function Products() {
           accessibilityRole="alert"
           accessibilityLiveRegion="polite"
           style={{ shadowColor: '#0E1A15', shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 12 }, elevation: 8 }}
-          className="absolute bottom-5 left-4 right-4 flex-row items-center justify-between rounded-2xl bg-ink py-3.5 pl-[18px] pr-3.5"
+          className="absolute bottom-5 left-4 right-4 flex-row items-center justify-between rounded-2xl bg-panel py-3.5 pl-[18px] pr-3.5"
         >
           <T numberOfLines={1} className="mr-2 flex-1 font-sans-semibold text-sm text-white">{toast} deleted</T>
           <Pressable accessibilityRole="button" onPress={undo} className="h-9 justify-center rounded-full bg-gold px-3.5">

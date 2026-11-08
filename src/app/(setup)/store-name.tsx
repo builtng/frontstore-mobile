@@ -8,6 +8,7 @@ import { toSlug, updateDraft, useDraft } from '@/features/setup/draft';
 import { checkSubdomainAvailable, getCountries, detectLocation } from '@/api/store';
 import { Country } from '@/api/types';
 import { SearchableSelectModal, SelectItem } from '@/components/SearchableSelectModal';
+import { C } from '@/lib/theme';
 
 function getCountryFlag(code?: string): string {
   if (!code || code.length !== 2) return '🌍';
@@ -171,17 +172,17 @@ export default function StoreName() {
             </T>
             {checking ? (
               <View className="flex-row items-center gap-1.5">
-                <ActivityIndicator size="small" color="#1E5E3A" />
+                <ActivityIndicator size="small" color={C.accent} />
                 <T className="font-sans-medium text-[13px] text-muted">Checking availability...</T>
               </View>
             ) : available === true && slug.length >= 3 ? (
               <View className="flex-row items-center gap-1.5">
-                <Check size={14} color="#1E5E3A" strokeWidth={3} />
-                <T className="font-sans-bold text-[13px] text-green">Available</T>
+                <Check size={14} color={C.accent} strokeWidth={3} />
+                <T className="font-sans-bold text-[13px] text-accent">Available</T>
               </View>
             ) : available === false ? (
               <View className="flex-row items-center gap-1.5">
-                <X size={14} color="#9A2C14" strokeWidth={3} />
+                <X size={14} color={C.danger} strokeWidth={3} />
                 <T className="font-sans-bold text-[13px] text-danger">Taken. Try another name</T>
               </View>
             ) : null}
@@ -202,11 +203,11 @@ export default function StoreName() {
                 </T>
                 {currency_code ? (
                   <View className="rounded-full bg-mint/50 px-2 py-0.5">
-                    <T className="text-xs font-sans-bold text-green">{currency_code}</T>
+                    <T className="text-xs font-sans-bold text-accent">{currency_code}</T>
                   </View>
                 ) : null}
               </View>
-              <ChevronDown size={18} color="#5F6B65" strokeWidth={2} />
+              <ChevronDown size={18} color={C.muted} strokeWidth={2} />
             </Pressable>
           </View>
         </ScrollView>

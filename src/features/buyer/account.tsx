@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
+import { C } from '@/lib/theme';
 
 /** Back to the buyer profile (or wherever we came from). */
 export function backToProfile() {
@@ -15,7 +16,7 @@ export function AccountHeader({ title }: { title: string }) {
   return (
     <View className="flex-row items-center justify-between px-2 pb-2">
       <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={backToProfile} className="h-11 w-11 items-center justify-center">
-        <ChevronLeft size={22} color="#0E1A15" strokeWidth={2} />
+        <ChevronLeft size={22} color={C.ink} strokeWidth={2} />
       </Pressable>
       <T accessibilityRole="header" className="font-sans-bold text-[17px]">{title}</T>
       <View className="w-11" />
@@ -29,7 +30,7 @@ export function DashedAdd({ label, onPress }: { label: string; onPress: () => vo
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="h-[52px] items-center justify-center rounded-2xl border-[1.5px] border-dashed border-[#BFC7C1]"
+      className="h-[52px] items-center justify-center rounded-2xl border-[1.5px] border-dashed border-rule"
     >
       <T className="font-sans-bold text-[15px]">{label}</T>
     </Pressable>
@@ -59,7 +60,7 @@ export function SheetField({ label, className, ...rest }: TextInputProps & { lab
       <T className="font-sans-bold text-[13px]">{label}</T>
       <TextInput
         accessibilityLabel={label}
-        placeholderTextColor="#8A948F"
+        placeholderTextColor={C.placeholder}
         className="h-[46px] rounded-xl border border-line-2 bg-surface px-3 font-sans text-[15px] text-ink"
         {...rest}
       />
@@ -84,11 +85,11 @@ export function LinkRow({ label, value, danger, onPress }: { label: string; valu
       accessibilityRole="button"
       accessibilityLabel={value ? `${label}, ${value}` : label}
       onPress={onPress}
-      className="min-h-[56px] flex-row items-center gap-3 border-b border-[#E7E9E4] px-[18px]"
+      className="min-h-[56px] flex-row items-center gap-3 border-b border-line px-[18px]"
     >
       <T className={cx('flex-1 font-sans-semibold text-[15px]', danger ? 'text-danger' : 'text-ink')}>{label}</T>
       {value ? <T className="text-sm text-muted">{value}</T> : null}
-      <ChevronRight size={16} color="#8A918D" strokeWidth={2} />
+      <ChevronRight size={16} color={C.placeholder} strokeWidth={2} />
     </Pressable>
   );
 }
@@ -102,7 +103,7 @@ export function SwitchRow({ label, sub, value, onChange }: { label: string; sub?
       accessibilityHint={sub}
       accessibilityState={{ checked: value }}
       onPress={() => onChange(!value)}
-      className="min-h-[60px] flex-row items-center gap-3 border-b border-[#E7E9E4] px-[18px] py-2.5"
+      className="min-h-[60px] flex-row items-center gap-3 border-b border-line px-[18px] py-2.5"
     >
       <View className="flex-1 gap-0.5">
         <T className="font-sans-semibold text-[15px]">{label}</T>

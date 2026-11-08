@@ -11,6 +11,7 @@ import { WhatsAppIcon } from '@/features/setup/parts';
 import { INVOICE_PILL, dueLine, shortDay } from '@/features/seller/invoiceMeta';
 import { deleteInvoice, emailInvoice, getInvoice, invoiceState, invoiceUrl, markInvoiceSent, recordInvoicePayment } from '@/api/invoices';
 import { formatNaira } from '@/lib/format';
+import { C } from '@/lib/theme';
 
 export default function InvoiceDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -70,7 +71,7 @@ export default function InvoiceDetail() {
         fallback="/invoices"
         right={st !== 'paid' ? (
           <Pressable accessibilityRole="button" accessibilityLabel="Delete invoice" onPress={confirmDelete} hitSlop={6} className="h-10 w-10 items-center justify-center rounded-full border border-line bg-surface">
-            <Trash2 size={18} color="#9A2C14" strokeWidth={2} />
+            <Trash2 size={18} color={C.danger} strokeWidth={2} />
           </Pressable>
         ) : undefined}
       />
@@ -112,12 +113,12 @@ export default function InvoiceDetail() {
           <View className="flex-row items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-4 pr-1.5">
             <T numberOfLines={1} className="flex-1 text-[13px] text-muted">{url.replace('https://', '')}</T>
             <Pressable accessibilityRole="button" accessibilityLabel="Copy invoice link" onPress={copy} className={cx('h-[34px] flex-row items-center gap-1.5 rounded-full px-3', copied ? 'bg-green' : 'bg-bg')}>
-              {copied ? <Check size={14} color="#FFFFFF" strokeWidth={2.6} /> : <Copy size={14} color="#0E1A15" strokeWidth={2} />}
+              {copied ? <Check size={14} color="#FFFFFF" strokeWidth={2.6} /> : <Copy size={14} color={C.ink} strokeWidth={2} />}
               <T className={cx('font-sans-bold text-xs', copied ? 'text-white' : 'text-ink')}>{copied ? 'Copied' : 'Copy'}</T>
             </Pressable>
           </View>
         ) : null}
-        {note ? <T accessibilityLiveRegion="polite" className="text-center text-[13px] text-green">{note}</T> : null}
+        {note ? <T accessibilityLiveRegion="polite" className="text-center text-[13px] text-accent">{note}</T> : null}
         {error ? <T accessibilityLiveRegion="polite" className="text-center text-[13px] text-danger">{(error as Error).message || 'That didn’t work. Try again.'}</T> : null}
       </ScrollView>
 
@@ -130,12 +131,12 @@ export default function InvoiceDetail() {
           <View className="flex-row gap-2.5">
             {v.customer_email ? (
               <Pressable accessibilityRole="button" disabled={email.isPending} onPress={() => email.mutate()} className="h-[50px] flex-1 flex-row items-center justify-center gap-2 rounded-2xl border-[1.5px] border-line bg-surface">
-                {email.isPending ? <ActivityIndicator size="small" color="#1E5E3A" /> : <Mail size={17} color="#0E1A15" strokeWidth={2} />}
+                {email.isPending ? <ActivityIndicator size="small" color={C.accent} /> : <Mail size={17} color={C.ink} strokeWidth={2} />}
                 <T className="font-sans-bold text-sm">Email it</T>
               </Pressable>
             ) : null}
             <Pressable accessibilityRole="button" disabled={paid.isPending} onPress={confirmPaid} className="h-[50px] flex-1 flex-row items-center justify-center gap-2 rounded-2xl border-[1.5px] border-line bg-surface">
-              {paid.isPending ? <ActivityIndicator size="small" color="#1E5E3A" /> : <Check size={17} color="#0E1A15" strokeWidth={2.2} />}
+              {paid.isPending ? <ActivityIndicator size="small" color={C.accent} /> : <Check size={17} color={C.ink} strokeWidth={2.2} />}
               <T className="font-sans-bold text-sm">Mark as paid</T>
             </Pressable>
           </View>
@@ -143,8 +144,8 @@ export default function InvoiceDetail() {
       ) : (
         <View style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }} className="px-5 pt-3">
           <View className="h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-mint">
-            <Check size={18} color="#1E5E3A" strokeWidth={2.4} />
-            <T className="font-sans-bold text-[15px] text-green">Paid</T>
+            <Check size={18} color={C.accent} strokeWidth={2.4} />
+            <T className="font-sans-bold text-[15px] text-accent">Paid</T>
           </View>
         </View>
       )}

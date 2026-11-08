@@ -10,6 +10,7 @@ import type { Order, OrderStatus } from '@/api/types';
 import { LIST_OF, NEXT, STAGE, ago, customerWhatsApp, orderPhoto, tileColor, type OrderList } from '@/features/seller/orderMeta';
 import { summarise } from '@/features/seller/salesStats';
 import { formatNaira } from '@/lib/format';
+import { C } from '@/lib/theme';
 
 /** No orders at all yet: the design's "first order is one share away". */
 function FirstOrder() {
@@ -18,7 +19,7 @@ function FirstOrder() {
       <View className="relative h-[170px] w-[200px]" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <View style={{ transform: [{ rotate: '-6deg' }] }} className="absolute left-5 top-5 h-[120px] w-[150px] rounded-3xl border border-line bg-surface" />
         <View className="absolute left-[34px] top-[34px] h-[120px] w-[150px] items-center justify-center rounded-3xl bg-mint">
-          <ShoppingBag size={48} color="#1E5E3A" strokeWidth={1.6} />
+          <ShoppingBag size={48} color={C.accent} strokeWidth={1.6} />
         </View>
         <View className="absolute right-0 top-0 rounded-full bg-gold px-2.5 py-1.5">
           <T className="font-sans-bold text-xs text-[#2A1B05]">Soon!</T>
@@ -67,7 +68,7 @@ function OrderCard({ o, onAct, busy }: { o: Order; onAct: (o: Order, to: OrderSt
         <View className="flex-1" />
         {wa ? (
           <Pressable accessibilityRole="button" accessibilityLabel={`WhatsApp ${o.customer_name}`} onPress={() => Linking.openURL(wa)} className="h-[38px] w-[38px] items-center justify-center rounded-full border border-line">
-            <MessageCircle size={17} color="#0E1A15" strokeWidth={2} />
+            <MessageCircle size={17} color={C.ink} strokeWidth={2} />
           </Pressable>
         ) : null}
         {next ? (
@@ -147,20 +148,20 @@ export default function Orders() {
           onPress={() => { setSearching(!searching); setQuery(''); }}
           className="h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-surface"
         >
-          {searching ? <X size={19} color="#0E1A15" strokeWidth={2} /> : <Search size={19} color="#0E1A15" strokeWidth={2} />}
+          {searching ? <X size={19} color={C.ink} strokeWidth={2} /> : <Search size={19} color={C.ink} strokeWidth={2} />}
         </Pressable>
       </View>
 
       <View className="px-5 pb-3">
         {searching ? (
           <View className="h-11 flex-row items-center gap-2 rounded-[14px] border-[1.5px] border-line bg-surface px-3">
-            <Search size={16} color="#5F6B65" strokeWidth={2} />
+            <Search size={16} color={C.muted} strokeWidth={2} />
             <TextInput
               autoFocus
               value={query}
               onChangeText={setQuery}
               placeholder="Name, order number or item"
-              placeholderTextColor="#8A948F"
+              placeholderTextColor={C.placeholder}
               accessibilityLabel="Search orders"
               returnKeyType="search"
               className="h-full min-w-0 flex-1 font-sans text-base text-ink"
@@ -188,7 +189,7 @@ export default function Orders() {
         ) : (
           <View className="items-center gap-1.5 px-5 py-10">
             <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-mint">
-              <CheckCircle size={24} color="#1E5E3A" strokeWidth={2} />
+              <CheckCircle size={24} color={C.accent} strokeWidth={2} />
             </View>
             <T className="text-center font-sans-bold text-base">{query.trim() ? `Nothing matches “${query.trim()}”` : 'All caught up'}</T>
             <T className="text-center text-sm text-muted">{query.trim() ? 'Try a name or order number.' : 'Nothing in this list right now.'}</T>

@@ -10,6 +10,7 @@ import { createProduct } from '@/api/products';
 import { queryClient } from '@/api/queryClient';
 import { getMe } from '@/api/auth';
 import { getToken } from '@/api/authStore';
+import { C } from '@/lib/theme';
 
 export default function FirstProduct() {
   const draft = useDraft();
@@ -138,7 +139,7 @@ export default function FirstProduct() {
             <AiProductFlow flow={flow} />
           ) : account === 'creating' ? (
             <View accessibilityLiveRegion="polite" className="h-[210px] items-center justify-center gap-3 rounded-[22px] bg-surface">
-              <ActivityIndicator color="#1E5E3A" />
+              <ActivityIndicator color={C.accent} />
               <T className="font-sans-semibold text-sm text-muted">Creating your store…</T>
             </View>
           ) : (
@@ -159,7 +160,7 @@ export default function FirstProduct() {
               accessibilityState={{ disabled: true }}
               accessibilityLabel="Add product and finish"
               accessibilityHint={filled ? 'Add a name and price first' : 'Add a photo first'}
-              className="h-[54px] items-center justify-center rounded-2xl bg-[#BFD3C6]"
+              className="h-[54px] items-center justify-center rounded-2xl bg-disabled"
             >
               <T className="font-sans-bold text-base text-white">Add product and finish</T>
             </View>

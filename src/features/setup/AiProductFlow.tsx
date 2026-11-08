@@ -7,6 +7,7 @@ import { SearchableSelectModal } from '@/components/SearchableSelectModal';
 import { useCategories } from '@/features/products/useCategories';
 import { ColourChips } from '@/features/products/ColourChips';
 import { usePhotoDraft, type PhotoStage } from '@/features/products/usePhotoDraft';
+import { C } from '@/lib/theme';
 
 export type AiStage = PhotoStage;
 
@@ -114,7 +115,7 @@ function Reading({ uri, onSkip }: { uri?: string; onSkip: () => void }) {
           return (
             <View key={label} className="flex-row items-center gap-3">
               <View className={cx('h-[26px] w-[26px] items-center justify-center rounded-full', done ? 'bg-green' : doing ? 'bg-mint' : 'bg-sand')}>
-                {done ? <Check size={14} color="#FFFFFF" strokeWidth={3} /> : doing ? <ActivityIndicator size="small" color="#1E5E3A" /> : null}
+                {done ? <Check size={14} color="#FFFFFF" strokeWidth={3} /> : doing ? <ActivityIndicator size="small" color={C.accent} /> : null}
               </View>
               <T className={cx('flex-1 text-[15px]', done ? 'font-sans-bold' : doing ? 'font-sans-medium' : 'font-sans-bold text-muted')}>{label}</T>
             </View>
@@ -122,7 +123,7 @@ function Reading({ uri, onSkip }: { uri?: string; onSkip: () => void }) {
         })}
       </View>
       <Pressable accessibilityRole="button" onPress={onSkip} className="min-h-11 items-center justify-center">
-        <T className="font-sans-bold text-sm text-green">Skip, I’ll fill it in myself</T>
+        <T className="font-sans-bold text-sm text-accent">Skip, I’ll fill it in myself</T>
       </Pressable>
     </View>
   );
@@ -155,14 +156,14 @@ function Snap({ flow }: { flow: Flow }) {
       </Pressable>
       <View className="flex-row items-center gap-3">
         <Pressable accessibilityRole="button" onPress={() => photos.addFrom('library')} disabled={photos.uploading} className="h-[52px] min-w-0 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-line bg-surface">
-          <ImageIcon size={18} color="#0E1A15" strokeWidth={2} />
+          <ImageIcon size={18} color={C.ink} strokeWidth={2} />
           <T className="font-sans-bold text-sm">Gallery</T>
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Take photo" onPress={() => photos.addFrom('camera')} disabled={photos.uploading} className="h-[72px] w-[72px] items-center justify-center rounded-full border-[5px] border-green bg-surface">
           <View className="h-[50px] w-[50px] rounded-full bg-green" />
         </Pressable>
         <Pressable accessibilityRole="button" onPress={photos.skip} className="h-[52px] min-w-0 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-line bg-surface">
-          <Type size={18} color="#0E1A15" strokeWidth={2} />
+          <Type size={18} color={C.ink} strokeWidth={2} />
           <T className="font-sans-bold text-sm">Type it</T>
         </Pressable>
       </View>
@@ -190,8 +191,8 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
     <View className="gap-3.5">
       <View className="flex-row items-center justify-between gap-2 rounded-[14px] bg-mint px-3.5 py-3">
         <View className="shrink flex-row items-center gap-2">
-          <SparkleIcon size={15} color="#14532D" />
-          <T className="shrink text-[13px] leading-[19px] text-[#14532D]">{aiError ?? (p.name ? 'Nina filled this in. Check it, then publish.' : 'Fill in the details.')}</T>
+          <SparkleIcon size={15} color={C['mint-fg']} />
+          <T className="shrink text-[13px] leading-[19px] text-mint-fg">{aiError ?? (p.name ? 'Nina filled this in. Check it, then publish.' : 'Fill in the details.')}</T>
         </View>
         <Pressable
           accessibilityRole="button"
@@ -199,7 +200,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
           hitSlop={{ top: 6, bottom: 6 }}
           className="h-8 justify-center rounded-full bg-surface px-3"
         >
-          <T className="font-sans-bold text-xs text-green">Read again</T>
+          <T className="font-sans-bold text-xs text-accent">Read again</T>
         </Pressable>
       </View>
 
@@ -209,7 +210,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
           value={p.name}
           onChangeText={(v) => update({ name: v })}
           accessibilityLabel="Product name"
-          placeholderTextColor="#8A948F"
+          placeholderTextColor={C.placeholder}
           className={cx(inputBox, 'h-[50px] px-3.5 font-sans-semibold text-base text-ink')}
         />
       </View>
@@ -237,7 +238,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
             className={cx(inputBox, 'h-[50px] flex-row items-center justify-between px-3')}
           >
             <T className="flex-1 font-sans-semibold text-base" numberOfLines={1}>{categories.nameOf(p.categoryId) || 'Select'}</T>
-            <ChevronDown size={16} color="#5F6B65" strokeWidth={2} />
+            <ChevronDown size={16} color={C.muted} strokeWidth={2} />
           </Pressable>
         </View>
       </View>
@@ -304,7 +305,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
                   onPress={() => toggleSize(s)}
                   className={cx('h-11 min-w-[44px] items-center justify-center rounded-xl px-3', on ? 'bg-ink' : 'border border-line bg-surface')}
                 >
-                  <T className={cx('font-sans-bold text-sm', on ? 'text-white' : 'text-ink')}>{s}</T>
+                  <T className={cx('font-sans-bold text-sm', on ? 'text-bg' : 'text-ink')}>{s}</T>
                 </Pressable>
               );
             })}
@@ -316,7 +317,7 @@ function FilledForm({ product: p, update, onRedo, aiError }: { product: AiProduc
             onChangeText={(v) => update({ stock: v.replace(/\D/g, '').slice(0, 5) })}
             keyboardType="number-pad"
             placeholder="How many in stock"
-            placeholderTextColor="#8A948F"
+            placeholderTextColor={C.placeholder}
             accessibilityLabel="How many in stock"
             className="h-11 rounded-xl border border-line bg-surface px-3 font-sans text-base text-ink"
           />
@@ -356,9 +357,9 @@ export function AiProductFlow({ flow }: { flow: Flow }) {
             accessibilityLabel="Add photo"
             onPress={photos.pick}
             disabled={photos.uploading}
-            className="h-[92px] w-[92px] items-center justify-center rounded-[18px] border-[1.5px] border-dashed border-[#BFC7C1]"
+            className="h-[92px] w-[92px] items-center justify-center rounded-[18px] border-[1.5px] border-dashed border-rule"
           >
-            {photos.uploading ? <ActivityIndicator color="#1E5E3A" /> : <Camera size={22} color="#5F6B65" strokeWidth={2} />}
+            {photos.uploading ? <ActivityIndicator color={C.accent} /> : <Camera size={22} color={C.muted} strokeWidth={2} />}
           </Pressable>
         ) : null}
       </View>

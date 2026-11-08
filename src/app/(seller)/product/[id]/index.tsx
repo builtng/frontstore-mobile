@@ -12,9 +12,10 @@ import { createProduct, updateProduct } from '@/api/products';
 import { useSellerProduct } from '@/features/products/useSellerProduct';
 import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { getMe } from '@/api/auth';
+import { C } from '@/lib/theme';
 
 function Row({ Icon, label, onPress, danger, className }: { Icon: LucideIcon; label: string; onPress: () => void; danger?: boolean; className?: string }) {
-  const color = danger ? '#9A2C14' : '#0E1A15';
+  const color = danger ? C.danger : C.ink;
   return (
     <Pressable accessibilityRole="button" onPress={onPress} className={cx('min-h-[52px] flex-row items-center gap-3.5 px-1.5 py-3.5', className)}>
       <Icon size={20} color={color} strokeWidth={2} />

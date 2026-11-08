@@ -3,6 +3,7 @@ import { Image, Pressable, Text, TextInput, View, type PressableProps, type Text
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { Link, type Href } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
+import { C } from '@/lib/theme';
 
 const cx = (...c: Array<string | false | null | undefined>) => c.filter(Boolean).join(' ');
 
@@ -12,7 +13,7 @@ const cx = (...c: Array<string | false | null | undefined>) => c.filter(Boolean)
  */
 // Any text colour class passed in. NativeWind does not guarantee that a later colour class wins
 // over an earlier one, so the default ink colour is only added when no colour is given.
-const TEXT_COLOR = /(^|\s)text-(bg|surface|surface-2|sand|cream|ink|green|green-2|deep|night|mint|mint-2|leaf|saffron|gold|peach|line|line-2|muted|muted-2|faint|faint-2|placeholder|terra|warn-fg|info-fg|on-dark|on-dark-2|danger|white|black|transparent|\[#)/;
+const TEXT_COLOR = /(^|\s)text-(accent|seg|bg|surface|surface-2|sand|cream|ink|panel|body|mint-fg|rule|disabled|green|green-2|deep|night|mint|mint-2|leaf|saffron|gold|peach|line|line-2|muted|muted-2|faint|faint-2|placeholder|terra|warn-fg|info-fg|on-dark|on-dark-2|danger|white|black|transparent|\[#)/;
 const FONT_FAMILY = /(^|\s)font-(sans|display)/;
 
 export function T({ className = '', ...rest }: TextProps & { className?: string }) {
@@ -36,7 +37,7 @@ export function Screen({ className, edges = ['top'], children, ...rest }: ViewPr
 type BtnKind = 'primary' | 'dark' | 'outline' | 'gold' | 'ghost' | 'danger';
 const BTN: Record<BtnKind, [string, string]> = {
   primary: ['bg-deep', 'text-white'],
-  dark: ['bg-ink', 'text-white'],
+  dark: ['bg-panel', 'text-white'],
   outline: ['border-[1.5px] border-line bg-surface', 'text-ink'],
   gold: ['bg-gold', 'text-[#2A1B05]'],
   ghost: ['bg-transparent', 'text-deep'],
@@ -72,7 +73,7 @@ export const Field = forwardRef<TextInput, TextInputProps & { label?: string; cl
       {label ? <T className="font-sans-bold text-[13px] text-muted">{label}</T> : null}
       <TextInput
         ref={ref}
-        placeholderTextColor="#8A948F"
+        placeholderTextColor={C.placeholder}
         className={cx('h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink', className)}
         {...rest}
       />

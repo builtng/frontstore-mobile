@@ -8,6 +8,7 @@ import { WhatsAppIcon } from '@/features/setup/parts';
 import { Button, Screen, Skeleton, T, cx } from '@/components/ui';
 import { BottomSheet, SheetField } from '@/features/buyer/account';
 import { PrivacyActions } from '@/features/account/PrivacyActions';
+import { AppearancePicker } from '@/features/account/AppearancePicker';
 import { ContactEditSheet, type ContactKind } from '@/features/account/ContactEditSheet';
 import { PasswordSheet } from '@/features/account/PasswordSheet';
 import { naira } from '@/lib/format';
@@ -16,6 +17,7 @@ import { getStore } from '@/api/store';
 import { getWalletBalance } from '@/api/orders';
 import { apiGet } from '@/api/client';
 import { planName, signOut, updateStore } from '@/api/account';
+import { C } from '@/lib/theme';
 
 type Row = { label: string; sub?: string; Icon?: LucideIcon | React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>; value?: string; loading?: boolean; href?: Href; onPress?: () => void; danger?: boolean };
 
@@ -40,7 +42,7 @@ function Rows({ rows }: { rows: Row[] }) {
         >
           {r.Icon ? (
             <IconTile tone={r.danger ? 'danger' : 'green'} size={36}>
-              <r.Icon size={18} color={r.danger ? '#9A2C14' : '#1E5E3A'} strokeWidth={2} />
+              <r.Icon size={18} color={r.danger ? C.danger : C.accent} strokeWidth={2} />
             </IconTile>
           ) : null}
           <View className="min-w-0 flex-1">
@@ -48,7 +50,7 @@ function Rows({ rows }: { rows: Row[] }) {
             {r.sub ? <T numberOfLines={1} className="text-xs text-muted">{r.sub}</T> : null}
           </View>
           {r.loading ? <Skeleton className="h-3.5 w-14" /> : r.value ? <T numberOfLines={1} className="max-w-[45%] text-sm text-muted">{r.value}</T> : null}
-          {(r.href || r.onPress) && !r.danger ? <ChevronRight size={18} color="#9AA39E" strokeWidth={2} /> : null}
+          {(r.href || r.onPress) && !r.danger ? <ChevronRight size={18} color={C['faint-2']} strokeWidth={2} /> : null}
         </Pressable>
       ))}
     </View>
@@ -57,7 +59,7 @@ function Rows({ rows }: { rows: Row[] }) {
 
 /** WhatsApp logo sized like the other row icons. */
 function WhatsAppGlyph({ size = 18 }: { size?: number }) {
-  return <WhatsAppIcon size={size} color="#1E5E3A" />;
+  return <WhatsAppIcon size={size} color={C.accent} />;
 }
 
 export default function Settings() {
@@ -184,7 +186,7 @@ export default function Settings() {
             </View>
             {storeSlug ? (
               <Pressable accessibilityRole="link" accessibilityLabel="View your store" onPress={() => Linking.openURL(`https://frontstore.app/${storeSlug}`)} className="h-9 justify-center rounded-full bg-mint px-3">
-                <T className="font-sans-bold text-[13px] text-green">View</T>
+                <T className="font-sans-bold text-[13px] text-accent">View</T>
               </Pressable>
             ) : null}
           </View>
@@ -208,6 +210,8 @@ export default function Settings() {
         <Section title="Money and account" />
         <Rows rows={moneyRows} />
 
+        <AppearancePicker />
+
         <Section title="Privacy" />
         <View className="overflow-hidden rounded-[20px] border border-line bg-surface">
           <PrivacyActions />
@@ -226,11 +230,11 @@ export default function Settings() {
         <View className="gap-3 py-1">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <Truck size={20} color="#1E5E3A" />
+              <Truck size={20} color={C.accent} />
               <T className="font-display text-xl">Delivery fee</T>
             </View>
             <Pressable accessibilityRole="button" accessibilityLabel="Close" hitSlop={8} onPress={() => setDeliveryOpen(false)}>
-              <X size={20} color="#0E1A15" />
+              <X size={20} color={C.ink} />
             </Pressable>
           </View>
           <T className="text-sm text-muted">One flat fee added to every delivery order at checkout. Leave it empty for no fee. Set fees by area on the web dashboard.</T>

@@ -1,6 +1,7 @@
 import { Image, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Heart } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
+import { C } from '@/lib/theme';
 
 /** Coloured square/round avatar with a store initial. */
 export function Avatar({ initial, color, uri, size = 48, radius = 14, fontSize = 18, className }: {
@@ -35,7 +36,7 @@ export function ChipRow({ options, value, onChange, px = 14, bordered = 'border-
             style={{ paddingHorizontal: px }}
             className={cx('h-[38px] justify-center rounded-full', on ? 'bg-ink' : cx('border', bordered))}
           >
-            <T className={cx('font-sans-semibold text-sm', on ? 'text-white' : 'text-ink')}>{o}</T>
+            <T className={cx('font-sans-semibold text-sm', on ? 'text-bg' : 'text-ink')}>{o}</T>
           </Pressable>
         );
       })}
@@ -78,7 +79,7 @@ export function HeartToggle({ on, onToggle, label }: { on: boolean; onToggle: ()
       hitSlop={6}
       className="absolute right-2 top-2 h-8 w-8 items-center justify-center rounded-full bg-surface"
     >
-      <Heart size={16} color={on ? '#C8553D' : '#0E1A15'} fill={on ? '#C8553D' : 'none'} strokeWidth={2} />
+      <Heart size={16} color={on ? '#C8553D' : C.ink} fill={on ? '#C8553D' : 'none'} strokeWidth={2} />
     </Pressable>
   );
 }

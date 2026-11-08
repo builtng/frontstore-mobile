@@ -10,6 +10,7 @@ import { BackHeader, Segmented, Toggle } from '@/features/seller/parts';
 import { LockedOrError } from '@/features/seller/ProGate';
 import { createPaymentLink, deletePaymentLink, getPaymentLinks, linkUrl, setPaymentLinkActive, type PaymentLink } from '@/api/paymentLinks';
 import { formatNaira } from '@/lib/format';
+import { C } from '@/lib/theme';
 
 const kindLine = (l: PaymentLink) => {
   const amount = l.allow_custom_amount ? `Any amount · min ${formatNaira(l.amount)}` : `Fixed · ${formatNaira(l.amount)}`;
@@ -32,26 +33,26 @@ function LinkRow({ l, first, copied, onCopy, onShare, onToggle, onDelete, busy }
         </View>
         <View className="items-end gap-px">
           <T className="font-sans-bold text-[15px]">{formatNaira(l.amount_received)}</T>
-          <T className="text-xs text-muted">{l.amount_received > 0 ? 'collected' : 'No payments yet'}</T>
+          <T className="text-xs text-muted">{l.receipts_count != null ? (l.receipts_count ? `${l.receipts_count} paid` : 'No payments yet') : l.amount_received > 0 ? 'collected' : 'No payments yet'}</T>
         </View>
       </View>
       <View className="flex-row items-center gap-2">
         {l.status === 'paid' ? (
-          <View className="rounded-full bg-mint px-2.5 py-1"><T className="font-sans-bold text-xs text-green">Paid</T></View>
+          <View className="rounded-full bg-mint px-2.5 py-1"><T className="font-sans-bold text-xs text-accent">Paid</T></View>
         ) : (
           <Toggle label={`${l.title} is taking payments`} value={on} onChange={onToggle} />
         )}
         <View className="flex-1" />
         {l.amount_received <= 0 ? (
           <Pressable accessibilityRole="button" accessibilityLabel={`Delete ${l.title}`} disabled={busy} onPress={onDelete} className="h-[34px] w-[34px] items-center justify-center rounded-full border border-line">
-            <Trash2 size={15} color="#9A2C14" strokeWidth={2} />
+            <Trash2 size={15} color={C.danger} strokeWidth={2} />
           </Pressable>
         ) : null}
         <Pressable accessibilityRole="button" accessibilityLabel={`Share ${l.title}`} onPress={onShare} className="h-[34px] w-[34px] items-center justify-center rounded-full border border-line">
-          <Share2 size={15} color="#0E1A15" strokeWidth={2} />
+          <Share2 size={15} color={C.ink} strokeWidth={2} />
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={`Copy link for ${l.title}`} onPress={onCopy} className={cx('h-[34px] flex-row items-center gap-1.5 rounded-full px-3', copied ? 'bg-green' : 'border border-line bg-surface')}>
-          {copied ? <Check size={14} color="#FFFFFF" strokeWidth={2.6} /> : <Copy size={14} color="#0E1A15" strokeWidth={2} />}
+          {copied ? <Check size={14} color="#FFFFFF" strokeWidth={2.6} /> : <Copy size={14} color={C.ink} strokeWidth={2} />}
           <T className={cx('font-sans-bold text-xs', copied ? 'text-white' : 'text-ink')}>{copied ? 'Copied' : 'Copy'}</T>
         </Pressable>
       </View>
@@ -76,14 +77,14 @@ function NewLinkSheet({ visible, onClose, onCreated }: { visible: boolean; onClo
         <T className="font-display-x text-[22px]">New payment link</T>
         <View className="gap-1.5">
           <T className="font-sans-bold text-[13px] text-muted">What is it for?</T>
-          <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Aso-ebi deposit" placeholderTextColor="#8A948F" maxLength={150} accessibilityLabel="What is it for" className="h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink" />
+          <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Aso-ebi deposit" placeholderTextColor={C.placeholder} maxLength={150} accessibilityLabel="What is it for" className="h-14 rounded-2xl border-[1.5px] border-line bg-surface px-4 font-sans-semibold text-[17px] text-ink" />
         </View>
         <Segmented value={custom} onChange={setCustom} options={[['fixed', 'Fixed amount'], ['any', 'Customer chooses']] as const} />
         <View className="gap-1.5">
           <T className="font-sans-bold text-[13px] text-muted">{custom === 'any' ? 'Smallest amount' : 'Amount'}</T>
           <View className="h-14 flex-row items-center gap-1 rounded-2xl border-[1.5px] border-line bg-surface px-4">
             <T className="font-sans-semibold text-[17px] text-muted">₦</T>
-            <TextInput value={amount} onChangeText={(v) => setAmount(v.replace(/\D/g, '').slice(0, 9))} keyboardType="number-pad" placeholder="25000" placeholderTextColor="#8A948F" accessibilityLabel="Amount in naira" className="h-full flex-1 font-sans-semibold text-[17px] text-ink" />
+            <TextInput value={amount} onChangeText={(v) => setAmount(v.replace(/\D/g, '').slice(0, 9))} keyboardType="number-pad" placeholder="25000" placeholderTextColor={C.placeholder} accessibilityLabel="Amount in naira" className="h-full flex-1 font-sans-semibold text-[17px] text-ink" />
           </View>
         </View>
         <Segmented value={type} onChange={setType} options={[['reusable', 'Many payments'], ['one_time', 'Pays once']] as const} />
@@ -167,7 +168,7 @@ export default function PaymentLinks() {
               </View>
             ) : (
               <View className="items-center gap-2 rounded-[22px] border border-line bg-surface px-6 py-8">
-                <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-mint"><Link2 size={24} color="#1E5E3A" strokeWidth={2} /></View>
+                <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-mint"><Link2 size={24} color={C.accent} strokeWidth={2} /></View>
                 <T className="text-center font-sans-bold text-base">Get paid without a product</T>
                 <T className="text-center text-sm leading-5 text-muted">Deposits, fees, classes, “pay what you owe”. Make a link, send it on WhatsApp, and the money comes to your wallet.</T>
               </View>

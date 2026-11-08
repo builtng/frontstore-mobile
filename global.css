@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Light theme defaults; src/lib/theme.tsx swaps these for the dark palette. */
+:root {
+  --c-bg: 244 245 242;
+  --c-bg-alt: 248 249 250;
+  --c-surface: 255 255 255;
+  --c-surface-2: 249 250 248;
+  --c-sand: 233 236 231;
+  --c-cream: 238 242 239;
+  --c-ink: 14 26 21;
+  --c-panel: 14 26 21;
+  --c-green: 30 94 58;
+  --c-deep: 30 94 58;
+  --c-green-2: 22 74 45;
+  --c-mint: 230 242 234;
+  --c-mint-2: 207 229 215;
+  --c-line: 231 233 228;
+  --c-line-2: 217 222 217;
+  --c-muted: 95 107 101;
+  --c-muted-2: 74 82 78;
+  --c-faint: 122 132 127;
+  --c-faint-2: 154 163 158;
+  --c-placeholder: 138 148 143;
+  --c-warn-bg: 253 241 225;
+  --c-warn-fg: 138 74 6;
+  --c-danger: 154 44 20;
+  --c-danger-bg: 253 236 232;
+  --c-info-bg: 238 242 255;
+  --c-info-fg: 55 48 163;
+  --c-mint-fg: 20 83 45;
+  --c-disabled: 191 211 198;
+  --c-rule: 191 199 193;
+  --c-accent: 30 94 58;
+  --c-seg: 255 255 255;
+  --c-body: 38 50 45;
+}

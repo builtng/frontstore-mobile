@@ -5,6 +5,7 @@ import { Link, router, type Href } from 'expo-router';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { ChevronLeft } from 'lucide-react-native';
 import { T, cx } from '@/components/ui';
+import { C } from '@/lib/theme';
 
 /** router.back() with a fallback when there is no history (deep link / reload). */
 export function goBack(fallback: Href) {
@@ -34,7 +35,7 @@ export function StepHeader({
           hitSlop={6}
           className="h-10 w-10 items-center justify-center rounded-full border border-line bg-surface"
         >
-          <ChevronLeft size={20} color="#0E1A15" strokeWidth={2} />
+          <ChevronLeft size={20} color={C.ink} strokeWidth={2} />
         </Pressable>
       ) : (
         <View className="h-10 w-10" />
@@ -43,12 +44,12 @@ export function StepHeader({
       {right ? (
         right.onPress ? (
           <Pressable accessibilityRole="button" onPress={right.onPress} className="h-11 justify-center px-2.5">
-            <T className="font-sans-bold text-[15px] text-green">{right.title}</T>
+            <T className="font-sans-bold text-[15px] text-accent">{right.title}</T>
           </Pressable>
         ) : (
           <Link href={right.href!} asChild>
             <Pressable accessibilityRole="link" className="h-11 justify-center px-2.5">
-              <T className="font-sans-bold text-[15px] text-green">{right.title}</T>
+              <T className="font-sans-bold text-[15px] text-accent">{right.title}</T>
             </Pressable>
           </Link>
         )
@@ -125,7 +126,7 @@ export const RingInput = forwardRef<TextInput, TextInputProps & { left?: React.R
           {left}
           <TextInput
             ref={innerRef}
-            placeholderTextColor="#8A948F"
+            placeholderTextColor={C.placeholder}
             onFocus={(e) => { setFocused(true); onFocus?.(e); }}
             onBlur={(e) => { setFocused(false); onBlur?.(e); }}
             className={cx('h-full flex-1 text-ink', inputClassName ?? 'font-sans-semibold text-[17px]')}
@@ -159,7 +160,7 @@ export function WhatsAppIcon({ size = 20, color = '#25D366' }: IconProps) {
   );
 }
 
-export function InstagramIcon({ size = 22, color = '#0E1A15', strokeWidth = 2 }: IconProps) {
+export function InstagramIcon({ size = 22, color = C.ink, strokeWidth = 2 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
       <Rect x={3} y={3} width={18} height={18} rx={5} />
@@ -168,7 +169,7 @@ export function InstagramIcon({ size = 22, color = '#0E1A15', strokeWidth = 2 }:
   );
 }
 
-export function TikTokIcon({ size = 22, color = '#0E1A15', strokeWidth = 2 }: IconProps) {
+export function TikTokIcon({ size = 22, color = C.ink, strokeWidth = 2 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M14 3v11a4 4 0 1 1-4-4M14 3c0 3 2 5 5 5" />

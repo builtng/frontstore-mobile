@@ -12,9 +12,15 @@ import { PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-goo
 import { UpdateNotification } from '../components/UpdateNotification';
 import { getToken } from '@/api/authStore';
 import { registerForPush } from '@/lib/push';
+import { C, ThemeProvider, useTheme } from '@/lib/theme';
 
 SplashScreen.preventAutoHideAsync();
 
+
+/** Light status bar text on the dark theme, dark text on the light one. */
+function ThemedStatusBar() {
+  return <StatusBar style={useTheme().dark ? 'light' : 'dark'} />;
+}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -53,14 +59,14 @@ export default function RootLayout() {
       onError={() => setRestored(true)}
     >
       {loaded && restored ? (
-        <>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F4F5F2' } }}>
-        <Stack.Screen name="(seller)/product/[id]/index" options={{ presentation: 'transparentModal', animation: 'fade' }} />
-        <Stack.Screen name="switch" options={{ presentation: 'transparentModal', animation: 'fade' }} />
-      </Stack>
-      <UpdateNotification />
-        </>
+        <ThemeProvider>
+          <ThemedStatusBar />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg } }}>
+            <Stack.Screen name="(seller)/product/[id]/index" options={{ presentation: 'transparentModal', animation: 'fade' }} />
+            <Stack.Screen name="switch" options={{ presentation: 'transparentModal', animation: 'fade' }} />
+          </Stack>
+          <UpdateNotification />
+        </ThemeProvider>
       ) : null}
     </PersistQueryClientProvider>
   );
