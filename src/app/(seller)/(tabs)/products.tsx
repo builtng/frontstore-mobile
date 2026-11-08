@@ -11,7 +11,9 @@ import { ProductImage, productPhoto } from '@/features/products/ProductImage';
 import { Product } from '@/api/types';
 import { C } from '@/lib/theme';
 
-type Filter = 'all' | 'in' | 'low' | 'out';
+type Filter = 'all' | 'in' | 'low' | 'out' | 'digital';
+/** Downloadable products (files, e-books, courses). */
+const isDigital = (p: Product) => !!((p as any).is_digital || (p as any).digital_files?.length);
 const LOW = 3;
 
 /** Stock pill text and colours (design: green in stock, amber low, grey sold out). */
@@ -74,6 +76,7 @@ export default function Products() {
 
   const all = (apiProducts ?? []).filter((p) => !(toast && p.name === toast));
   const hiddenCount = all.filter((p) => p.status === 'hidden').length;
+  const hasDigital = all.some(isDigital);
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
     return all.filter((p) => {
@@ -81,6 +84,7 @@ export default function Products() {
       if (filter === 'in') return p.stock_count > LOW;
       if (filter === 'low') return p.stock_count > 0 && p.stock_count <= LOW;
       if (filter === 'out') return p.stock_count <= 0;
+      if (filter === 'digital') return isDigital(p);
       return true;
     });
   }, [all, query, filter]);
@@ -119,7 +123,12 @@ export default function Products() {
             />
           </View>
         ) : (
-          <Segmented value={filter} onChange={setFilter} options={[['all', 'All'], ['in', 'In stock'], ['low', 'Low'], ['out', 'Sold out']] as const} />
+          <Segmented
+            value={filter}
+            onChange={setFilter}
+            // The Digital list only appears for stores that sell downloads.
+            options={hasDigital ? ([['all', 'All'], ['in', 'In stock'], ['low', 'Low'], ['out', 'Sold out'], ['digital', 'Digital']] as const) : ([['all', 'All'], ['in', 'In stock'], ['low', 'Low'], ['out', 'Sold out']] as const)}
+          />
         )}
       </View>
 
@@ -168,7 +177,7 @@ export default function Products() {
           <EmptyState title={`Nothing matches “${query.trim()}”`} sub="Try a different word." action="Clear search" onAction={() => setQuery('')} />
         ) : (
           <EmptyState
-            title={filter === 'in' ? 'Nothing well stocked' : filter === 'low' ? 'Nothing running low' : 'Nothing is sold out'}
+            title={filter === 'in' ? 'Nothing well stocked' : filter === 'low' ? 'Nothing running low' : filter === 'digital' ? 'No digital products' : 'Nothing is sold out'}
             sub={filter === 'in' ? 'Update your stock so buyers can order.' : filter === 'low' ? `Products with ${LOW} or fewer left show here.` : 'Products that run out will show here.'}
           />
         )}

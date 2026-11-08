@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Image, Linking, Pressable, ScrollView, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeftRight, ChevronRight, CircleHelp, KeyRound, Link2, LogOut, Mail, Palette, QrCode, ReceiptText, Truck, Wallet, X, type LucideIcon } from 'lucide-react-native';
+import { ArrowLeftRight, ChevronRight, CircleHelp, KeyRound, Link2, LogOut, Mail, Palette, QrCode, ReceiptText, Ticket, Truck, Wallet, X, type LucideIcon } from 'lucide-react-native';
 import { IconTile, Toggle } from '@/features/seller/parts';
 import { WhatsAppIcon } from '@/features/setup/parts';
 import { Button, Screen, Skeleton, T, cx } from '@/components/ui';
@@ -144,6 +144,7 @@ export default function Settings() {
     { label: 'Share store and QR code', sub: storeSlug ? `frontstore.app/${storeSlug}` : undefined, Icon: QrCode, href: '/share' },
     { label: 'Payment links', sub: 'Get paid without a product', Icon: Link2, href: '/payment-links' },
     { label: 'Invoices', sub: 'Bill a customer and track payment', Icon: ReceiptText, href: '/invoices' },
+    { label: 'Event tickets', sub: 'Check guests in at the door', Icon: Ticket, href: '/tickets' },
   ];
   const passwordOn = Boolean(user.has_password) && user.password_login_enabled !== false;
   const moneyRows: Row[] = [

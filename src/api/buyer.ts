@@ -307,3 +307,16 @@ export interface OrderPaymentInfo {
 export async function initOrderPayment(orderId: string | number): Promise<OrderPaymentInfo> {
   return apiPost<OrderPaymentInfo>(`/public/orders/${orderId}/initialize-payment`);
 }
+
+export type OrderDownload = { product: string; name: string; url: string; downloadsLeft: number | null; expiresAt: string | null; expired: boolean; readOnline: boolean };
+export type OrderTicket = { product: string; code: string; qr: string; admits: number; eventDate: string | null; location: string | null; checkedInAt: string | null };
+
+/** Files and event tickets for a paid order (empty until it's paid, or on servers without this yet). */
+export async function getOrderDeliverables(orderId: string | number): Promise<{ downloads: OrderDownload[]; tickets: OrderTicket[] }> {
+  try {
+    const d = await apiGet<any>(`/public/orders/${orderId}/deliverables`);
+    return { downloads: d?.downloads ?? [], tickets: d?.tickets ?? [] };
+  } catch {
+    return { downloads: [], tickets: [] };
+  }
+}
