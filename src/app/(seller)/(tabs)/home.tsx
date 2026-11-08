@@ -132,8 +132,8 @@ export default function Home() {
           <View className="flex-row gap-2">
             <Link href="/share" asChild>
               <Pressable accessibilityRole="button" className="h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-full bg-saffron">
-                {narrow ? null : <Share size={16} color="#07261C" strokeWidth={2.2} />}
-                <T numberOfLines={1} className="font-sans-bold text-sm text-deep">{narrow ? 'Share' : 'Share store'}</T>
+                <Share size={16} color="#07261C" strokeWidth={2.2} />
+                <T numberOfLines={1} className="font-sans-bold text-sm text-deep">Share store</T>
               </Pressable>
             </Link>
             <Link href="/payouts" asChild>
@@ -141,9 +141,6 @@ export default function Home() {
                 <T className="font-sans-semibold text-sm text-bg">Payout</T>
               </Pressable>
             </Link>
-            <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/shop/store/[slug]', params: { slug: username } })} className="h-11 justify-center rounded-full border border-[rgba(246,243,236,0.25)] px-3.5">
-              <T className="font-sans-semibold text-sm text-bg">Preview</T>
-            </Pressable>
           </View>
         </View>
 
