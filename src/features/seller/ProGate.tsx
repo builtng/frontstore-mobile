@@ -1,4 +1,4 @@
-import { Linking, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import { Sparkles } from 'lucide-react-native';
 import { Button, LoadError, T } from '@/components/ui';
 import { C } from '@/lib/theme';
@@ -19,8 +19,11 @@ export function LockedOrError({ error, what, feature, onRetry }: { error: unknow
         <Sparkles size={24} color={C['warn-fg']} strokeWidth={2} />
       </View>
       <T className="text-center font-display text-xl">{feature} are on Pro</T>
-      <T className="text-center text-sm leading-5 text-muted">Upgrade your plan on the Frontstore website, then come back here to use them.</T>
-      <Button title="See plans" kind="dark" className="mt-1 h-12 self-stretch" onPress={() => Linking.openURL('https://frontstore.app/pricing')} />
+      <T className="text-center text-sm leading-5 text-muted">This feature isn’t included in your current plan.</T>
+      {/* App Store rule 3.1.1: no links or buttons pointing iOS users to buy outside the app. */}
+      {Platform.OS !== 'ios' ? (
+        <Button title="See plans" kind="dark" className="mt-1 h-12 self-stretch" onPress={() => Linking.openURL('https://frontstore.app/pricing')} />
+      ) : null}
     </View>
   );
 }

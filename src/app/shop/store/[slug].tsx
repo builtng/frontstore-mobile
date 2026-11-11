@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, ScrollView, Share, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, Share, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -30,7 +30,10 @@ export default function BuyerStore() {
   // Sellers can look at their own store but can't buy from it.
   const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe });
   const ownStore = !!me?.store && (String(me.store.id) === String(storeObj?.id) || me.store.username === slug);
-  const liveProducts = liveData?.products || [];
+  // App Store rule 3.1.1: digital goods bought inside an iOS app must use Apple's in-app purchase.
+  // So on iPhone/iPad the shop only sells physical goods, services and event tickets.
+  const isDigitalItem = (p: any) => !!(p?.is_digital || p?.digital_files?.length || p?.type === 'subscription');
+  const liveProducts = (liveData?.products || []).filter((p: any) => Platform.OS !== 'ios' || !isDigitalItem(p));
 
   const storeName = storeObj?.name || '';
   const storeInitial = storeName[0] || 'S';
