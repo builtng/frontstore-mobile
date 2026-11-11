@@ -1,0 +1,16 @@
+# Sends an iOS build that already exists on EAS to App Store Connect.
+# Runs when .github/ios-submit changes on main. Put the EAS build ID below.
+name: iOS submit existing build
+
+on:
+  push:
+    branches: ['main']
+    paths: ['.github/ios-submit']
+
+jobs:
+  submit_ios:
+    name: Submit to App Store Connect
+    type: submit
+    params:
+      build_id: 4767e2d9-c2b7-445c-b518-59547147ceba
+      profile: production
